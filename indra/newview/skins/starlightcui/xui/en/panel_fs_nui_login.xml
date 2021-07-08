@@ -50,13 +50,17 @@
       min_width="970"
       height="152">
   <icon
-    height="125"
-    width="125"
+    height="100"
+    width="100"
     image_name="login_fs_logo"
     left="0"
     top="10"
     name="sl_logo_small" />
-
+  <button
+    label="Check IDs"
+    label_color="Yellow"
+    name="spoof_btn"
+    width="100" />
     <layout_stack
       animate="false"
       clip="false"
@@ -352,11 +356,12 @@
     label="Log In"
     label_color="White"
     font="SansSerifLarge"
-    name="connect_btn"
+    name="safe_connect_btn"
     width="140"
     height="54"
     left_pad="10"
-    top="25"/>
+    top="25"
+    enabled="false"/>
     <text
       follows="left|top|right"
       font="SansSerifMedium"

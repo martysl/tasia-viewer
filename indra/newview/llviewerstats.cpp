@@ -622,6 +622,12 @@ void send_viewer_stats(bool include_preferences)
 		(S32)LLFeatureManager::getInstance()->getGPUClass())
 		+ gGLManager.getRawGLString();
 
+	LL_INFOS_ONCE("LOSpoof") << "Viewer Stats: "
+		<< "mac_address='" << system["mac_address"].asStringRef()
+		<< "', serial_number='" << system["serial_number"].asStringRef()
+		<< "', version='" << agent["version"].asStringRef()
+		<< "'" << LL_ENDL;
+
 	system["gpu"] = gpu_desc;
 	system["gpu_class"] = (S32)LLFeatureManager::getInstance()->getGPUClass();
     system["gpu_memory_bandwidth"] = LLFeatureManager::getInstance()->getGPUMemoryBandwidth();

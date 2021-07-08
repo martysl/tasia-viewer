@@ -109,6 +109,7 @@ set(llcommon_SOURCE_FILES
     threadpool.cpp
     workqueue.cpp
     StackWalker.cpp
+    lospoof.cpp
     )
     
 set(llcommon_HEADER_FILES
