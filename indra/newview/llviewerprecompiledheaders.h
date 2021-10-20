@@ -29,11 +29,20 @@
 #ifndef LL_LLVIEWERPRECOMPILEDHEADERS_H
 #define LL_LLVIEWERPRECOMPILEDHEADERS_H
 
-#include "llwin32headers.h"
-
 // This file MUST be the first one included by each .cpp file
 // in viewer.
 // It is used to precompile headers for improved build speed.
+
+#include "llwin32headers.h"
+
+#if LL_GTK
+#include "gtk/gtk.h"
+#endif
+
+#if LL_LINUX
+#include <endian.h>
+#include <netinet/in.h>
+#endif
 
 #include "linden_common.h"
 
@@ -132,5 +141,18 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
+#include <queue>
+#include <stack>
+#include <boost/call_traits.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/range.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/utility/value_init.hpp>
+#include <boost/variant.hpp>
+#include <openssl/x509.h>
+
+#include "llglheaders.h"
 
 #endif
