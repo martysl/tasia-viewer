@@ -102,7 +102,7 @@ LLOSInfo::LLOSInfo() :
 
 #if LL_WINDOWS
 
-    if (IsWindows10OrGreater())
+	if (IsWindowsVersionOrGreater(HIBYTE(0x0A00), LOBYTE(0x0A00), 0))
 	{
 		mMajorVer = 10;
 		mMinorVer = 0;
