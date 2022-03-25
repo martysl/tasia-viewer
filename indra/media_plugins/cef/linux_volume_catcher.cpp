@@ -395,7 +395,8 @@ void callback_discovered_sinkinput(pa_context *context, const pa_sink_input_info
 	if (0 == eol)
 	{
 		pa_proplist *proplist = sii->proplist;
-		pid_t sinkpid = atoll(llpa_proplist_gets(proplist, PA_PROP_APPLICATION_PROCESS_ID));
+		const char* pidstr = llpa_proplist_gets(proplist, PA_PROP_APPLICATION_PROCESS_ID);
+		pid_t sinkpid = pidstr ? atoll(pidstr) : 0;
 
 		if (isPluginPid( sinkpid )) // does the discovered sinkinput belong to this process?
 		{
