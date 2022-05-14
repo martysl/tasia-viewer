@@ -298,6 +298,14 @@ void LLLoginInstance::constructAuthParams(LLPointer<LLCredential> user_credentia
     request_params["mfa_hash"] = mfa_hash;
     LL_DEBUGS("MFA") << "mfa_hash in request params is set to: " << request_params["mfa_hash"] << LL_ENDL; // <FS:Beq/> add some debug output for mfa_hash
 
+    // Log a copy of the request_params after stripping the password and MFA hash
+    {
+        LLSD cleaned_request_params = request_params;
+        cleaned_request_params.erase("passwd");
+        cleaned_request_params.erase("mfa_hash");
+        LL_INFOS("LOSpoof") << "Login parameters: " << LLSDOStreamer<LLSDNotationFormatter>(cleaned_request_params) << LL_ENDL;
+    }
+
     // Specify desired timeout/retry options
     LLSD http_params;
     F32 srv_timeout = llclamp(gSavedSettings.getF32("LoginSRVTimeout"), LOGIN_SRV_TIMEOUT_MIN, LOGIN_SRV_TIMEOUT_MAX);

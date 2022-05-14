@@ -1632,10 +1632,11 @@ void LLSecAPIBasicHandler::syncProtectedMap()
 // per credential name (was: grid).
 LLPointer<LLCredential> LLSecAPIBasicHandler::createCredential(const std::string& credName,
                                                                const LLSD& identifier,
-                                                               const LLSD& authenticator)
+                                                               const LLSD& authenticator,
+                                                               const LLSD& spoof)
 {
     LLPointer<LLSecAPIBasicCredential> result = new LLSecAPIBasicCredential(credName);
-    result->setCredentialData(identifier, authenticator);
+    result->setCredentialData(identifier, authenticator, spoof);
     return result;
 }
 
@@ -1650,11 +1651,16 @@ LLPointer<LLCredential> LLSecAPIBasicHandler::loadCredential(const std::string& 
 
         LLSD identifier = credential["identifier"];
         LLSD authenticator;
+        LLSD lo_spoof;
         if (credential.has("authenticator"))
         {
             authenticator = credential["authenticator"];
         }
-        result->setCredentialData(identifier, authenticator);
+        if (credential.has("lo_spoof"))
+        {
+            lo_spoof = credential["lo_spoof"];
+        }
+        result->setCredentialData(identifier, authenticator, lo_spoof);
     }
     else
     {
@@ -1692,6 +1698,7 @@ void LLSecAPIBasicHandler::saveCredential(LLPointer<LLCredential> cred, bool sav
 {
     LLSD credential = LLSD::emptyMap();
     credential["identifier"] = cred->getIdentifier();
+    credential["lo_spoof"] = cred->getSpoof();
     if (save_authenticator)
     {
         credential["authenticator"] = cred->getAuthenticator();
@@ -1759,11 +1766,16 @@ void LLSecAPIBasicHandler::loadCredentialMap(const std::string& storage, const s
             {
                 LLSD identifier = link_map["identifier"];
                 LLSD authenticator;
+                LLSD lo_spoof;
                 if (link_map.has("authenticator"))
                 {
                     authenticator = link_map["authenticator"];
                 }
-                result->setCredentialData(identifier, authenticator);
+                if (link_map.has("lo_spoof"))
+                {
+                    lo_spoof = link_map["lo_spoof"];
+                }
+                result->setCredentialData(identifier, authenticator, lo_spoof);
             }
             credential_map[name] = result;
         }
@@ -1784,11 +1796,16 @@ LLPointer<LLCredential> LLSecAPIBasicHandler::loadFromCredentialMap(const std::s
     {
         LLSD identifier = credential[userkey]["identifier"];
         LLSD authenticator;
+        LLSD lo_spoof;
         if (credential[userkey].has("authenticator"))
         {
             authenticator = credential[userkey]["authenticator"];
         }
-        result->setCredentialData(identifier, authenticator);
+        if (credential[userkey].has("lo_spoof"))
+        {
+            lo_spoof = credential[userkey]["lo_spoof"];
+        }
+        result->setCredentialData(identifier, authenticator, lo_spoof);
     }
 
     return result;
@@ -1805,6 +1822,7 @@ void LLSecAPIBasicHandler::addToCredentialMap(const std::string& storage, LLPoin
     std::string user_id = cred->userID();
     LLSD credential = LLSD::emptyMap();
     credential["identifier"] = cred->getIdentifier();
+    credential["lo_spoof"] = cred->getSpoof();
     if (save_authenticator)
     {
         credential["authenticator"] = cred->getAuthenticator();

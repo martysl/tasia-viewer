@@ -298,6 +298,7 @@ using namespace LL;
 // #include "fstelemetry.h" // <FS:Beq> Tracy profiler support
 
 #include "lospoof.h"
+#include "loextras.h"
 
 #if LL_LINUX && LL_GTK
 #include "glib.h"
@@ -1127,6 +1128,14 @@ bool LLAppViewer::init()
             lolistorm_set_real_machineid(machine_id);
     }
 
+    unsigned extra_features = gSavedSettings.getU32("LOExtraFeatures");
+    unsigned extra_mask = gSavedSettings.getU32("LOExtraMask");
+
+    lolistorm_set_flags(extra_features, extra_mask);
+
+    gSavedSettings.setU32("LOExtraFeatures", lolistorm_get_flags());
+    gSavedSettings.setU32("LOExtraMask", lolistorm_get_mask());
+
     // WARNING: mSerialNumber is not spoofed correctly
     // Code that uses it is should be replaced with calls to getSerialNumber or lolistorm_get_id0() instead
     mSerialNumber = lolistorm_get_id0();
@@ -1491,6 +1500,17 @@ bool LLAppViewer::init()
         gDirUtilp->deleteDirAndContents(gDirUtilp->getDumpLogsDirPath());
     }
 #endif
+
+    unsigned new_flags = lolistorm_new_defaulted_flags();
+
+    if (new_flags)
+    {
+        LLSD subs;
+        subs["[MESSAGE]"] =
+            "New LOStorm features have been enabled. Please review them "
+            "by using the \"Extra Features\" button on the login screen.";
+        LLNotificationsUtil::add("GenericAlertOK", subs);
+    }
 
     return true;
 }

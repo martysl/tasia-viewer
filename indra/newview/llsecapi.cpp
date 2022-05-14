@@ -144,6 +144,22 @@ LLSD LLCredential::getLoginParams()
             result["passwd"] = mAuthenticator["secret"].asString();
             username = result["username"].asString();
         }
+
+        if (mSpoof.isMap())
+        {
+            std::string id0 = mSpoof["id0"];
+            std::string macid = mSpoof["mac"];
+
+            if (!id0.empty())
+            {
+                result["id0"] = id0;
+            }
+
+            if (!macid.empty())
+            {
+                result["mac"] = macid;
+            }
+        }
     }
     catch (...)
     {

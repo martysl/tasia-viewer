@@ -79,6 +79,13 @@
 #include "llviewernetwork.h"
 // </FS:Ansariel> [Legacy Bake]
 
+#include "loextras.h"
+
+#if LL_MSVC
+// disable boost::lexical_cast warning
+#pragma warning (disable:4702)
+#endif
+
 #include <boost/lexical_cast.hpp>
 
 LLPointer<LLVOAvatarSelf> gAgentAvatarp = NULL;
@@ -2378,6 +2385,12 @@ void LLVOAvatarSelf::setBakedReady(LLAvatarAppearanceDefines::ETextureIndex type
 // virtual
 void LLVOAvatarSelf::dumpLocalTextures() const
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+
+#if !LL_RELEASE_FOR_DOWNLOAD
+    bypass_perms = true;
+#endif
+
     LL_INFOS() << "Local Textures:" << LL_ENDL;
 
     /* ETextureIndex baked_equiv[] = {
@@ -2399,13 +2412,12 @@ void LLVOAvatarSelf::dumpLocalTextures() const
         // index is baked texture - index is not relevant. putting in 0 as placeholder
         if (isTextureDefined(baked_equiv, 0))
         {
-#if LL_RELEASE_FOR_DOWNLOAD
-            // End users don't get to trivially see avatar texture IDs, makes textures
-            // easier to steal. JC
-            LL_INFOS() << "LocTex " << name << ": Baked " << LL_ENDL;
-#else
-            LL_INFOS() << "LocTex " << name << ": Baked " << getTEImage(baked_equiv)->getID() << LL_ENDL;
-#endif
+            LL_INFOS() << "LocTex " << name << ": Baked ";
+
+            if (bypass_perms)
+                LL_CONT << getTEImage(baked_equiv)->getID();
+
+            LL_CONT << LL_ENDL;
         }
         else if (local_tex_obj && local_tex_obj->getImage() != NULL)
         {
@@ -2419,13 +2431,12 @@ void LLVOAvatarSelf::dumpLocalTextures() const
 
                 LL_INFOS() << "LocTex " << name << ": "
                         << "Discard " << image->getDiscardLevel() << ", "
-                        << "(" << image->getWidth() << ", " << image->getHeight() << ") "
-#if !LL_RELEASE_FOR_DOWNLOAD
-                    // End users don't get to trivially see avatar texture IDs,
-                    // makes textures easier to steal
-                        << image->getID() << " "
-#endif
-                        << "Priority: " << image->getMaxVirtualSize()
+                        << "(" << image->getWidth() << ", " << image->getHeight() << ") ";
+
+                if (bypass_perms)
+                    LL_CONT << image->getID() << " ";
+
+                LL_CONT << "Priority: " << image->getMaxVirtualSize()
                         << LL_ENDL;
             }
         }
@@ -2967,7 +2978,9 @@ bool LLVOAvatarSelf::canGrabBakedTexture(EBakedTextureIndex baked_index) const
         return false;
     }
 
-    if (gAgent.isGodlikeWithoutAdminMenuFakery())
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+
+    if (bypass_perms || gAgent.isGodlikeWithoutAdminMenuFakery())
         return true;
 
     // Check permissions of textures that show up in the

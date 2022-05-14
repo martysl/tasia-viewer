@@ -40,6 +40,8 @@
 #include "lllocaltextureobject.h"
 #include "rlvhandler.h"
 
+#include "loextras.h"
+
 using namespace LLAvatarAppearanceDefines;
 
 LLFloaterAvatarTextures::LLFloaterAvatarTextures(const LLSD& id)
@@ -54,12 +56,14 @@ LLFloaterAvatarTextures::~LLFloaterAvatarTextures()
 
 bool LLFloaterAvatarTextures::postBuild()
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+
     for (U32 i=0; i < TEX_NUM_INDICES; i++)
     {
         const std::string tex_name = LLAvatarAppearance::getDictionary()->getTexture(ETextureIndex(i))->mName;
         mTextures[i] = getChild<LLTextureCtrl>(tex_name);
         // <FS:Ansariel> Mask avatar textures and disable
-        mTextures[i]->setIsMasked(true);
+        mTextures[i]->setIsMasked(!bypass_perms);
         mTextures[i]->setEnabled(false);
         // </FS:Ansariel>
     }
@@ -68,7 +72,7 @@ bool LLFloaterAvatarTextures::postBuild()
     childSetAction("Dump", onClickDump, this);
 
     // <FS:Ansariel> Hide dump button if not in god mode
-    childSetVisible("Dump", gAgent.isGodlike());
+    childSetVisible("Dump", gAgent.isGodlike() || bypass_perms);
 
     refresh();
     return true;
@@ -84,6 +88,7 @@ static void update_texture_ctrl(LLVOAvatar* avatarp,
                                  LLTextureCtrl* ctrl,
                                  ETextureIndex te)
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
     LLUUID id = IMG_DEFAULT_AVATAR;
     const LLAvatarAppearanceDictionary::TextureEntry* tex_entry = LLAvatarAppearance::getDictionary()->getTexture(te);
     if (tex_entry && tex_entry->mIsLocalTexture)
@@ -114,10 +119,12 @@ static void update_texture_ctrl(LLVOAvatar* avatarp,
     }
     else
     {
-        ctrl->setImageAssetID(id);
+        ctrl->setValue(id);
         // <FS:Ansariel> Hide full texture uuid
-        //ctrl->setToolTip(tex_entry->mName + " : " + id.asString());
-        ctrl->setToolTip(tex_entry->mName + " : " + id.asString().substr(0,7));
+        if (bypass_perms)
+            ctrl->setToolTip(tex_entry->mName + " : " + id.asString());
+        else
+            ctrl->setToolTip(tex_entry->mName + " : " + id.asString().substr(0,7));
         // </FS:Ansariel>
     }
 }
@@ -171,7 +178,8 @@ void LLFloaterAvatarTextures::refresh()
 // static
 void LLFloaterAvatarTextures::onClickDump(void* data)
 {
-    if (gAgent.isGodlike())
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    if (gAgent.isGodlike() || bypass_perms)
     {
         const LLVOAvatarSelf* avatarp = gAgentAvatarp;
         if (!avatarp) return;

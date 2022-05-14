@@ -137,6 +137,8 @@
 
 #include "fsdiscordconnect.h" // <FS:LO> tapping a place that happens on landing in world to start up discord
 
+#include "loextras.h"
+
 extern F32 SPEED_ADJUST_MAX;
 extern F32 SPEED_ADJUST_MAX_SEC;
 extern F32 ANIM_SPEED_MAX;
@@ -4881,6 +4883,8 @@ LLViewerInventoryItem* recursiveGetObjectInventoryItem(LLViewerObject *vobj, LLU
 
 void LLVOAvatar::updateAnimationDebugText()
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+
     for (LLMotionController::motion_list_t::iterator iter = mMotionController.getActiveMotions().begin();
          iter != mMotionController.getActiveMotions().end(); ++iter)
     {
@@ -4913,7 +4917,7 @@ void LLVOAvatar::updateAnimationDebugText()
             if (motion_name.empty())
             {
                 std::string name;
-                if (gAgent.isGodlikeWithoutAdminMenuFakery() || isSelf())
+                if (bypass_perms || gAgent.isGodlikeWithoutAdminMenuFakery() || isSelf())
                 {
                     name = motionp->getID().asString();
                     LLVOAvatar::AnimSourceIterator anim_it = mAnimationSources.begin();
@@ -11535,6 +11539,7 @@ void LLVOAvatar::dumpArchetypeXMLCallback(const std::vector<std::string>& filena
         apr_file_printf( file, "\n\t<archetype name=\"???\">\n" );
 
         bool agent_is_godlike = gAgent.isGodlikeWithoutAdminMenuFakery();
+        bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
 
         if (group_by_wearables)
         {
@@ -11562,7 +11567,7 @@ void LLVOAvatar::dumpArchetypeXMLCallback(const std::vector<std::string>& filena
                         if( te_image )
                         {
                             std::string uuid_str = LLUUID().asString();
-                            if (agent_is_godlike)
+                            if (bypass_perms || agent_is_godlike)
                             {
                                 te_image->getID().toString(uuid_str);
                             }
@@ -11588,7 +11593,7 @@ void LLVOAvatar::dumpArchetypeXMLCallback(const std::vector<std::string>& filena
                 if( te_image )
                 {
                     std::string uuid_str = LLUUID().asString();
-                    if (agent_is_godlike)
+                    if (bypass_perms || agent_is_godlike)
                     {
                         te_image->getID().toString(uuid_str);
                     }

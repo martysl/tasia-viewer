@@ -108,6 +108,7 @@ set(llcommon_SOURCE_FILES
     workqueue.cpp
     StackWalker.cpp
     lospoof.cpp
+    loextras.cpp
     )
     
 set(llcommon_HEADER_FILES
@@ -244,6 +245,8 @@ set(llcommon_HEADER_FILES
     llwin32headers.h
     llworkerthread.h
     hbxxh.h
+    lospoof.h
+    loextras.h
     lockstatic.h
     stdtypes.h
     stringize.h

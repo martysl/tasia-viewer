@@ -118,6 +118,8 @@
 #include "llpresetsmanager.h"
 #include "NACLantispam.h"
 
+#include "loextras.h"
+
 using namespace LLAvatarAppearanceDefines;
 
 extern LLMenuBarGL* gMenuBarView;

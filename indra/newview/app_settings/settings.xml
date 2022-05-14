@@ -25879,6 +25879,39 @@ Change of this parameter will affect the layout of buttons in notification toast
 	  <key>Value</key>
 	  <string></string>
     </map>
+    <key>LOExtraFeatures</key>
+    <map>
+      <key>Comment</key>
+      <string>Bit mask for extra features</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LOExtraMask</key>
+    <map>
+      <key>Comment</key>
+      <string>Bit mask for available features</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LOCustomLoginBackground</key>
+    <map>
+      <key>Comment</key>
+      <string>Custom login background image</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string></string>
+    </map>
     <key>FSLookAtTargetLimitDistance</key>
     <map>
       <key>Comment</key>

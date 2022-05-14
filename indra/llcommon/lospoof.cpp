@@ -6,6 +6,7 @@
 #include "llstring.h"
 
 #include "lospoof.h"
+#include "loextras.h"
 
 #include <stdlib.h>
 
@@ -212,9 +213,21 @@ const std::string& lolistorm_get_real_machineid_str() { return real_machineid_st
 
 const std::string& lolistorm_get_real_macid_str() { return real_macid_str; }
 
-const std::string& lolistorm_get_id0() { return spoofed_id0; }
+const std::string& lolistorm_get_id0()
+{
+    const std::string& custom_id0 = lolistorm_get_custom_id0();
+    if (!custom_id0.empty())
+        return custom_id0;
+    return spoofed_id0;
+}
 
-const std::string& lolistorm_get_macid() { return spoofed_macid; }
+const std::string& lolistorm_get_macid()
+{
+    const std::string& custom_macid = lolistorm_get_custom_macid();
+    if (!custom_macid.empty())
+        return custom_macid;
+    return spoofed_macid;
+}
 
 void lolistorm_get_faux_nodeid(unsigned char out[6])
 {

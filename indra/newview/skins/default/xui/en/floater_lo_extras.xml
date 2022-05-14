@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ name="LOstorm Extras"
+ title="LOstorm Extras"
+ single_instance="true"
+ width="470"
+ height="424">
+  <scroll_container top="0" left="0" height="420">
+  <panel width="442" height="620">
+  <text
+    left="8"
+    height="20"
+    font="SansSerifBold">
+Custom Login Background
+  </text>
+  <line_editor
+    name="custom_login_background"
+    height="24"
+    max_length_chars="1024"
+    text_pad_left="4"
+  />
+  <text_editor height="26" h_pad="10" v_pad="0" read_only="true" word_wrap="true" max_length="999">
+Enter an image URL above to change the login background image.
+  </text_editor>
+  <check_box
+    left="8"
+    height="20"
+    label="Spoof IDs (ALWAYS ENABLED)"
+    font="SansSerifBold"
+    name="spoof_ids_chk"
+    enabled="false"
+    value="1" />
+  <text_editor height="26" h_pad="10" v_pad="0" read_only="true" word_wrap="true" max_length="999">
+- Sends spoofed IDs for each account to help prevent association of alts.
+  </text_editor>
+  <check_box
+    height="20"
+    label="Convenience Features"
+    font="SansSerifBold"
+    name="convenience_chk"
+    enabled="false" />
+  <text_editor height="52" h_pad="10" v_pad="0" read_only="true" word_wrap="true" max_length="999">
+- Consistent access to "Edit" and "Build" options
+- Persistent setting of "Fly Override" setting (FSAlwaysFly)
+- More in the future...
+  </text_editor>
+  <check_box
+    height="20"
+    label="Bypass Permissions"
+    font="SansSerifBold"
+    name="bypass_export_perms_chk"
+    enabled="false" />
+  <text_editor height="52" h_pad="10" v_pad="0" read_only="true" word_wrap="true" max_length="999">
+- Allows viewing and copying of texture UUIDs, applying textures by UUID
+- Allows exporting of textures, linksets, meshes and group member lists without permissions.
+  </text_editor>
+  <check_box
+    height="20"
+    label="Enhanced Export / Import"
+    font="SansSerifBold"
+    name="enhanced_export_chk"
+    enabled="false" />
+  <text_editor height="52" h_pad="10" v_pad="0" read_only="true" word_wrap="true" max_length="999">
+- Enables export of linksets containing mesh by substituting in dummy prims
+- Enables export and import of materials and other additional textures
+- More in the future...
+  </text_editor>
+  <check_box
+    height="20"
+    label="Anonymize Exports"
+    font="SansSerifBold"
+    name="anonymize_exports_chk"
+    enabled="false" />
+  <text_editor height="26" h_pad="10" v_pad="0" read_only="true" word_wrap="true" max_length="999">
+- Removes your name from exported OXP and DAE files.
+  </text_editor>
+  <check_box
+    height="20"
+    label="MD5 Logins"
+    font="SansSerifBold"
+    name="md5_login_chk"
+    enabled="false" />
+  <text_editor height="26" h_pad="10" v_pad="0" read_only="true" word_wrap="true" max_length="999">
+- Allows direct entry of MD5 passwords for logins
+</text_editor>
+  <check_box
+    height="20"
+    label="Custom IDs for user:"
+    font="SansSerifBold"
+    name="custom_login_ids_chk"
+    enabled="true" />
+  <text
+    font="SansSerifBold"
+    top_delta="4"
+    width="250"
+    height="20"
+    left="200"
+    value="Governor Linden @ Second Life"
+    name="username"
+    />
+  <text_editor left="10" height="52" h_pad="10" v_pad="0" read_only="true" word_wrap="true" max_length="999">
+- Uses custom login IDs to use with the current account
+- IDs are saved on a successful login, if 'Remember Username' is used
+- Dangerous! Do not use unless you need to spoof a specific login ID
+  </text_editor>
+  <text
+    font="SansSerifBold"
+    height="26"
+    value="Custom ID0"
+    name="custom_id0_label"
+    left="10" />
+  <text
+    font="SansSerifBold"
+    height="26"
+    value="Custom MACID"
+    name="custom_macid_label"
+    top_delta="0"
+    left="230" />
+  <line_editor
+    width="210"
+    height="24"
+    max_length_chars="32"
+    name="custom_id0"
+    text_pad_left="4"
+    enabled="true"
+    top_delta="20"
+    left="10"
+  />
+  <line_editor
+    width="210"
+    height="24"
+    max_length_chars="32"
+    name="custom_macid"
+    text_pad_left="4"
+    enabled="true"
+    top_delta="0"
+    left="230"
+    />
+  </panel>
+  </scroll_container>
+</floater>

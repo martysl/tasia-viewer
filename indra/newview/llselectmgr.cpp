@@ -114,6 +114,8 @@
 #include "llinventoryobserver.h"
 #include "fscommon.h"
 
+#include "loextras.h"
+
 LLViewerObject* getSelectedParentObject(LLViewerObject *object) ;
 //
 // Consts
@@ -1971,9 +1973,11 @@ struct TextureApplyFunctor : public LLSelectedTEFunctor
 // *TODO: re-arch texture applying out of lltooldraganddrop
 bool LLSelectMgr::selectionSetImage(const LLUUID& imageid, bool isPBR)
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
     // First for (no copy) textures and multiple object selection
     LLViewerInventoryItem* item = gInventory.getItem(imageid);
-    if(item
+
+    if(!bypass_perms && item
         && !item->getPermissions().allowOperationBy(PERM_COPY, gAgent.getID())
         && (mSelectedObjects->getNumNodes() > 1) )
     {
@@ -2031,7 +2035,7 @@ bool LLSelectMgr::selectionSetImage(const LLUUID& imageid, bool isPBR)
     //  }
     // };
     // </FS:Beq>
-    if (item && !item->getPermissions().allowOperationBy(PERM_COPY, gAgent.getID()))
+    if (!bypass_perms && item && !item->getPermissions().allowOperationBy(PERM_COPY, gAgent.getID()))
     {
         getSelection()->applyNoCopyTextureToTEs(item);
     }

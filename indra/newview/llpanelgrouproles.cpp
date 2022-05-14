@@ -61,6 +61,8 @@
 #include "llfilepicker.h"
 #include "llviewermenufile.h"
 
+#include "loextras.h"
+
 static LLPanelInjector<LLPanelGroupRoles> t_panel_group_roles("panel_group_roles");
 
 bool agentCanRemoveFromRole(const LLUUID& group_id,
@@ -406,6 +408,7 @@ bool LLPanelGroupRoles::hasModal()
 
 void LLPanelGroupRoles::setGroupID(const LLUUID& id)
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
     LLPanelGroupTab::setGroupID(id);
 
     LLPanelGroupMembersSubTab* group_members_tab = findChild<LLPanelGroupMembersSubTab>("members_sub_tab");
@@ -424,7 +427,7 @@ void LLPanelGroupRoles::setGroupID(const LLUUID& id)
     // [FS:CR] FIRE-12276
     button = getChild<LLButton>("export_list");
     if (button)
-        button->setEnabled(gAgent.hasPowerInGroup(mGroupID, GP_MEMBER_VISIBLE_IN_DIR));
+        button->setEnabled(bypass_perms || gAgent.hasPowerInGroup(mGroupID, GP_MEMBER_VISIBLE_IN_DIR));
     // [/FS:CR]
     if(mSubTabContainer)
         mSubTabContainer->selectTab(1);

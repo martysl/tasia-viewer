@@ -59,6 +59,13 @@
         label_color="Yellow"
         name="spoof_btn"
         left="100"
+        top="8"
+        width="100" />
+      <button
+        label="Extra Features"
+        name="extras_btn"
+        left="208"
+        top="8"
         width="100" />
          <text
           follows="left|bottom"

@@ -223,6 +223,7 @@
 #include "fsmoneytracker.h"
 //#include "fspanelclassified.h"
 #include "lofloaterspoof.h"
+#include "lofloaterextras.h"
 #include "lggbeamcolormapfloater.h"
 #include "lggbeammapfloater.h"
 #include "llfloaterdisplayname.h"
@@ -677,6 +678,7 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("fs_whitelist_floater", "floater_whitelist.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterWhiteListHelper>); // white list advisor
 
     LLFloaterReg::add("lo_spoof", "floater_lo_spoof.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<LOFloaterSpoof>));
+    LLFloaterReg::add("lo_extras", "floater_lo_extras.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<LOFloaterExtras>));
 
     LLFloaterReg::registerControlVariables(); // Make sure visibility and rect controls get preserved when saving
 }

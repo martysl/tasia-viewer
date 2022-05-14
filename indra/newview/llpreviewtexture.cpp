@@ -63,6 +63,8 @@
 #include "fscommon.h"
 #include "llviewermenu.h"
 
+#include "loextras.h"
+
 #include <boost/lexical_cast.hpp>
 
 const S32 CLIENT_RECT_VPAD = 4;
@@ -107,6 +109,7 @@ LLPreviewTexture::LLPreviewTexture(const LLSD& key)
       mDisplayNameCallback(false),
       mAvatarNameCallbackConnection()
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
     updateImageID();
     if (key.has("save_as"))
     {
@@ -118,9 +121,12 @@ LLPreviewTexture::LLPreviewTexture(const LLSD& key)
         mShowKeepDiscard = false;
         mCopyToInv = false;
         mIsCopyable = false;
-        mPreviewToSave = false;
+        if (!bypass_perms)
+            mPreviewToSave = false;
         mIsFullPerm = false;
     }
+    if (bypass_perms)
+        mIsFullPerm = TRUE;
 }
 
 LLPreviewTexture::~LLPreviewTexture()
@@ -435,7 +441,17 @@ void LLPreviewTexture::saveAs(EFileformatType format, uuid_vec_t remaining_ids)
     // <FS:Ansariel> Undo MAINT-2897 and use our own texture format selection
     //std::string filename = getItem() ? LLDir::getScrubbedFileName(getItem()->getName()) : LLStringUtil::null;
     //LLFilePickerReplyThread::startPicker(boost::bind(&LLPreviewTexture::saveTextureToFile, this, _1), LLFilePicker::FFSAVE_TGAPNG, filename);
-    std::string filename = getItem() ? checkFileExtension(LLDir::getScrubbedFileName(getItem()->getName()), format) : LLStringUtil::null;
+    std::string filename;
+
+    if (getItem())
+        filename = getItem()->getName();
+    else if (!mImageID.isNull())
+        filename = mImageID.asString();
+    else
+        filename = "texture";
+
+    filename = checkFileExtension(LLDir::getScrubbedFileName(filename), format);
+
     LLFilePickerReplyThread::startPicker(boost::bind(&LLPreviewTexture::saveTextureToFile, this, _1, format, callback, remaining_ids), saveFilter, filename);
     // </FS:Ansariel>
 }
@@ -640,6 +656,14 @@ void LLPreviewTexture::onFileLoadedForSaveTGA(bool success,
 
     LLPreviewTexture* self = LLFloaterReg::findTypedInstance<LLPreviewTexture>("preview_texture", *item_uuid);
 
+    if (!self)
+    {
+        LLSD key;
+        key["uuid"] = *item_uuid;
+        key["preview_only"] = TRUE;
+        self = LLFloaterReg::findTypedInstance<LLPreviewTexture>("preview_texture", key);
+    }
+
     if( final || !success )
     {
         delete item_uuid;
@@ -725,6 +749,14 @@ void LLPreviewTexture::onFileLoadedForSavePNG(bool success,
 
     LLPreviewTexture* self = LLFloaterReg::findTypedInstance<LLPreviewTexture>("preview_texture", *item_uuid);
 
+    if (!self)
+    {
+        LLSD key;
+        key["uuid"] = *item_uuid;
+        key["preview_only"] = TRUE;
+        self = LLFloaterReg::findTypedInstance<LLPreviewTexture>("preview_texture", key);
+    }
+
     if( final || !success )
     {
         delete item_uuid;
@@ -790,7 +822,6 @@ void LLPreviewTexture::updateDimensions()
         // Asset has been fully loaded, adjust aspect ratio
         adjustAspectRatio();
     }
-
 
     // Update the width/height display every time
     // <FS:Ansariel> Performance improvement
@@ -1192,6 +1223,7 @@ void LLPreviewTexture::adjustAspectRatio()
 
 void LLPreviewTexture::updateImageID()
 {
+    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
     const LLViewerInventoryItem *item = static_cast<const LLViewerInventoryItem*>(getItem());
     if(item)
     {
@@ -1205,7 +1237,7 @@ void LLPreviewTexture::updateImageID()
         mCopyToInv = false;
         LLPermissions perm(item->getPermissions());
         mIsCopyable = perm.allowCopyBy(gAgent.getID(), gAgent.getGroupID()) && perm.allowTransferTo(gAgent.getID());
-        mIsFullPerm = item->checkPermissionsSet(PERM_ITEM_UNRESTRICTED);
+        mIsFullPerm = bypass_perms || item->checkPermissionsSet(PERM_ITEM_UNRESTRICTED);
     }
     else // not an item, assume it's an asset id
     {

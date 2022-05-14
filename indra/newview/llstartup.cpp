@@ -255,6 +255,8 @@
 #include "streamtitledisplay.h"
 #include "tea.h"
 
+#include "loextras.h"
+
 //
 // exported globals
 //

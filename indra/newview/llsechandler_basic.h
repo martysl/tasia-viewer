@@ -290,7 +290,8 @@ public:
 
     virtual LLPointer<LLCredential> createCredential(const std::string& credName,
                                                      const LLSD& identifier,
-                                                     const LLSD& authenticator);
+                                                     const LLSD& authenticator,
+                                                     const LLSD& spoof = LLSD());
 
     // load single credencial from default storage
     virtual LLPointer<LLCredential> loadCredential(const std::string& credName);

@@ -277,7 +277,7 @@
       follows="left|top|right"
       name="grid_panel"
       layout="topleft"
-      width="342"
+      width="320"
       height="66"
       visible="true">
     <text
@@ -323,6 +323,25 @@
       visible="false">
     + Click to add more grids
     </text>
+    </layout_panel>
+    <layout_panel
+      auto_resize="false"
+      follows="left|top|right"
+      name="extras_panel"
+      layout="topleft"
+      width="160"
+      height="66"
+      visible="true">
+    <button
+      label="Extra Features"
+      label_color="White"
+      image_unselected="PushButton_Extras"
+      image_pressed="PushButton_Extras_Pressed"
+      image_hover_unselected="PushButton_Extras_Over"
+      name="extras_btn"
+      width="160"
+      height="32"
+      font="SansSerifLarge" />
     </layout_panel>
     <layout_panel
       follows="left|top|right"

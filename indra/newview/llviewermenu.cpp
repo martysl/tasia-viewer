@@ -182,6 +182,9 @@
 #include "particleeditor.h"
 #include "permissionstracker.h"
 
+#include "loextras.h"
+#include "llpreviewtexture.h"
+
 using namespace LLAvatarAppearanceDefines;
 
 typedef LLPointer<LLViewerObject> LLViewerObjectPtr;
@@ -2049,19 +2052,20 @@ class LLAdvancedEnableAppearanceToXML : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
     {
+        bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
         LLViewerObject *obj = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
         if (obj && obj->isAnimatedObject() && obj->getControlAvatar())
         {
-            return gSavedSettings.getBOOL("DebugAnimatedObjects");
+            return bypass_perms || gSavedSettings.getBOOL("DebugAnimatedObjects");
         }
         else if (obj && obj->isAttachment() && obj->getAvatar())
         {
-            return gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
+            return bypass_perms || gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
         }
         else if (obj && obj->isAvatar())
         {
             // This has to be a non-control avatar, because control avs are invisible and unclickable.
-            return gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
+            return bypass_perms || gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
         }
         else
         {
@@ -4040,6 +4044,9 @@ class LLLandEnableBuyPass : public view_listener_t
 
 bool enable_object_edit()
 {
+    if (lolistorm_check_flag(LO_CONVENIENCE))
+        return TRUE;
+
     if (!isAgentAvatarValid()) return false;
 
     // *HACK:  The new "prelude" Help Islands have a build sandbox area,
@@ -7791,7 +7798,7 @@ class LLCommSetShowOnscreenConsole : public view_listener_t
         // This change will propagate to the other controls for this value
         bool show_onscreen_console = !gSavedSettings.getBOOL("FSShowOnscreenConsole");
         gSavedSettings.setBOOL("FSShowOnscreenConsole", show_onscreen_console);
-        
+
         return true;
     }
 };
@@ -10949,6 +10956,9 @@ void handle_grab_baked_texture(EBakedTextureIndex baked_tex_index)
         return;
 
     const LLUUID& asset_id = gAgentAvatarp->grabBakedTexture(baked_tex_index);
+
+    // Sim will immediately destroy this inventory item, so just preview instead
+#if 0
     LL_INFOS("texture") << "Adding baked texture " << asset_id << " to inventory." << LL_ENDL;
     LLAssetType::EType asset_type = LLAssetType::AT_TEXTURE;
     LLInventoryType::EType inv_type = LLInventoryType::IT_TEXTURE;
@@ -11007,6 +11017,9 @@ void handle_grab_baked_texture(EBakedTextureIndex baked_tex_index)
     {
         LL_WARNS() << "Can't find a folder to put it in" << LL_ENDL;
     }
+#endif
+
+    LLFloaterReg::showTypedInstance<LLPreviewTexture>("preview_texture", LLSD(asset_id), TAKE_FOCUS_YES);
 }
 
 bool enable_grab_baked_texture(EBakedTextureIndex baked_tex_index)
@@ -12874,7 +12887,7 @@ void initialize_menus()
     // Develop (Fonts debugging)
     commit.add("Develop.Fonts.Dump", boost::bind(&LLFontGL::dumpFonts));
     commit.add("Develop.Fonts.DumpTextures", boost::bind(&LLFontGL::dumpFontTextures));
-    
+
     //Develop (dump data)
     commit.add("Develop.TextureList.Dump", boost::bind(&LLViewerTextureList::dumpTexturelist));
 

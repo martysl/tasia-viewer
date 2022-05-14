@@ -47,6 +47,9 @@
 #include "llviewernetwork.h"        // FIX FIRE 3143 SJ
 #include "llcorehttputil.h"
 #include "llfloaterreg.h"
+
+#include "loextras.h"
+
 LLFloaterTOS::LLFloaterTOS(const LLSD& data)
 :   LLModalDialog( data["message"].asString() ),
     mMessage(data["message"].asString()),
@@ -75,7 +78,8 @@ bool LLFloaterTOS::postBuild()
     }
 
     // disable Agree to TOS radio button until the page has fully loaded
-    updateAgreeEnabled(false);
+    if (!lolistorm_check_flag(LO_CONVENIENCE))
+        updateAgreeEnabled(false);
 
     // hide the SL text widget if we're displaying TOS with using a browser widget.
     LLUICtrl *editor = getChild<LLUICtrl>("tos_text");

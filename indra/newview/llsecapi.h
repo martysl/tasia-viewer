@@ -307,26 +307,32 @@ public:
 
     virtual ~LLCredential() {}
 
-    virtual void setCredentialData(const LLSD& identifier, const LLSD& authenticator)
+    virtual void setCredentialData(const LLSD& identifier, const LLSD& authenticator, const LLSD& lo_spoof = LLSD())
     {
         mIdentifier = identifier;
         mAuthenticator = authenticator;
+
+        if (!lo_spoof.isUndefined())
+            mSpoof = lo_spoof;
     }
     virtual LLSD getIdentifier() { return mIdentifier; }
     virtual void identifierType(std::string& idType);
     virtual LLSD getAuthenticator() { return mAuthenticator; }
+    virtual LLSD getSpoof() { return mSpoof; }
     virtual void authenticatorType(std::string& authType);
     virtual LLSD getLoginParams();
     virtual std::string getCredentialName() { return mCredentialName; }
 
-
     virtual void clearAuthenticator() { mAuthenticator = LLSD(); }
+    virtual void clearSpoof() { mSpoof = LLSD(); }
+
     virtual std::string userID() const { return std::string("unknown");}
     virtual std::string asString() const { return std::string("unknown");}
     operator std::string() const { return asString(); }
 protected:
     LLSD mIdentifier;
     LLSD mAuthenticator;
+    LLSD mSpoof;
     std::string mCredentialName;
 };
 
@@ -492,7 +498,8 @@ public:
 public:
     virtual LLPointer<LLCredential> createCredential(const std::string& grid,
                                                      const LLSD& identifier,
-                                                     const LLSD& authenticator)=0;
+                                                     const LLSD& authenticator,
+                                                     const LLSD& spoof = LLSD())=0;
 
     virtual LLPointer<LLCredential> loadCredential(const std::string& name)=0;
 

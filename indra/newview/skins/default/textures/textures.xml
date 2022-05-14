@@ -675,6 +675,10 @@ with the same filename but different name
   <texture name="PushButton_Login_Over" file_name="widgets/PushButton_Login_Over.png" preload="true" scale.left="4" scale.top="19" scale.right="28" scale.bottom="4" />
   <texture name="PushButton_Login_Pressed" file_name="widgets/PushButton_Login_Pressed.png" preload="true" scale.left="4" scale.top="19" scale.right="28" scale.bottom="4" />
 
+  <texture name="PushButton_Extras" file_name="widgets/PushButton_Extras.png" preload="true" scale.left="4" scale.top="28" scale.right="156" scale.bottom="4" />
+  <texture name="PushButton_Extras_Over" file_name="widgets/PushButton_Extras_Over.png" preload="true" scale.left="4" scale.top="28" scale.right="156" scale.bottom="4" />
+  <texture name="PushButton_Extras_Pressed" file_name="widgets/PushButton_Extras_Pressed.png" preload="true" scale.left="4" scale.top="28" scale.right="156" scale.bottom="4" />
+
 
   <texture name="RadioButton_Press" file_name="widgets/RadioButton_Press.png" preload="true" />
   <texture name="RadioButton_On_Press" file_name="widgets/RadioButton_On_Press.png" preload="true" />
