@@ -71,6 +71,8 @@
 #include "llviewerparcelmgr.h"
 #include "fscommon.h"
 
+#include "loextras.h"
+
 // syntactic sugar
 #define callMemberFunction(object,ptrToMember)  ((object).*(ptrToMember))
 
@@ -936,6 +938,9 @@ BOOL LLToolDragAndDrop::handleDropTextureProtections(LLViewerObject* hit_obj,
 													 LLToolDragAndDrop::ESource source,
 													 const LLUUID& src_id)
 {
+	if (lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
+		return TRUE;
+
 	// Always succeed if....
 	// texture is from the library 
 	// or already in the contents of the object
@@ -2055,7 +2060,8 @@ EAcceptance LLToolDragAndDrop::dad3dApplyToObject(
 	//If texture !copyable don't texture or you'll never get it back.
 	if(!item->getPermissions().allowCopyBy(gAgent.getID()))
 	{
-		return ACCEPT_NO;
+		if (!lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
+			return ACCEPT_NO;
 	}
 
 	if(drop && (ACCEPT_YES_SINGLE <= rv))

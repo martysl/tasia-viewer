@@ -215,6 +215,7 @@
 #include "fsmoneytracker.h"
 //#include "fspanelclassified.h"
 #include "lofloaterspoof.h"
+#include "lofloaterextras.h"
 #include "lggbeamcolormapfloater.h"
 #include "lggbeammapfloater.h"
 #include "llfloaterdisplayname.h"
@@ -641,6 +642,7 @@ void LLViewerFloaterReg::registerFloaters()
 	LLFloaterReg::add("vram_usage", "floater_fs_vram_usage.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<FSFloaterVRAMUsage>));
 	LLFloaterReg::add("local_mesh_floater", "floater_vj_local_mesh.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterLocalMesh>); // local mesh
 	LLFloaterReg::add("lo_spoof", "floater_lo_spoof.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<LOFloaterSpoof>));
+	LLFloaterReg::add("lo_extras", "floater_lo_extras.xml", static_cast<LLFloaterBuildFunc>(&LLFloaterReg::build<LOFloaterExtras>));
 
 	LLFloaterReg::registerControlVariables(); // Make sure visibility and rect controls get preserved when saving
 }

@@ -104,6 +104,8 @@
 #include "llviewerattachmenu.h"
 #include "llresmgr.h"
 
+#include "loextras.h"
+
 #include <boost/shared_ptr.hpp>
 
 void copy_slurl_to_clipboard_callback_inv(const std::string& slurl);
@@ -880,6 +882,7 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
 										menuentry_vec_t &items,
 										menuentry_vec_t &disabled_items, U32 flags)
 {
+	bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
 	const LLInventoryObject *obj = getInventoryObject();
     bool single_folder_root = (mRoot == NULL);
 
@@ -949,7 +952,7 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
             }
 
             LLViewerInventoryItem *inv_item = gInventory.getItem(mUUID);
-			if (show_asset_id)
+			if (bypass_perms || show_asset_id)
 			{
 				items.push_back(std::string("Copy Asset UUID"));
 
@@ -963,7 +966,8 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
 					 || (! ( isItemPermissive() || gAgent.isGodlike() ) )
 					 || (flags & FIRST_SELECTED_ITEM) == 0)
 				{
-					disabled_items.push_back(std::string("Copy Asset UUID"));
+					if (!bypass_perms)
+						disabled_items.push_back(std::string("Copy Asset UUID"));
 				}
 			}
 

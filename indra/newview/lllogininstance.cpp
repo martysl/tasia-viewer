@@ -243,9 +243,6 @@ void LLLoginInstance::constructAuthParams(LLPointer<LLCredential> user_credentia
 	request_params["extended_errors"] = true; // request message_id and message_args
 	request_params["token"] = "";
 
-    // log request_params _before_ adding the credentials or sensitive MFA hash data
-    LL_INFOS("LOSpoof") << "Login parameters: " << LLSDOStreamer<LLSDNotationFormatter>(request_params) << LL_ENDL;
-
     // Copy the credentials into the request after logging the rest
     LLSD credentials(user_credential->getLoginParams());
     for (LLSD::map_const_iterator it = credentials.beginMap();
@@ -282,6 +279,14 @@ void LLLoginInstance::constructAuthParams(LLPointer<LLCredential> user_credentia
     }
 
     request_params["mfa_hash"] = mfa_hash;
+
+	// Log a copy of the request_params after stripping the password and MFA hash
+	{
+		LLSD cleaned_request_params = request_params;
+		cleaned_request_params.erase("passwd");
+		cleaned_request_params.erase("mfa_hash");
+		LL_INFOS("LOSpoof") << "Login parameters: " << LLSDOStreamer<LLSDNotationFormatter>(cleaned_request_params) << LL_ENDL;
+	}
 
 	// Specify desired timeout/retry options
 	LLSD http_params;

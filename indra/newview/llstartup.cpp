@@ -255,6 +255,8 @@
 #include "streamtitledisplay.h"
 #include "tea.h"
 
+#include "loextras.h"
+
 //
 // exported globals
 //
@@ -1654,7 +1656,6 @@ bool idle_startup()
 		login->setLastExecDuration(gLastExecDuration);
 		login->setLastExecEvent(last_exec_event);
 // </AW: crash report grid correctness>
-
 
 		// This call to LLLoginInstance::connect() starts the 
 		// authentication process.

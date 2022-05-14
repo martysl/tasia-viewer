@@ -76,6 +76,8 @@
 
 #include "fscommon.h"
 
+#include "loextras.h"
+
 static const S32 LOCAL_TRACKING_ID_COLUMN = 1;
 
 //static const char CURRENT_IMAGE_NAME[] = "Current Texture";
@@ -209,6 +211,8 @@ LLFloaterTexturePicker::~LLFloaterTexturePicker()
 
 void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selection /*=true*/)
 {
+	bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+
 	if( ((mImageAssetID != image_id) || mTentative) && mActive)
 	{
 		mNoCopyTextureSelected = FALSE;
@@ -226,6 +230,9 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selecti
 				mModeSelector->setSelectedIndex(2, 0);
 				onModeSelect(0,this);
 			}
+
+			if (bypass_perms)
+				getChild<LLLineEditor>("TextureKey")->setText(image_id.asString());
 		}
 		else
 		{
@@ -244,7 +251,10 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selecti
 			{
 				mInventoryPanel->getRootFolder()->clearSelection();
 				//<FS:Chaser> Clear out the UUID instead of keeping the last value
-				getChild<LLLineEditor>("TextureKey")->setText(LLUUID::null.asString());
+				if (bypass_perms)
+					getChild<LLLineEditor>("TextureKey")->setText(image_id.asString());
+				else
+					getChild<LLLineEditor>("TextureKey")->setText(LLUUID::null.asString());
 				//</FS:Chaser>
 			}
 			else
@@ -258,7 +268,7 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selecti
 					BOOL mod = itemp->getPermissions().allowModifyBy(gAgent.getID());
 					BOOL xfer = itemp->getPermissions().allowOperationBy(PERM_TRANSFER, gAgent.getID());
 
-					if(!copy)
+					if(!bypass_perms && !copy)
 					{
 						// no copy texture
 						getChild<LLUICtrl>("apply_immediate_check")->setValue(FALSE);
@@ -267,7 +277,7 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selecti
 
 					//Verify permissions before revealing UUID.
 					//Replicates behaviour of "Copy UUID" on inventory. If you can't copy it there, you can't copy it here.
-					if(copy&&mod&&xfer)
+					if(bypass_perms || (copy&&mod&&xfer))
 					{
 						getChild<LLLineEditor>("TextureKey")->setText(image_id.asString());
 					}
@@ -278,7 +288,10 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selecti
 				}
 				else
 				{
-					getChild<LLLineEditor>("TextureKey")->setText(LLUUID::null.asString());
+					if (bypass_perms)
+						getChild<LLLineEditor>("TextureKey")->setText(image_id.asString());
+					else
+						getChild<LLLineEditor>("TextureKey")->setText(LLUUID::null.asString());
 				}
 				// </FS:Chaser>
 			}
@@ -288,9 +301,6 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selecti
 				mInventoryPanel->setSelection(item_id, TAKE_FOCUS_NO);
 			}
 		}
-		
-
-		
 	}
 }
 
@@ -389,6 +399,7 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
 		EAcceptance *accept,
 		std::string& tooltip_msg)
 {
+	bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
 	BOOL handled = FALSE;
 
 	bool is_mesh = cargo_type == DAD_MESH;
@@ -409,7 +420,7 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
 		
 		//PermissionMask filter_perm_mask = getFilterPermMask();  Commented out due to no-copy texture loss.
 		PermissionMask filter_perm_mask = mDnDFilterPermMask;
-		if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
+		if ( bypass_perms || (item_perm_mask & filter_perm_mask) == filter_perm_mask )
 		{
 			if (drop)
 			{
@@ -584,6 +595,9 @@ BOOL LLFloaterTexturePicker::postBuild()
 		}
 	}
 
+	if (lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
+		getChild<LLLineEditor>("TextureKey")->setText(mImageAssetID.asString());
+
 	childSetAction("l_add_btn", LLFloaterTexturePicker::onBtnAdd, this);
 	childSetAction("l_rem_btn", LLFloaterTexturePicker::onBtnRemove, this);
 	childSetAction("l_upl_btn", LLFloaterTexturePicker::onBtnUpload, this);
@@ -618,13 +632,14 @@ BOOL LLFloaterTexturePicker::postBuild()
 // virtual
 void LLFloaterTexturePicker::draw()
 {
+	bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
     static LLCachedControl<F32> max_opacity(gSavedSettings, "PickerContextOpacity", 0.4f);
     drawConeToOwner(mContextConeOpacity, max_opacity, mOwner);
 
 	bool valid_dims = updateImageStats();
 
 	// if we're inactive, gray out "apply immediate" checkbox
-	getChildView("show_folders_check")->setEnabled(mActive && mCanApplyImmediately && !mNoCopyTextureSelected);
+	getChildView("show_folders_check")->setEnabled(mActive && mCanApplyImmediately && (bypass_perms || !mNoCopyTextureSelected));
 	mSelectBtn->setEnabled(mActive && mCanApply && valid_dims);
 	mPipetteBtn->setEnabled(mActive);
     mPipetteBtn->setValue(LLToolMgr::getInstance()->getCurrentTool() == LLToolPipette::getInstance());
@@ -789,9 +804,10 @@ PermissionMask LLFloaterTexturePicker::getFilterPermMask()
 
 void LLFloaterTexturePicker::commitIfImmediateSet()
 {
+	bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
 	// <FS:Ansariel> FIRE-8298: Apply now checkbox has no effect
 	//if (!mNoCopyTextureSelected && mCanApply)
-	if (!mNoCopyTextureSelected && mCanApply && mCanPreview)
+	if ((bypass_perms || !mNoCopyTextureSelected) && mCanApply && mCanPreview)
 	// </FS:Ansariel>
 	{
         commitCallback(LLTextureCtrl::TEXTURE_CHANGE);
@@ -965,6 +981,7 @@ void LLFloaterTexturePicker::onBtnPipette()
 
 void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action)
 {
+	bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
 	if (items.size())
 	{
 		LLFolderViewItem* first_item = items.front();
@@ -997,7 +1014,7 @@ void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem
 			//We also have to set this here because above passes the asset ID, not the inventory ID.
 			//Verify permissions before revealing UUID.
 			//Replicates behaviour of "Copy UUID" on inventory. If you can't copy it there, you can't copy it here.
-			if(copy&&mod&&xfer)
+			if(bypass_perms || (copy&&mod&&xfer))
 			{
 				getChild<LLLineEditor>("TextureKey")->setText(itemp->getAssetUUID().asString());
 			}
@@ -2103,6 +2120,8 @@ void LLTextureCtrl::draw()
 
 BOOL LLTextureCtrl::allowDrop(LLInventoryItem* item)
 {
+	bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+
 	BOOL copy = item->getPermissions().allowCopyBy(gAgent.getID());
 	BOOL mod = item->getPermissions().allowModifyBy(gAgent.getID());
 	BOOL xfer = item->getPermissions().allowOperationBy(PERM_TRANSFER,
@@ -2116,7 +2135,7 @@ BOOL LLTextureCtrl::allowDrop(LLInventoryItem* item)
 //	PermissionMask filter_perm_mask = mCanApplyImmediately ?			commented out due to no-copy texture loss.
 //			mImmediateFilterPermMask : mNonImmediateFilterPermMask;
 	PermissionMask filter_perm_mask = mImmediateFilterPermMask;
-	if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
+	if ( bypass_perms || (item_perm_mask & filter_perm_mask) == filter_perm_mask )
 	{
 		if(mDragCallback)
 		{
