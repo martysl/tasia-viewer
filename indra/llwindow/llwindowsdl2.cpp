@@ -165,13 +165,11 @@ namespace
                             request.target, 8, PropModeReplace,
                             (unsigned char *) utf8.c_str(), utf8.length());
         }
-        else if (request.selection == XA_CLIPBOARD)
+        else
         {
             // Did not have what they wanted, so no property set
             reply.property = None;
         }
-        else
-            return;
 
         XSendEvent(request.display, request.requestor, False, NoEventMask, (XEvent *) &reply);
         XSync(display, False);
@@ -353,7 +351,7 @@ bool LLWindowSDL::setSelectionText(Atom selection, const LLWString& text)
     if (selection == XA_PRIMARY)
     {
         std::string utf8 = wstring_to_utf8str(text);
-        XStoreBytes(mSDL_Display, utf8.c_str(), utf8.length() + 1);
+        XStoreBytes(mSDL_Display, utf8.c_str(), utf8.length());
         mPrimaryClipboard = text;
     }
     else
