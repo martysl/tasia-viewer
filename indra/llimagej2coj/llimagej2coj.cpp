@@ -30,7 +30,6 @@
 // this is defined so that we get static linking.
 #include "openjpeg.h"
 #include "event.h"
-#include "cio.h"
 
 #define MAX_ENCODED_DISCARD_LEVELS 5
 
@@ -300,9 +299,6 @@ public:
         size = dataSize;
         offset = 0;
 
-        // enable decoding partially loaded images
-        opj_decoder_set_strict_mode(decoder, OPJ_FALSE);
-
         /* Read the main header of the codestream and if necessary the JP2 boxes*/
         if (!opj_read_header((opj_stream_t*)stream, decoder, &image))
         {
@@ -377,9 +373,6 @@ public:
 
         // needs to happen before opj_read_header and opj_decode...
         opj_set_decoded_resolution_factor(decoder, discard_level);
-
-        // enable decoding partially loaded images
-        opj_decoder_set_strict_mode(decoder, OPJ_FALSE);
 
         if (!opj_read_header(stream, decoder, &image))
         {
