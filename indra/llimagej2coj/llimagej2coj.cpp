@@ -447,6 +447,12 @@ public:
         }
         else
         {
+            parameters.tcp_numlayers = 5;
+            parameters.tcp_rates[0] = 1920.0f;
+            parameters.tcp_rates[1] = 480.0f;
+            parameters.tcp_rates[2] = 120.0f;
+            parameters.tcp_rates[3] = 30.0f;
+            parameters.tcp_rates[4] = 10.0f;
             parameters.irreversible = 1;
         }
 
