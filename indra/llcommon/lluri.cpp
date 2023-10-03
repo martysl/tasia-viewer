@@ -360,8 +360,9 @@ static BOOL isDefault(const std::string& scheme, U16 port)
 
 void LLURI::parseAuthorityAndPathUsingOpaque()
 {
-	if (mScheme == "http" || mScheme == "https" || mScheme == "hop" || 
-		mScheme == "ftp" || mScheme == "secondlife" || 
+	if (mScheme == "http" || mScheme == "https" || mScheme == "hop" ||
+		mScheme == "ftp" || mScheme == "secondlife" ||
+		mScheme == "file" || mScheme == "x-lostorm" ||
 		mScheme == "x-grid-location-info")
 	{
 		if (mEscapedOpaque.substr(0,2) != "//")

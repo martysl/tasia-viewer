@@ -15,6 +15,7 @@ indra/tools/vstool/* -text
 *.png binary
 *.tga binary
 *.tif binary
+*.webp binary
 
 # Viewer resources
 *.db2 binary
