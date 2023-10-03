@@ -27,6 +27,7 @@
   <web_browser
       tab_stop="false"
       trusted_content="true"
+      disable_web_security="true"
       bg_opaque_color="Black"
       border_visible="false"
       follows="all"

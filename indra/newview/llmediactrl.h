@@ -56,6 +56,7 @@ public:
                                 hide_loading,
                                 decouple_texture_size,
                                 trusted_content,
+                                disable_web_security,
                                 focus_on_click;
 
         Optional<S32>           texture_width,
@@ -197,6 +198,7 @@ public:
         bool    mFrequentUpdates,
                 mForceUpdate,
                 mTrusted,
+                mDisableWebSecurity,
                 mAlwaysRefresh,
                 mTakeFocusOnClick,
                 mStretchToFill,

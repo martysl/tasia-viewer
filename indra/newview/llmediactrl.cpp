@@ -84,6 +84,7 @@ LLMediaCtrl::Params::Params()
     error_page_url("error_page_url"),
     media_id("media_id"),
     trusted_content("trusted_content", false),
+    disable_web_security("disable_web_security", false),
     focus_on_click("focus_on_click", true)
 {
 }
@@ -110,6 +111,7 @@ LLMediaCtrl::LLMediaCtrl( const Params& p) :
     mHomePageMimeType(p.initial_mime_type),
     mErrorPageURL(p.error_page_url),
     mTrusted(p.trusted_content),
+    mDisableWebSecurity(p.disable_web_security),
     mWindowShade(NULL),
     mHoverTextChanged(false),
     mAllowFileDownload(false)
@@ -776,7 +778,7 @@ bool LLMediaCtrl::ensureMediaSourceExists()
     if(mMediaSource.isNull())
     {
         // If we don't already have a media source, try to create one.
-        mMediaSource = LLViewerMedia::getInstance()->newMediaImpl(mMediaTextureID, mTextureWidth, mTextureHeight);
+        mMediaSource = LLViewerMedia::getInstance()->newMediaImpl(mMediaTextureID, mTextureWidth, mTextureHeight, false, false, mDisableWebSecurity);
         if ( mMediaSource )
         {
             mMediaSource->setUsedInUI(true);

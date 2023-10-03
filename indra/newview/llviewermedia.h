@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file llviewermedia.h
  * @brief Client interface to the media engine
  *
@@ -95,7 +95,8 @@ public:
                                        S32 media_width = 0,
                                        S32 media_height = 0,
                                        U8 media_auto_scale = false,
-                                       U8 media_loop = false);
+                                       U8 media_loop = false,
+                                       U8 disable_web_security = false);
 
     viewer_media_t updateMediaImpl(LLMediaEntry* media_entry, const std::string& previous_url, bool update_from_self);
     LLViewerMediaImpl* getMediaImplFromTextureID(const LLUUID& texture_id);
@@ -194,7 +195,8 @@ public:
         S32 media_width,
         S32 media_height,
         U8 media_auto_scale,
-        U8 media_loop);
+        U8 media_loop,
+        U8 disable_web_security);
 
     ~LLViewerMediaImpl();
 
@@ -482,6 +484,7 @@ private:
     bool mNavigateSuspended;
     bool mNavigateSuspendedDeferred;
     bool mTrustedBrowser;
+    bool mDisableWebSecurity;
     std::string mTarget;
     LLNotificationPtr mNotification;
     bool mCleanBrowser;     // force the creation of a clean browsing target with full options enabled

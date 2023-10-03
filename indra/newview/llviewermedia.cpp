@@ -243,13 +243,14 @@ viewer_media_t LLViewerMedia::newMediaImpl(
                                              S32 media_width,
                                              S32 media_height,
                                              U8 media_auto_scale,
-                                             U8 media_loop)
+                                             U8 media_loop,
+                                             U8 disable_web_security)
 {
     LLViewerMediaImpl* media_impl = getMediaImplFromTextureID(texture_id);
     if(media_impl == NULL || texture_id.isNull())
     {
         // Create the media impl
-        media_impl = new LLViewerMediaImpl(texture_id, media_width, media_height, media_auto_scale, media_loop);
+        media_impl = new LLViewerMediaImpl(texture_id, media_width, media_height, media_auto_scale, media_loop, disable_web_security);
     }
     else
     {
@@ -259,6 +260,7 @@ viewer_media_t LLViewerMedia::newMediaImpl(
         media_impl->mMediaHeight = media_height;
         media_impl->mMediaAutoScale = media_auto_scale;
         media_impl->mMediaLoop = media_loop;
+        media_impl->mDisableWebSecurity = disable_web_security;
     }
 
     return media_impl;
@@ -1527,7 +1529,8 @@ LLViewerMediaImpl::LLViewerMediaImpl(     const LLUUID& texture_id,
                                           S32 media_width,
                                           S32 media_height,
                                           U8 media_auto_scale,
-                                          U8 media_loop)
+                                          U8 media_loop,
+                                          U8 disable_web_security)
 :
     mMediaSource( NULL ),
     mMovieImageHasMips(false),
@@ -1567,6 +1570,7 @@ LLViewerMediaImpl::LLViewerMediaImpl(     const LLUUID& texture_id,
     mNavigateSuspendedDeferred(false),
     mIsUpdated(false),
     mTrustedBrowser(false),
+    mDisableWebSecurity(disable_web_security),
     mZoomFactor(1.0),
     mCleanBrowser(false),
     mMimeProbe(),
@@ -1866,7 +1870,7 @@ bool LLViewerMediaImpl::initializePlugin(const std::string& media_type)
     // Save the MIME type that really caused the plugin to load
     mCurrentMimeType = mMimeType;
 
-    LLPluginClassMedia* media_source = newSourceFromMediaType(mMimeType, this, mMediaWidth, mMediaHeight, mZoomFactor, mTarget, mCleanBrowser);
+    LLPluginClassMedia* media_source = newSourceFromMediaType(mMimeType, this, mMediaWidth, mMediaHeight, mZoomFactor, mTarget, mCleanBrowser || mDisableWebSecurity);
 
     if (media_source)
     {

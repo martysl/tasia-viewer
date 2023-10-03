@@ -940,10 +940,32 @@ void FSPanelLogin::loadLoginPage()
 {
     if (!sInstance) return;
 
-    LLURI login_page = LLURI(LLGridManager::getInstance()->getLoginPage());
+    LLURI real_login_page = LLURI(LLGridManager::getInstance()->getLoginPage());
+
+    // Redirect SL login pages to LOstorm news page instead
+    std::string host = real_login_page.hostName();
+    std::string grid = LLGridManager::getInstance()->getGrid();
+    // Catch left-over references to the old login page in user_settings
+    bool is_sl_login = (host == "phoenixviewer.com" || host == "lolibox.us.to" || host == "lostorm.neocities.org"
+                         || grid == "agni" || grid == "aditi"); // Resilient against Firestorm changing their URL
+    LLURI login_page = is_sl_login ? LLURI(DEFAULT_LOGIN_PAGE) : real_login_page;
+
+    // Translate login page URL to local file
+    if (login_page.scheme() == "x-lostorm")
+    {
+        std::string p = login_page.path();
+        std::string q = login_page.query();
+        if (p.length() >= 1 && (p[0] == '/' || p[0] == '\\'))
+            p = p.substr(1);
+        p = gDirUtilp->getExpandedFilename(LL_PATH_FS_RESOURCES, p);
+        if (!q.empty())
+            q = '?' + q;
+        login_page = LLURI("file://" + p + q);
+    }
+
     LLSD params(login_page.queryMap());
 
-    LL_DEBUGS("AppInit") << "login_page: " << login_page << LL_ENDL;
+    LL_INFOS("AppInit") << "login_page: " << login_page << LL_ENDL;
 
     // allow users (testers really) to specify a different login content URL
     std::string force_login_url = gSavedSettings.getString("ForceLoginURL");
@@ -975,6 +997,16 @@ void FSPanelLogin::loadLoginPage()
                                  LLVersionInfo::getInstance()->getShortVersion().c_str(),
                                  LLVersionInfo::getInstance()->getBuild());
     params["channel"] = LLVersionInfo::getInstance()->getChannel();
+
+    if (login_page.scheme() == "file")
+    {
+        params["loversion"] = 0;
+
+        std::string bg_image = (gSavedSettings.getString("LOCustomLoginBackground"));
+
+        if (!bg_image.empty())
+            params["bg_image"] = bg_image;
+    }
 
     // Grid
     params["grid"] = LLGridManager::getInstance()->getGridId();

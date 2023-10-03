@@ -670,7 +670,8 @@ void MediaPluginCEF::receiveMessage(const char* message_string)
                 // a concern). Leaving them here, explicitly turn off vs removing
                 // entirely from this source file so that others are aware of them
                 // in the future.
-                settings.disable_web_security = false;
+                // LOstorm -- this is used to load the login page news html
+                settings.disable_web_security = mDisableWebSecurity;
                 settings.file_access_from_file_urls = false;
 
                 settings.flash_enabled = mPluginsEnabled;
