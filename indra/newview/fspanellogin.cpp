@@ -990,7 +990,7 @@ void FSPanelLogin::loadLoginPage()
 
 	if (login_page.scheme() == "file")
 	{
-		params["loversion"] = 0;
+		params["loversion"] = 1;
 
 		std::string bg_image = (gSavedSettings.getString("LOCustomLoginBackground"));
 
