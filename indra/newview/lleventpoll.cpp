@@ -328,7 +328,8 @@ namespace Details
                     if (main_queue)
                     { // shuttle to a sensible spot in the main thread instead
                         // of wherever this coroutine happens to be executing
-                        const LLSD& msg = *i;
+                        // Dont pass by ref, it will become invalidated
+                        LLSD msg = *i;
                         main_queue->post([this, msg]()
                             {
                                 handleMessage(msg);
