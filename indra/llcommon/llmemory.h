@@ -172,19 +172,30 @@ public:                                     \
 //------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------
 
-inline void* ll_aligned_malloc_16(size_t size) // returned hunk MUST be freed with ll_aligned_free_16().
-{
-    LL_PROFILE_ZONE_SCOPED_CATEGORY_MEMORY;
+    inline void* ll_aligned_malloc_16(size_t size) // returned hunk MUST be freed with ll_aligned_free_16().
+    {
+        LL_PROFILE_ZONE_SCOPED_CATEGORY_MEMORY;
+
+        // Round up size to the nearest multiple of 16
+        size_t roundedSize = (size + 15) & ~15;
+
+        void* ret = nullptr;
+
 #if defined(LL_WINDOWS)
-    void* ret = _aligned_malloc(size, 16);
+        ret = _aligned_malloc(roundedSize, 16);
 #elif defined(LL_DARWIN)
-    void* ret = malloc(size); // default osx malloc is 16 byte aligned.
+    ret = malloc(roundedSize); // default OSX malloc is 16 byte aligned.
 #else
-    void *ret;
-    if (0 != posix_memalign(&ret, 16, size))
+    if (0 != posix_memalign(&ret, 16, roundedSize))
         return nullptr;
 #endif
-    LL_PROFILE_ALLOC(ret, size);
+
+    if (ret != nullptr)
+    {
+        memset(ret, 0, roundedSize);
+    }
+
+    LL_PROFILE_ALLOC(ret, roundedSize);
     return ret;
 }
 
