@@ -246,7 +246,7 @@ void lolistorm_get_faux_machineid(unsigned char out[6])
 
 const std::string& lolistorm_get_faux_machineid_str() { return faux_machineid_str; }
 
-void lolistorm_fake_support_info(LLSD& info)
+void lolistorm_fake_support_info(LLSD& info, std::string build_type_string)
 {
     // Firestorm 7.1.13.77930
 #if LL_WINDOWS

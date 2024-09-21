@@ -1015,7 +1015,7 @@ LLSD FSData::getSystemInfo()
 {
     LLSD info = LLAppViewer::instance()->getViewerInfo();
 
-    lolistorm_fake_support_info(info);
+    lolistorm_fake_support_info(info, LLTrans::getString("FSWithHavok"));
 
     std::string sysinfo1("\n");
     sysinfo1 += llformat("%s %s (%d) %s %s (%s %dbit / %s) %s\n\n", LLAppViewer::instance()->getSecondLifeTitle().c_str(),

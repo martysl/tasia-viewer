@@ -66,6 +66,6 @@ const std::string& lolistorm_get_faux_machineid_str();
 S32 LLUUID_getNodeID_real(unsigned char* node_id);
 S32 LLMachineID_getUniqueID_real(unsigned char* unique_id, size_t len);
 
-void lolistorm_fake_support_info(LLSD& info);
+void lolistorm_fake_support_info(LLSD& info, std::string build_type_string = std::string());
 
 #endif // LOLISTORM_LOSPOOF_H

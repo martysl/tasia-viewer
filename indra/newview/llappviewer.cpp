@@ -4261,7 +4261,7 @@ std::string LLAppViewer::getViewerInfoString(bool unfaked_string) const
     LLSD info(getViewerInfo());
 
     if (!unfaked_string)
-        lolistorm_fake_support_info(info);
+        lolistorm_fake_support_info(info, LLTrans::getString("FSWithHavok"));
 
     // Render the LLSD from getInfo() as a format_map_t
     LLStringUtil::format_map_t args;
