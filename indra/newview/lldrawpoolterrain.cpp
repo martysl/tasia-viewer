@@ -1076,8 +1076,8 @@ void LLDrawPoolTerrain::renderOwnership()
     for (std::vector<LLFace*>::iterator iter = mDrawFace.begin();
          iter != mDrawFace.end(); iter++)
     {
-        LLFace *facep = *iter;
-        facep->renderIndexed();
+        LLFace *face = *iter;
+        face->renderIndexed();
     }
 
     gGL.matrixMode(LLRender::MM_TEXTURE);
