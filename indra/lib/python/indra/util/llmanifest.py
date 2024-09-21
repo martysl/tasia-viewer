@@ -74,7 +74,7 @@ def proper_windows_path(path, current_platform = sys.platform):
     match = re.match("/cygdrive/([a-z])/(.*)", path)
     if not match:
         # <FS:Beq> Use raw strings to avoid python 3.6 complaints
-        # match = re.match('([a-zA-Z]):\\\(.*)', path)
+        # match = re.match(r'([a-zA-Z]):\\\(.*)', path)
         match = re.match(r'([a-zA-Z]):\\(.*)', path)
         # </FS:Beq>
     if not match:
@@ -829,7 +829,7 @@ class LLManifest(object, metaclass=LLManifestRegistry):
         while dst_temp.count("*") > 0:
             # <FS:Beq> fix up python 3.6 literal support
             # dst_temp = dst_temp.replace('\*', '\g<' + str(i) + '>', 1)
-            dst_temp = dst_temp.replace('*', r'\g<' + str(i) + '>', 1)
+            dst_temp = dst_temp.replace('*', r'\g<' + str(i) + r'>', 1)
             i = i + 1
             # </FS:Beq>
         return re.compile(src_re), dst_temp
