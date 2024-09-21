@@ -63,14 +63,7 @@ const S32 MAX_FOLDER_DEPTH_REQUEST = 50;
 /*static*/
 bool AISAPI::isAvailable()
 {
-    // <FS:Ansariel> Add AIS3 debug setting
-    //if (gAgent.getRegion())
-    if (gAgent.getRegion() && (gSavedSettings.getBOOL("FSUseAis3Api") || LLGridManager::instance().isInSecondLife()))
-    // </FS:Ansariel>
-    {
-        return gAgent.getRegion()->isCapabilityAvailable(INVENTORY_CAP_NAME);
-    }
-    return false;
+    return gAgent.getRegion() && gAgent.getRegion()->isCapabilityAvailable(INVENTORY_CAP_NAME);
 }
 
 /*static*/
