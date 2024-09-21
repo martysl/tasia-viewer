@@ -1056,8 +1056,8 @@ void LLDrawPoolTerrain::renderOwnership()
     LLDrawable              *drawablep          = facep->getDrawable();
     const LLViewerObject    *objectp                = drawablep->getVObj();
     const LLVOSurfacePatch  *vo_surface_patchp  = (LLVOSurfacePatch *)objectp;
-    LLSurfacePatch          *surface_patchp     = vo_surface_patchp->getPatch();
-    LLSurface               *surfacep           = surface_patchp->getSurface();
+    std::shared_ptr<LLSurfacePatch> surface_patchp     = vo_surface_patchp->getPatch();
+    std::shared_ptr<LLSurface>  surfacep           = surface_patchp->getSurface();
     LLViewerRegion          *regionp            = surfacep->getRegion();
     LLViewerParcelOverlay   *overlayp           = regionp->getParcelOverlay();
     LLViewerTexture         *texturep           = overlayp->getTexture();

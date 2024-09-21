@@ -114,7 +114,7 @@ public:
                             LLVector3d &intersection, LLVector3 &intersection_normal,
                             LLViewerObject** viewerObjectPtr=NULL);
 
-    LLSurfacePatch *        resolveLandPatchGlobal(const LLVector3d &position);
+    std::shared_ptr<LLSurfacePatch>        resolveLandPatchGlobal(const LLVector3d &position);
     LLVector3               resolveLandNormalGlobal(const LLVector3d &position);        // absolute frame
 
     U32                     getRegionWidthInPoints() const  { return mWidth; }

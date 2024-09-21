@@ -69,7 +69,6 @@ S32 LLVOGrass::sMaxGrassSpecies = 0;
 LLVOGrass::LLVOGrass(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
 :   LLAlphaObject(id, pcode, regionp)
 {
-    mPatch               = NULL;
     mLastPatchUpdateTime = 0;
     mGrassVel.clearVec();
     mGrassBend.clearVec();
@@ -307,8 +306,9 @@ void LLVOGrass::idleUpdate(LLAgent &agent, const F64 &time)
         gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_ALL);
         return;
     }
-    if (mPatch && (mLastPatchUpdateTime != mPatch->getLastUpdateTime()))
+    if (auto patch = mPatch.lock())
     {
+        if (mLastPatchUpdateTime != patch->getLastUpdateTime())
         gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME);
     }
 
@@ -489,9 +489,10 @@ void LLVOGrass::getGeometry(S32 idx,
         return ;
     }
 
-    mPatch = mRegionp->getLand().resolvePatchRegion(getPositionRegion());
-    if (mPatch)
-        mLastPatchUpdateTime = mPatch->getLastUpdateTime();
+    auto patch = mRegionp->getLand().resolvePatchRegion(getPositionRegion());
+    mPatch = patch;
+    if (patch)
+        mLastPatchUpdateTime = patch->getLastUpdateTime();
 
     LLVector3 position;
     // Create random blades of grass with gaussian distribution

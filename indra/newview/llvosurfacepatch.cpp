@@ -51,7 +51,6 @@ LLVOSurfacePatch::LLVOSurfacePatch(const LLUUID &id, const LLPCode pcode, LLView
         mDirtiedPatch(false),
         mPool(NULL),
         mBaseComp(0),
-        mPatchp(NULL),
         mDirtyTexture(false),
         mDirtyTerrain(false),
         mLastNorthStride(0),
@@ -67,16 +66,16 @@ LLVOSurfacePatch::LLVOSurfacePatch(const LLUUID &id, const LLPCode pcode, LLView
 
 LLVOSurfacePatch::~LLVOSurfacePatch()
 {
-    mPatchp = NULL;
+
 }
 
 
 void LLVOSurfacePatch::markDead()
 {
-    if (mPatchp)
+    if (const auto patch = mPatchp.lock())
     {
-        mPatchp->clearVObj();
-        mPatchp = NULL;
+        patch->clearVObj();
+        mPatchp.reset();
     }
     LLViewerObject::markDead();
 }
@@ -102,27 +101,35 @@ void LLVOSurfacePatch::updateTextures()
 
 LLFacePool *LLVOSurfacePatch::getPool()
 {
-    mPool = (LLDrawPoolTerrain*) gPipeline.getPool(LLDrawPool::POOL_TERRAIN, mPatchp->getSurface()->getSTexture());
-
+    if (const auto patch = mPatchp.lock())
+    {
+        mPool = (LLDrawPoolTerrain *) gPipeline.getPool(LLDrawPool::POOL_TERRAIN, patch->getSurface()->getSTexture());
+    }
     return mPool;
 }
 
 
 LLDrawable *LLVOSurfacePatch::createDrawable(LLPipeline *pipeline)
 {
+    const auto patch = mPatchp.lock();
+    if (!patch)
+    {
+        return mDrawable;
+    }
+
     pipeline->allocDrawable(this);
 
     mDrawable->setRenderType(LLPipeline::RENDER_TYPE_TERRAIN);
 
-    mBaseComp = llfloor(mPatchp->getMinComposition());
+    mBaseComp = llfloor(patch->getMinComposition());
     S32 min_comp, max_comp, range;
-    min_comp = llfloor(mPatchp->getMinComposition());
-    max_comp = llceil(mPatchp->getMaxComposition());
+    min_comp = llfloor(patch->getMinComposition());
+    max_comp = llceil(patch->getMaxComposition());
     range = (max_comp - min_comp);
     range++;
     if (range > 3)
     {
-        if ((mPatchp->getMinComposition() - min_comp) > (max_comp - mPatchp->getMaxComposition()))
+        if ((patch->getMinComposition() - min_comp) > (max_comp - patch->getMaxComposition()))
         {
             // The top side runs over more
             mBaseComp++;
@@ -140,10 +147,10 @@ LLDrawable *LLVOSurfacePatch::createDrawable(LLPipeline *pipeline)
 
 void LLVOSurfacePatch::updateGL()
 {
-    if (mPatchp)
+    if (auto patch = mPatchp.lock())
     {
         LL_PROFILE_ZONE_SCOPED;
-        mPatchp->updateGL();
+        patch->updateGL();
     }
 }
 
@@ -154,14 +161,20 @@ bool LLVOSurfacePatch::updateGeometry(LLDrawable *drawable)
     dirtySpatialGroup();
 
     S32 min_comp, max_comp, range;
-    min_comp = lltrunc(mPatchp->getMinComposition());
-    max_comp = lltrunc(ceil(mPatchp->getMaxComposition()));
+
+    const auto patch = mPatchp.lock();
+    if (!patch)
+    {
+        return false;
+    }
+    min_comp = lltrunc(patch->getMinComposition());
+    max_comp = lltrunc(ceil(patch->getMaxComposition()));
     range = (max_comp - min_comp);
     range++;
-    S32 new_base_comp = lltrunc(mPatchp->getMinComposition());
+    S32 new_base_comp = lltrunc(patch->getMinComposition());
     if (range > 3)
     {
-        if ((mPatchp->getMinComposition() - min_comp) > (max_comp - mPatchp->getMaxComposition()))
+        if ((patch->getMinComposition() - min_comp) > (max_comp - patch->getMaxComposition()))
         {
             // The top side runs over more
             new_base_comp++;
@@ -181,23 +194,23 @@ bool LLVOSurfacePatch::updateGeometry(LLDrawable *drawable)
     //
 
     U32 patch_width, render_stride, north_stride, east_stride, length;
-    render_stride = mPatchp->getRenderStride();
-    patch_width = mPatchp->getSurface()->getGridsPerPatchEdge();
+    render_stride = patch->getRenderStride();
+    patch_width = patch->getSurface()->getGridsPerPatchEdge();
 
     length = patch_width / render_stride;
 
-    if (mPatchp->getNeighborPatch(NORTH))
+    if (patch->getNeighborPatch(NORTH))
     {
-        north_stride = mPatchp->getNeighborPatch(NORTH)->getRenderStride();
+        north_stride = patch->getNeighborPatch(NORTH)->getRenderStride();
     }
     else
     {
         north_stride = render_stride;
     }
 
-    if (mPatchp->getNeighborPatch(EAST))
+    if (patch->getNeighborPatch(EAST))
     {
-        east_stride = mPatchp->getNeighborPatch(EAST)->getRenderStride();
+        east_stride = patch->getNeighborPatch(EAST)->getRenderStride();
     }
     else
     {
@@ -292,7 +305,13 @@ void LLVOSurfacePatch::updateMainGeometry(LLFace *facep,
     llassert(mLastStride > 0);
 
     render_stride = mLastStride;
-    patch_size = mPatchp->getSurface()->getGridsPerPatchEdge();
+
+    const auto patch = mPatchp.lock();
+    if (!patch)
+    {
+        return;
+    }
+    patch_size = patch->getSurface()->getGridsPerPatchEdge();
     S32 vert_size = patch_size / render_stride;
 
     ///////////////////////////
@@ -308,7 +327,7 @@ void LLVOSurfacePatch::updateMainGeometry(LLFace *facep,
 
     if (num_vertices > 0)
     {
-        facep->mCenterAgent = mPatchp->getPointAgent(8, 8);
+        facep->mCenterAgent = patch->getPointAgent(8, 8);
 
         // Generate patch points first
         for (j = 0; j < vert_size; j++)
@@ -317,7 +336,7 @@ void LLVOSurfacePatch::updateMainGeometry(LLFace *facep,
             {
                 x = i * render_stride;
                 y = j * render_stride;
-                mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+                patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
                 verticesp++;
                 normalsp++;
                 texCoords1p++;
@@ -390,7 +409,12 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
     S32 num_vertices;
 
     U32 render_stride = mLastStride;
-    S32 patch_size = mPatchp->getSurface()->getGridsPerPatchEdge();
+    const auto patch = mPatchp.lock();
+    if (!patch)
+    {
+        return;
+    }
+    S32 patch_size = patch->getSurface()->getGridsPerPatchEdge();
     S32 length = patch_size / render_stride;
     S32 half_length = length / 2;
     U32 north_stride = mLastNorthStride;
@@ -406,7 +430,7 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
     {
         num_vertices = 2 * length + 1;
 
-        facep->mCenterAgent = (mPatchp->getPointAgent(8, 15) + mPatchp->getPointAgent(8, 16))*0.5f;
+        facep->mCenterAgent = (patch->getPointAgent(8, 15) + patch->getPointAgent(8, 16))*0.5f;
 
         // Main patch
         for (i = 0; i < length; i++)
@@ -414,7 +438,7 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
             x = i * render_stride;
             y = 16 - render_stride;
 
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -425,7 +449,7 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
         {
             x = i * render_stride;
             y = 16;
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -452,7 +476,7 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
         // North stride is longer (has less vertices)
         num_vertices = length + length/2 + 1;
 
-        facep->mCenterAgent = (mPatchp->getPointAgent(7, 15) + mPatchp->getPointAgent(8, 16))*0.5f;
+        facep->mCenterAgent = (patch->getPointAgent(7, 15) + patch->getPointAgent(8, 16))*0.5f;
 
         // Iterate through this patch's points
         for (i = 0; i < length; i++)
@@ -460,7 +484,7 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
             x = i * render_stride;
             y = 16 - render_stride;
 
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -472,7 +496,7 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
             x = i * render_stride;
             y = 16;
 
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -506,7 +530,7 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
         half_length = length / 2;
         num_vertices = length + half_length + 1;
 
-        facep->mCenterAgent = (mPatchp->getPointAgent(15, 7) + mPatchp->getPointAgent(16, 8))*0.5f;
+        facep->mCenterAgent = (patch->getPointAgent(15, 7) + patch->getPointAgent(16, 8))*0.5f;
 
         // Iterate through this patch's points
         for (i = 0; i < length; i+=2)
@@ -514,7 +538,7 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
             x = i * north_stride;
             y = 16 - render_stride;
 
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -526,7 +550,7 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
             x = i * north_stride;
             y = 16;
 
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -573,7 +597,12 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
     S32 num_vertices;
 
     U32 render_stride = mLastStride;
-    S32 patch_size = mPatchp->getSurface()->getGridsPerPatchEdge();
+    const auto patch = mPatchp.lock();
+    if (!patch)
+    {
+        return;
+    }
+    S32 patch_size = patch->getSurface()->getGridsPerPatchEdge();
     S32 length = patch_size / render_stride;
     S32 half_length = length / 2;
 
@@ -584,7 +613,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
     {
         num_vertices = 2 * length + 1;
 
-        facep->mCenterAgent = (mPatchp->getPointAgent(8, 15) + mPatchp->getPointAgent(8, 16))*0.5f;
+        facep->mCenterAgent = (patch->getPointAgent(8, 15) + patch->getPointAgent(8, 16))*0.5f;
 
         // Main patch
         for (i = 0; i < length; i++)
@@ -592,7 +621,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
             x = 16 - render_stride;
             y = i * render_stride;
 
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -603,7 +632,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
         {
             x = 16;
             y = i * render_stride;
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -630,7 +659,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
         // East stride is longer (has less vertices)
         num_vertices = length + half_length + 1;
 
-        facep->mCenterAgent = (mPatchp->getPointAgent(7, 15) + mPatchp->getPointAgent(8, 16))*0.5f;
+        facep->mCenterAgent = (patch->getPointAgent(7, 15) + patch->getPointAgent(8, 16))*0.5f;
 
         // Iterate through this patch's points
         for (i = 0; i < length; i++)
@@ -638,7 +667,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
             x = 16 - render_stride;
             y = i * render_stride;
 
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -649,7 +678,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
             x = 16;
             y = i * render_stride;
 
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -682,7 +711,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
         half_length = length / 2;
         num_vertices = length + length/2 + 1;
 
-        facep->mCenterAgent = (mPatchp->getPointAgent(15, 7) + mPatchp->getPointAgent(16, 8))*0.5f;
+        facep->mCenterAgent = (patch->getPointAgent(15, 7) + patch->getPointAgent(16, 8))*0.5f;
 
         // Iterate through this patch's points
         for (i = 0; i < length; i+=2)
@@ -690,7 +719,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
             x = 16 - render_stride;
             y = i * east_stride;
 
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -701,7 +730,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
             x = 16;
             y = i * east_stride;
 
-            mPatchp->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
+            patch->eval(x, y, render_stride, verticesp.get(), normalsp.get(), texCoords1p.get());
             verticesp++;
             normalsp++;
             texCoords1p++;
@@ -736,7 +765,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
     index_offset += num_vertices;
 }
 
-void LLVOSurfacePatch::setPatch(LLSurfacePatch *patchp)
+void LLVOSurfacePatch::setPatch(const std::shared_ptr<LLSurfacePatch>& patchp)
 {
     mPatchp = patchp;
 
@@ -749,13 +778,22 @@ void LLVOSurfacePatch::dirtyPatch()
     mDirtiedPatch = true;
     dirtyGeom();
     mDirtyTerrain = true;
-    LLVector3 center = mPatchp->getCenterRegion();
-    LLSurface *surfacep = mPatchp->getSurface();
+    const auto patch = mPatchp.lock();
+    if (!patch)
+    {
+        return;
+    }
+    LLVector3 center = patch->getCenterRegion();
+    const auto surfacep = patch->getSurface();
 
     setPositionRegion(center);
 
+    if (!surfacep)
+    {
+        return;
+    }
     F32 scale_factor = surfacep->getGridsPerPatchEdge() * surfacep->getMetersPerGrid();
-    setScale(LLVector3(scale_factor, scale_factor, mPatchp->getMaxZ() - mPatchp->getMinZ()));
+    setScale(LLVector3(scale_factor, scale_factor, patch->getMaxZ() - patch->getMinZ()));
 }
 
 void LLVOSurfacePatch::dirtyGeom()
@@ -774,7 +812,13 @@ void LLVOSurfacePatch::dirtyGeom()
 
 void LLVOSurfacePatch::getGeomSizesMain(const S32 stride, S32 &num_vertices, S32 &num_indices)
 {
-    S32 patch_size = mPatchp->getSurface()->getGridsPerPatchEdge();
+
+    const auto patch = mPatchp.lock();
+    if (!patch)
+    {
+        return;
+    }
+    S32 patch_size = patch->getSurface()->getGridsPerPatchEdge();
 
     // First, figure out how many vertices we need...
     S32 vert_size = patch_size / stride;
@@ -788,7 +832,12 @@ void LLVOSurfacePatch::getGeomSizesMain(const S32 stride, S32 &num_vertices, S32
 void LLVOSurfacePatch::getGeomSizesNorth(const S32 stride, const S32 north_stride,
                                          S32 &num_vertices, S32 &num_indices)
 {
-    S32 patch_size = mPatchp->getSurface()->getGridsPerPatchEdge();
+    const auto patch = mPatchp.lock();
+    if (!patch)
+    {
+        return;
+    }
+    S32 patch_size = patch->getSurface()->getGridsPerPatchEdge();
     S32 length = patch_size / stride;
     // Stride lengths are the same
     if (north_stride == stride)
@@ -814,7 +863,12 @@ void LLVOSurfacePatch::getGeomSizesNorth(const S32 stride, const S32 north_strid
 void LLVOSurfacePatch::getGeomSizesEast(const S32 stride, const S32 east_stride,
                                         S32 &num_vertices, S32 &num_indices)
 {
-    S32 patch_size = mPatchp->getSurface()->getGridsPerPatchEdge();
+    const auto patch = mPatchp.lock();
+    if (!patch)
+    {
+        return;
+    }
+    S32 patch_size = patch->getSurface()->getGridsPerPatchEdge();
     S32 length = patch_size / stride;
     // Stride lengths are the same
     if (east_stride == stride)

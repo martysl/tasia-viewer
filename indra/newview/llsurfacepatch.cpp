@@ -69,14 +69,11 @@ LLSurfacePatch::LLSurfacePatch()
     // This flag is used to communicate between adjacent surfaces and is
     // set to non-zero values by higher classes.
     mConnectedEdge(NO_EDGE),
-    mLastUpdateTime(0),
-    mSurfacep(NULL)
+    mLastUpdateTime(0)
 {
+
     S32 i;
-    for (i = 0; i < 8; i++)
-    {
-        setNeighborPatch(i, NULL);
-    }
+    mNeighborPatches.resize(8);
     for (i = 0; i < 9; i++)
     {
         mNormalsInvalid[i] = true;
@@ -109,26 +106,29 @@ void LLSurfacePatch::dirty()
     if (!mDirty)
     {
         mDirty = true;
-        mSurfacep->dirtySurfacePatch(this);
+        if (auto surface = mSurfacep.lock())
+        {
+            surface->dirtySurfacePatch(shared_from_this());
+        }
     }
 }
 
 
-void LLSurfacePatch::setSurface(LLSurface *surfacep)
+void LLSurfacePatch::setSurface(const std::shared_ptr<LLSurface>& surfacep)
 {
     mSurfacep = surfacep;
     if (mVObjp == (LLVOSurfacePatch *)NULL)
     {
         llassert(mSurfacep->mType == 'l');
 
-        mVObjp = (LLVOSurfacePatch *)gObjectList.createObjectViewer(LLViewerObject::LL_VO_SURFACE_PATCH, mSurfacep->getRegion());
-        mVObjp->setPatch(this);
+        mVObjp = (LLVOSurfacePatch *)gObjectList.createObjectViewer(LLViewerObject::LL_VO_SURFACE_PATCH, surfacep->getRegion());
+        mVObjp->setPatch(shared_from_this());
         mVObjp->setPositionRegion(mCenterRegion);
         gPipeline.createObject(mVObjp);
     }
 }
 
-void LLSurfacePatch::disconnectNeighbor(LLSurface *surfacep)
+void LLSurfacePatch::disconnectNeighbor(const std::shared_ptr<LLSurface>& surfacep)
 {
     U32 i;
     for (i = 0; i < 8; i++)
@@ -140,27 +140,30 @@ void LLSurfacePatch::disconnectNeighbor(LLSurface *surfacep)
         //  {
         if (auto patch = getNeighborPatch(i))
         {
-            if (patch->mSurfacep == surfacep)
+            if (auto surface = patch->mSurfacep.lock())
             {
-                // Clean up connected edges
-                switch(i)
+                if (surface == surfacep)
                 {
-                    case EAST:
-                        mConnectedEdge &= ~EAST_EDGE;
-                        break;
-                    case NORTH:
-                        mConnectedEdge &= ~NORTH_EDGE;
-                        break;
-                    case WEST:
-                        mConnectedEdge &= ~WEST_EDGE;
-                        break;
-                    case SOUTH:
-                        mConnectedEdge &= ~SOUTH_EDGE;
-                        break;
+                    // Clean up connected edges
+                    switch (i)
+                    {
+                        case EAST:
+                            mConnectedEdge &= ~EAST_EDGE;
+                            break;
+                        case NORTH:
+                            mConnectedEdge &= ~NORTH_EDGE;
+                            break;
+                        case WEST:
+                            mConnectedEdge &= ~WEST_EDGE;
+                            break;
+                        case SOUTH:
+                            mConnectedEdge &= ~SOUTH_EDGE;
+                            break;
+                    }
+                    // </FS:Beq>
+                    setNeighborPatch(i, NULL);
+                    mNormalsInvalid[i] = true;
                 }
-        // </FS:Beq>
-                setNeighborPatch(i, NULL);
-                mNormalsInvalid[i] = true;
             }
         }
     }
@@ -200,26 +203,36 @@ void LLSurfacePatch::disconnectNeighbor(LLSurface *surfacep)
 
 LLVector3 LLSurfacePatch::getPointAgent(const U32 x, const U32 y) const
 {
-    U32 surface_stride = mSurfacep->getGridsPerEdge();
+    auto surface = mSurfacep.lock();
+    if (!surface)
+    {
+        return {};
+    }
+    U32 surface_stride = surface->getGridsPerEdge();
     U32 point_offset = x + y*surface_stride;
     LLVector3 pos;
     pos = getOriginAgent();
-    pos.mV[VX] += x * mSurfacep->getMetersPerGrid();
-    pos.mV[VY] += y * mSurfacep->getMetersPerGrid();
+    pos.mV[VX] += x * surface->getMetersPerGrid();
+    pos.mV[VY] += y * surface->getMetersPerGrid();
     pos.mV[VZ] = *(mDataZ + point_offset);
     return pos;
 }
 
 LLVector2 LLSurfacePatch::getTexCoords(const U32 x, const U32 y) const
 {
-    U32 surface_stride = mSurfacep->getGridsPerEdge();
+    auto surface = mSurfacep.lock();
+    if (!surface)
+    {
+        return {};
+    }
+    U32 surface_stride = surface->getGridsPerEdge();
     U32 point_offset = x + y*surface_stride;
     LLVector3 pos, rel_pos;
     pos = getOriginAgent();
-    pos.mV[VX] += x * mSurfacep->getMetersPerGrid();
-    pos.mV[VY] += y * mSurfacep->getMetersPerGrid();
+    pos.mV[VX] += x * surface->getMetersPerGrid();
+    pos.mV[VY] += y * surface->getMetersPerGrid();
     pos.mV[VZ] = *(mDataZ + point_offset);
-    rel_pos = pos - mSurfacep->getOriginAgent();
+    rel_pos = pos - surface->getOriginAgent();
     rel_pos *= 1.f/surface_stride;
     return LLVector2(rel_pos.mV[VX], rel_pos.mV[VY]);
 }
@@ -228,24 +241,25 @@ LLVector2 LLSurfacePatch::getTexCoords(const U32 x, const U32 y) const
 void LLSurfacePatch::eval(const U32 x, const U32 y, const U32 stride, LLVector3 *vertex, LLVector3 *normal,
                           LLVector2 *tex1) const
 {
-    if (!mSurfacep || !mSurfacep->getRegion() || !mSurfacep->getGridsPerEdge() || !mVObjp)
+    auto surface = mSurfacep.lock();
+    if (!surface || !surface->getRegion() || !surface->getGridsPerEdge() || !mVObjp)
     {
         return; // failsafe
     }
     llassert_always(vertex && normal && tex1);
 
-    U32 surface_stride = mSurfacep->getGridsPerEdge();
+    U32 surface_stride = surface->getGridsPerEdge();
     U32 point_offset = x + y*surface_stride;
 
     *normal = getNormal(x, y);
 
     LLVector3 pos_agent = getOriginAgent();
-    pos_agent.mV[VX] += x * mSurfacep->getMetersPerGrid();
-    pos_agent.mV[VY] += y * mSurfacep->getMetersPerGrid();
+    pos_agent.mV[VX] += x * surface->getMetersPerGrid();
+    pos_agent.mV[VY] += y * surface->getMetersPerGrid();
     pos_agent.mV[VZ]  = *(mDataZ + point_offset);
     *vertex     = pos_agent-mVObjp->getRegion()->getOriginAgent();
 
-    tex1->mV[0] = mSurfacep->getRegion()->getCompositionXY(llfloor(mOriginRegion.mV[0])+x, llfloor(mOriginRegion.mV[1])+y);
+    tex1->mV[0] = surface->getRegion()->getCompositionXY(llfloor(mOriginRegion.mV[0])+x, llfloor(mOriginRegion.mV[1])+y);
 
     const F32 xyScale = 4.9215f*7.f; //0.93284f;
     const F32 xyScaleInv = (1.f / xyScale)*(0.2222222222f);
@@ -265,10 +279,15 @@ void LLSurfacePatch::eval(const U32 x, const U32 y, const U32 stride, LLVector3 
 template<>
 void LLSurfacePatch::calcNormal</*PBR=*/false>(const U32 x, const U32 y, const U32 stride)
 {
-    U32 patch_width = mSurfacep->mPVArray.mPatchWidth;
-    U32 surface_stride = mSurfacep->getGridsPerEdge();
+    auto surface = mSurfacep.lock();
+    if (!surface)
+    {
+        return;
+    }
+    U32 patch_width = surface->mPVArray.mPatchWidth;
+    U32 surface_stride = surface->getGridsPerEdge();
 
-    const F32 mpg = mSurfacep->getMetersPerGrid() * stride;
+    const F32 mpg = surface->getMetersPerGrid() * stride;
 
 // <FS:CR> Aurora Sim
     //S32 poffsets[2][2][2];
@@ -298,14 +317,14 @@ void LLSurfacePatch::calcNormal</*PBR=*/false>(const U32 x, const U32 y, const U
     poffsets[1][1][2] = surface_stride;
 // </FS:CR> Aurora Sim
 
-    const LLSurfacePatch *ppatches[2][2];
+    std::shared_ptr<LLSurfacePatch> ppatches[2][2];
 
     // LLVector3 p1, p2, p3, p4;
 
-    ppatches[0][0] = this;
-    ppatches[0][1] = this;
-    ppatches[1][0] = this;
-    ppatches[1][1] = this;
+    ppatches[0][0] = shared_from_this();
+    ppatches[0][1] = shared_from_this();
+    ppatches[1][0] = shared_from_this();
+    ppatches[1][1] = shared_from_this();
 
     U32 i, j;
     for (i = 0; i < 2; i++)
@@ -421,7 +440,12 @@ void LLSurfacePatch::calcNormal</*PBR=*/true>(const U32 x, const U32 y, const U3
     llassert(mDataNorm);
     constexpr U32 index = 0;
 
-    const U32 surface_stride = mSurfacep->getGridsPerEdge();
+    auto surface = mSurfacep.lock();
+    if (!surface)
+    {
+        return;
+    }
+    const U32 surface_stride = surface->getGridsPerEdge();
     LLVector3& normal_out = *(mDataNorm + surface_stride * y + x);
     calcNormalFlat(normal_out, x, y, index);
 }
@@ -432,13 +456,18 @@ void LLSurfacePatch::calcNormalFlat(LLVector3& normal_out, const U32 x, const U3
 {
     llassert(index == 0 || index == 1);
 
-    U32 patch_width = mSurfacep->mPVArray.mPatchWidth;
-    U32 surface_stride = mSurfacep->getGridsPerEdge();
+    auto surface = mSurfacep.lock();
+    if (!surface)
+    {
+        return;
+    }
+    U32 patch_width = surface->mPVArray.mPatchWidth;
+    U32 surface_stride = surface->getGridsPerEdge();
 
     // Vertex stride is always 1 because we want the flat surface of the current triangle face
     constexpr U32 stride = 1;
 
-    const F32 mpg = mSurfacep->getMetersPerGrid() * stride;
+    const F32 mpg = surface->getMetersPerGrid() * stride;
 
     S32 poffsets[2][2][2];
     poffsets[0][0][0] = x;
@@ -453,14 +482,14 @@ void LLSurfacePatch::calcNormalFlat(LLVector3& normal_out, const U32 x, const U3
     poffsets[1][1][0] = x + stride;
     poffsets[1][1][1] = y + stride;
 
-    const LLSurfacePatch *ppatches[2][2];
+    std::shared_ptr<LLSurfacePatch> ppatches[2][2];
 
     // LLVector3 p1, p2, p3, p4;
 
-    ppatches[0][0] = this;
-    ppatches[0][1] = this;
-    ppatches[1][0] = this;
-    ppatches[1][1] = this;
+    ppatches[0][0] = shared_from_this();
+    ppatches[0][1] = shared_from_this();
+    ppatches[1][0] = shared_from_this();
+    ppatches[1][1] = shared_from_this();
 
     U32 i, j;
     for (i = 0; i < 2; i++)
@@ -577,7 +606,12 @@ void LLSurfacePatch::calcNormalFlat(LLVector3& normal_out, const U32 x, const U3
 
 const LLVector3 &LLSurfacePatch::getNormal(const U32 x, const U32 y) const
 {
-    U32 surface_stride = mSurfacep->getGridsPerEdge();
+    auto surface = mSurfacep.lock();
+    if (!surface)
+    {
+        return *mDataNorm;
+    }
+    U32 surface_stride = surface->getGridsPerEdge();
     llassert(mDataNorm);
     return *(mDataNorm + surface_stride * y + x);
 }
@@ -611,14 +645,15 @@ F32 LLSurfacePatch::getDistance() const
 // data.
 void LLSurfacePatch::updateVerticalStats()
 {
-    if (!mDirtyZStats)
+    auto surface = mSurfacep.lock();
+    if (!mDirtyZStats || !surface)
     {
         return;
     }
 
-    U32 grids_per_patch_edge = mSurfacep->getGridsPerPatchEdge();
-    U32 grids_per_edge = mSurfacep->getGridsPerEdge();
-    F32 meters_per_grid = mSurfacep->getMetersPerGrid();
+    U32 grids_per_patch_edge = surface->getGridsPerPatchEdge();
+    U32 grids_per_edge = surface->getGridsPerEdge();
+    F32 meters_per_grid = surface->getMetersPerGrid();
 
     U32 i, j, k;
     F32 z, total;
@@ -659,10 +694,10 @@ void LLSurfacePatch::updateVerticalStats()
                         mMaxZ - mMinZ);
     mRadius = diam_vec.magVec() * 0.5f;
 
-    mSurfacep->mMaxZ = llmax(mMaxZ, mSurfacep->mMaxZ);
-    mSurfacep->mMinZ = llmin(mMinZ, mSurfacep->mMinZ);
-    mSurfacep->mHasZData = true;
-    mSurfacep->getRegion()->calculateCenterGlobal();
+    surface->mMaxZ = llmax(mMaxZ, surface->mMaxZ);
+    surface->mMinZ = llmin(mMinZ, surface->mMinZ);
+    surface->mHasZData = true;
+    surface->getRegion()->calculateCenterGlobal();
 
     if (mVObjp)
     {
@@ -675,12 +710,13 @@ void LLSurfacePatch::updateVerticalStats()
 template<bool PBR>
 void LLSurfacePatch::updateNormals()
 {
-    if (mSurfacep->mType == 'w')
+    auto surface = mSurfacep.lock();
+    if (!surface || surface->mType == 'w')
     {
         return;
     }
-    U32 grids_per_patch_edge = mSurfacep->getGridsPerPatchEdge();
-    U32 grids_per_edge = mSurfacep->getGridsPerEdge();
+    U32 grids_per_patch_edge = surface->getGridsPerPatchEdge();
+    U32 grids_per_edge = surface->getGridsPerEdge();
 
     bool dirty_patch = false;
 
@@ -827,38 +863,38 @@ void LLSurfacePatch::updateNormals()
                 }
             }
         }
-        else if (getNeighborPatch(NORTHEAST)->mSurfacep != mSurfacep)
-        {
-            if (
-                (!getNeighborPatch(NORTH) || (getNeighborPatch(NORTH)->mSurfacep != mSurfacep))
-                &&
-                (!getNeighborPatch(EAST) || (getNeighborPatch(EAST)->mSurfacep != mSurfacep)))
-            {
-// <FS:CR> Aurora Sim
-                U32 own_xpos, own_ypos, neighbor_xpos, neighbor_ypos;
-                S32 own_offset = 0, neighbor_offset = 0;
-                from_region_handle(mSurfacep->getRegion()->getHandle(), &own_xpos, &own_ypos);
-                from_region_handle(getNeighborPatch(NORTHEAST)->mSurfacep->getRegion()->getHandle(), &neighbor_xpos, &neighbor_ypos);
-                if(own_ypos >= neighbor_ypos) {
-                    neighbor_offset = own_ypos - neighbor_ypos;
-                }
-                else {
-                    own_offset = neighbor_ypos - own_ypos;
-                }
-// </FS:CR> Aurora Sim
-
-                *(mDataZ + grids_per_patch_edge + grids_per_patch_edge*grids_per_edge) =
-                                        *(getNeighborPatch(NORTHEAST)->mDataZ +
-// <FS:CR> Aurora Sim
-                                            (grids_per_edge + neighbor_offset - own_offset - 1) *
-                                            getNeighborPatch(NORTHEAST)->getSurface()->getGridsPerEdge() );
-// </FS:CR> Aurora Sim
-            }
-        }
         else
         {
-            // We've got a northeast patch in the same surface.
-            // The z and normals will be handled by that patch.
+            auto neSurface = getNeighborPatch(NORTHEAST)->mSurfacep.lock();
+
+            if (neSurface != surface)
+            {
+                if (
+                    (!getNeighborPatch(NORTH) || (getNeighborPatch(NORTH)->mSurfacep.lock() != surface))
+                    &&
+                    (!getNeighborPatch(EAST) || (getNeighborPatch(EAST)->mSurfacep.lock() != surface)))
+                {
+    // <FS:CR> Aurora Sim
+                    U32 own_xpos, own_ypos, neighbor_xpos, neighbor_ypos;
+                    S32 own_offset = 0, neighbor_offset = 0;
+                    from_region_handle(surface->getRegion()->getHandle(), &own_xpos, &own_ypos);
+                    from_region_handle(neSurface->getRegion()->getHandle(), &neighbor_xpos, &neighbor_ypos);
+                    if(own_ypos >= neighbor_ypos) {
+                        neighbor_offset = own_ypos - neighbor_ypos;
+                    }
+                    else {
+                        own_offset = neighbor_ypos - own_ypos;
+                    }
+    // </FS:CR> Aurora Sim
+
+                    *(mDataZ + grids_per_patch_edge + grids_per_patch_edge*grids_per_edge) =
+                                            *(getNeighborPatch(NORTHEAST)->mDataZ +
+    // <FS:CR> Aurora Sim
+                                                (grids_per_edge + neighbor_offset - own_offset - 1) *
+                                                getNeighborPatch(NORTHEAST)->getSurface()->getGridsPerEdge() );
+    // </FS:CR> Aurora Sim
+                }
+            }
         }
         calcNormal<PBR>(grids_per_patch_edge, grids_per_patch_edge, 2);
         calcNormal<PBR>(grids_per_patch_edge, grids_per_patch_edge - 1, 2);
@@ -882,7 +918,7 @@ void LLSurfacePatch::updateNormals()
 
     if (dirty_patch)
     {
-        mSurfacep->dirtySurfacePatch(this);
+        surface->dirtySurfacePatch(shared_from_this());
     }
 
     for (i = 0; i < 9; i++)
@@ -896,8 +932,13 @@ template void LLSurfacePatch::updateNormals</*PBR=*/true>();
 
 void LLSurfacePatch::updateEastEdge()
 {
-    U32 grids_per_patch_edge = mSurfacep->getGridsPerPatchEdge();
-    U32 grids_per_edge = mSurfacep->getGridsPerEdge();
+    auto surface = mSurfacep.lock();
+    if (!surface)
+    {
+        return;
+    }
+    U32 grids_per_patch_edge = surface->getGridsPerPatchEdge();
+    U32 grids_per_edge = surface->getGridsPerEdge();
 // <FS:CR> Aurora Sim
     U32 grids_per_edge_east = grids_per_edge;
 
@@ -940,8 +981,13 @@ void LLSurfacePatch::updateEastEdge()
 
 void LLSurfacePatch::updateNorthEdge()
 {
-    U32 grids_per_patch_edge = mSurfacep->getGridsPerPatchEdge();
-    U32 grids_per_edge = mSurfacep->getGridsPerEdge();
+    auto surface = mSurfacep.lock();
+    if (!surface)
+    {
+        return;
+    }
+    U32 grids_per_patch_edge = surface->getGridsPerPatchEdge();
+    U32 grids_per_edge = surface->getGridsPerEdge();
 
     U32 i;
     F32 *south_surface, *north_surface;
@@ -1085,27 +1131,32 @@ void LLSurfacePatch::setOriginGlobal(const LLVector3d &origin_global)
     mOriginGlobal = origin_global;
 
     LLVector3 origin_region;
-    origin_region.setVec(mOriginGlobal - mSurfacep->getOriginGlobal());
+    auto surface = mSurfacep.lock();
+    if (!surface)
+    {
+        return;
+    }
+    origin_region.setVec(mOriginGlobal - surface->getOriginGlobal());
 
     mOriginRegion = origin_region;
-    mCenterRegion.mV[VX] = origin_region.mV[VX] + 0.5f*mSurfacep->getGridsPerPatchEdge()*mSurfacep->getMetersPerGrid();
-    mCenterRegion.mV[VY] = origin_region.mV[VY] + 0.5f*mSurfacep->getGridsPerPatchEdge()*mSurfacep->getMetersPerGrid();
+    mCenterRegion.mV[VX] = origin_region.mV[VX] + 0.5f*surface->getGridsPerPatchEdge()*surface->getMetersPerGrid();
+    mCenterRegion.mV[VY] = origin_region.mV[VY] + 0.5f*surface->getGridsPerPatchEdge()*surface->getMetersPerGrid();
 
     mVisInfo.mbIsVisible = false;
     mVisInfo.mDistance = 512.0f;
     mVisInfo.mRenderLevel = 0;
-    mVisInfo.mRenderStride = mSurfacep->getGridsPerPatchEdge();
+    mVisInfo.mRenderStride = surface->getGridsPerPatchEdge();
 
 }
 
-void LLSurfacePatch::connectNeighbor(LLSurfacePatch *neighbor_patchp, const U32 direction)
+void LLSurfacePatch::connectNeighbor(const std::shared_ptr<LLSurfacePatch>& neighbor_patchp, const U32 direction)
 {
     llassert(neighbor_patchp);
     mNormalsInvalid[direction] = true;
     neighbor_patchp->mNormalsInvalid[gDirOpposite[direction]] = true;
 
     setNeighborPatch(direction, neighbor_patchp);
-    neighbor_patchp->setNeighborPatch(gDirOpposite[direction], this);
+    neighbor_patchp->setNeighborPatch(gDirOpposite[direction], shared_from_this());
 
     if (EAST == direction)
     {
@@ -1131,7 +1182,8 @@ void LLSurfacePatch::connectNeighbor(LLSurfacePatch *neighbor_patchp, const U32 
 
 void LLSurfacePatch::updateVisibility()
 {
-    if (mVObjp.isNull())
+    auto surface = mSurfacep.lock();
+    if (!surface || mVObjp.isNull())
     {
         return;
     }
@@ -1139,11 +1191,11 @@ void LLSurfacePatch::updateVisibility()
     const F32 DEFAULT_DELTA_ANGLE   = (0.15f);
     U32 old_render_stride, max_render_stride;
     U32 new_render_level;
-    F32 stride_per_distance = DEFAULT_DELTA_ANGLE / mSurfacep->getMetersPerGrid();
-    U32 grids_per_patch_edge = mSurfacep->getGridsPerPatchEdge();
+    F32 stride_per_distance = DEFAULT_DELTA_ANGLE / surface->getMetersPerGrid();
+    U32 grids_per_patch_edge = surface->getGridsPerPatchEdge();
 
     LLVector4a center;
-    center.load3( (mCenterRegion + mSurfacep->getOriginAgent()).mV);
+    center.load3( (mCenterRegion + surface->getOriginAgent()).mV);
     LLVector4a radius;
     radius.splat(mRadius);
 
@@ -1172,8 +1224,8 @@ void LLSurfacePatch::updateVisibility()
 
         // We only use render_strides that are powers of two, so we use look-up tables to figure out
         // the render_level and corresponding render_stride
-        new_render_level = mVisInfo.mRenderLevel = mSurfacep->getRenderLevel(max_render_stride);
-        mVisInfo.mRenderStride = mSurfacep->getRenderStride(new_render_level);
+        new_render_level = mVisInfo.mRenderLevel = surface->getRenderLevel(max_render_stride);
+        mVisInfo.mRenderStride = surface->getRenderStride(new_render_level);
 
         if ((mVisInfo.mRenderStride != old_render_stride))
             // The reason we check !mbIsVisible is because non-visible patches normals
@@ -1192,7 +1244,7 @@ void LLSurfacePatch::updateVisibility()
                 //{
                 //  getNeighborPatch(SOUTH)->mVObjp->dirtyGeom();
                 //}
-                LLSurfacePatch* neighbor = getNeighborPatch(WEST);
+                auto neighbor = getNeighborPatch(WEST);
                 if (neighbor && neighbor->mVObjp.notNull())
                 {
                     neighbor->mVObjp->dirtyGeom();
@@ -1257,16 +1309,21 @@ const LLVector3 &LLSurfacePatch::getCenterRegion() const
 
 void LLSurfacePatch::updateCompositionStats()
 {
-    LLViewerLayer *vlp = mSurfacep->getRegion()->getComposition();
+    auto surface = mSurfacep.lock();
+    if (!surface)
+    {
+        return;
+    }
+    LLViewerLayer *vlp = surface->getRegion()->getComposition();
 
     F32 x, y, width, height, mpg, min, mean, max;
 
-    LLVector3 origin = getOriginAgent() - mSurfacep->getOriginAgent();
-    mpg = mSurfacep->getMetersPerGrid();
+    LLVector3 origin = getOriginAgent() - surface->getOriginAgent();
+    mpg = surface->getMetersPerGrid();
     x = origin.mV[VX];
     y = origin.mV[VY];
-    width = mpg*(mSurfacep->getGridsPerPatchEdge()+1);
-    height = mpg*(mSurfacep->getGridsPerPatchEdge()+1);
+    width = mpg*(surface->getGridsPerPatchEdge()+1);
+    height = mpg*(surface->getGridsPerPatchEdge()+1);
 
     mean = 0.f;
     min = vlp->getValueScaled(x, y);
@@ -1306,7 +1363,7 @@ F32 LLSurfacePatch::getMaxComposition() const
     return mMaxComposition;
 }
 
-void LLSurfacePatch::setNeighborPatch(const U32 direction, LLSurfacePatch *neighborp)
+void LLSurfacePatch::setNeighborPatch(const U32 direction, const std::shared_ptr<LLSurfacePatch>& neighborp)
 {
     mNeighborPatches[direction] = neighborp;
     mNormalsInvalid[direction] = true;
@@ -1317,9 +1374,9 @@ void LLSurfacePatch::setNeighborPatch(const U32 direction, LLSurfacePatch *neigh
     }
 }
 
-LLSurfacePatch *LLSurfacePatch::getNeighborPatch(const U32 direction) const
+std::shared_ptr<LLSurfacePatch> LLSurfacePatch::getNeighborPatch(const U32 direction) const
 {
-    return mNeighborPatches[direction];
+    return mNeighborPatches[direction].lock();
 }
 
 void LLSurfacePatch::clearVObj()

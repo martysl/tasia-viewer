@@ -200,7 +200,7 @@ public:
     static void buildCapabilityNames(LLSD& capabilityNames);
 
     // The surfaces and other layers
-    LLSurface*  mLandp;
+    std::shared_ptr<LLSurface>  mLandp;
 
     // Region geometry data
     LLVector3d  mOriginGlobal;  // Location of southwest corner of region (meters)
@@ -681,7 +681,7 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
     mImpl->mOriginGlobal = from_region_handle(handle);
     updateRenderMatrix();
 
-    mImpl->mLandp = new LLSurface('l', NULL);
+    mImpl->mLandp = std::make_shared<LLSurface>('l');
 
     // Create the composition layer for the surface
     mImpl->mCompositionp =
@@ -788,7 +788,7 @@ LLViewerRegion::~LLViewerRegion()
 
     delete mImpl->mCompositionp;
     delete mParcelOverlay;
-    delete mImpl->mLandp;
+    mImpl->mLandp.reset();
     delete mImpl->mEventPoll;
 #if 0
     LLHTTPSender::clearSender(mImpl->mHost);

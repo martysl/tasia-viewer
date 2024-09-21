@@ -425,7 +425,7 @@ const LLUUID (&LLVLComposition::getDefaultTextures())[ASSET_COUNT]
     return default_textures;
 }
 
-LLVLComposition::LLVLComposition(LLSurface *surfacep, const U32 width, const F32 scale) :
+LLVLComposition::LLVLComposition(const std::shared_ptr<LLSurface>& surfacep, const U32 width, const F32 scale) :
     LLTerrainMaterials(),
     LLViewerLayer(width, scale)
 {
@@ -453,7 +453,7 @@ LLVLComposition::~LLVLComposition()
 }
 
 
-void LLVLComposition::setSurface(LLSurface *surfacep)
+void LLVLComposition::setSurface(const std::shared_ptr<LLSurface>& surfacep)
 {
     mSurfacep = surfacep;
 }
@@ -467,9 +467,8 @@ bool LLVLComposition::generateHeights(const F32 x, const F32 y,
         return false;
     }
 
-    llassert(mSurfacep);
-
-    if (!mSurfacep || !mSurfacep->getRegion())
+    const auto surface = mSurfacep.lock();
+    if (!surface || !surface->getRegion())
     {
         // We don't always have the region yet here....
         return false;
@@ -491,7 +490,7 @@ bool LLVLComposition::generateHeights(const F32 x, const F32 y,
         y_end = mWidth;
     }
 
-    LLVector3d origin_global = from_region_handle(mSurfacep->getRegion()->getHandle());
+    LLVector3d origin_global = from_region_handle(surface->getRegion()->getHandle());
 
     // For perlin noise generation...
     const F32 slope_squared = 1.5f*1.5f;
@@ -533,7 +532,7 @@ bool LLVLComposition::generateHeights(const F32 x, const F32 y,
 
             LLVector3 location(i*mScale, j*mScale, 0.f);
 
-            F32 heightp = mSurfacep->resolveHeightRegion(location) + z_offset;
+            F32 heightp = surface->resolveHeightRegion(location) + z_offset;
 
             // Step 0: Measure the exact height at this texel
             vec[0] = (F32)(origin_global.mdV[VX]+location.mV[VX])*xyScaleInv;   //  Adjust to non-integer lattice

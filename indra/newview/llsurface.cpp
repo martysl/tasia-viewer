@@ -84,9 +84,6 @@ LLSurface::LLSurface(U32 type, LLViewerRegion *regionp) :
     mSurfaceZ = NULL;
     mNorm = NULL;
 
-    // Patch data
-    mPatchList = NULL;
-
     // One of each for each camera
     mVisiblePatchCount = 0;
 
@@ -100,10 +97,7 @@ LLSurface::LLSurface(U32 type, LLViewerRegion *regionp) :
     // In here temporarily.
     mSurfacePatchUpdateCount = 0;
 
-    for (S32 i = 0; i < 8; i++)
-    {
-        mNeighbors[i] = NULL;
-    }
+    mNeighbors.resize(8);
 }
 
 
@@ -292,7 +286,7 @@ void LLSurface::setOriginGlobal(const LLVector3d &origin_global)
 {
     LLVector3d new_origin_global;
     mOriginGlobal = origin_global;
-    LLSurfacePatch *patchp;
+    std::shared_ptr<LLSurfacePatch> patchp;
     S32 i, j;
     // Need to update the southwest corners of the patches
     for (j=0; j<mPatchesPerEdge; j++)
@@ -300,7 +294,10 @@ void LLSurface::setOriginGlobal(const LLVector3d &origin_global)
         for (i=0; i<mPatchesPerEdge; i++)
         {
             patchp = getPatch(i, j);
-
+            if (!patchp)
+            {
+                continue;
+            }
             new_origin_global = patchp->getOriginGlobal();
 
             new_origin_global.mdV[0] = mOriginGlobal.mdV[0] + i * mMetersPerGrid * mGridsPerPatchEdge;
@@ -331,9 +328,9 @@ void LLSurface::getNeighboringRegions( std::vector<LLViewerRegion*>& uniqueRegio
     S32 i;
     for (i = 0; i < 8; i++)
     {
-        if ( mNeighbors[i] != NULL )
+        if ( const auto neighbour = mNeighbors[i].lock() )
         {
-            uniqueRegions.push_back( mNeighbors[i]->getRegion() );
+            uniqueRegions.push_back( neighbour->getRegion() );
         }
     }
 }
@@ -344,23 +341,23 @@ void LLSurface::getNeighboringRegionsStatus( std::vector<S32>& regions )
     S32 i;
     for (i = 0; i < 8; i++)
     {
-        if ( mNeighbors[i] != NULL )
+        if ( mNeighbors[i].lock() )
         {
             regions.push_back( i );
         }
     }
 }
 
-void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
+void LLSurface::connectNeighbor(const std::shared_ptr<LLSurface>& neighborp, U32 direction)
 {
     S32 i;
-    LLSurfacePatch *patchp, *neighbor_patchp;
+    std::shared_ptr<LLSurfacePatch> patchp, neighbor_patchp;
 // <FS:CR> Aurora Sim
     S32 neighborPatchesPerEdge = neighborp->mPatchesPerEdge;
 // </FS:CR> Aurora Sim
 
     mNeighbors[direction] = neighborp;
-    neighborp->mNeighbors[gDirOpposite[direction]] = this;
+    neighborp->mNeighbors[gDirOpposite[direction]] = shared_from_this();
 
 // <FS:CR> Aurora Sim
     S32 ppe[2];
@@ -677,21 +674,24 @@ void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
     }
 }
 
-void LLSurface::disconnectNeighbor(LLSurface *surfacep)
+void LLSurface::disconnectNeighbor(const std::shared_ptr<LLSurface>& surfacep)
 {
     S32 i;
     for (i = 0; i < 8; i++)
     {
-        if (surfacep == mNeighbors[i])
+        if (auto neighbour = mNeighbors[i].lock())
         {
-            mNeighbors[i] = NULL;
+            if (surfacep == neighbour)
+            {
+                mNeighbors[i].reset();
+            }
         }
     }
 
     // Iterate through surface patches, removing any connectivity to removed surface.
     for (i = 0; i < mNumberOfPatches; i++)
     {
-        (mPatchList + i)->disconnectNeighbor(surfacep);
+        mPatchList[i]->disconnectNeighbor(surfacep);
     }
 }
 
@@ -701,10 +701,10 @@ void LLSurface::disconnectAllNeighbors()
     S32 i;
     for (i = 0; i < 8; i++)
     {
-        if (mNeighbors[i])
+        if (auto neighbour = mNeighbors[i].lock())
         {
-            mNeighbors[i]->disconnectNeighbor(this);
-            mNeighbors[i] = NULL;
+            neighbour->disconnectNeighbor(shared_from_this());
+            mNeighbors[i].reset();
         }
     }
 }
@@ -760,12 +760,10 @@ void LLSurface::updatePatchVisibilities(LLAgent &agent)
 
     LLVector3 pos_region = mRegionp->getPosRegionFromGlobal(gAgentCamera.getCameraPositionGlobal());
 
-    LLSurfacePatch *patchp;
-
     mVisiblePatchCount = 0;
     for (S32 i=0; i<mNumberOfPatches; i++)
     {
-        patchp = mPatchList + i;
+        auto patchp = mPatchList[i];
 
         patchp->updateVisibility();
         if (patchp->getVisible())
@@ -798,11 +796,14 @@ bool LLSurface::idleUpdate(F32 max_update_time)
 
     // Always call updateNormals() / updateVerticalStats()
     //  every frame to avoid artifacts
-    for(std::set<LLSurfacePatch *>::iterator iter = mDirtyPatchList.begin();
-        iter != mDirtyPatchList.end(); )
+    for(auto iter = mDirtyPatchList.begin(); iter != mDirtyPatchList.end(); )
     {
-        std::set<LLSurfacePatch *>::iterator curiter = iter++;
-        LLSurfacePatch *patchp = *curiter;
+        auto curiter = iter++;
+        const auto& patchp = *curiter;
+        if (!patchp)
+        {
+            continue;
+        }
         patchp->updateNormals<PBR>();
         patchp->updateVerticalStats();
         if (max_update_time == 0.f || update_timer.getElapsedTimeF32() < max_update_time)
@@ -831,7 +832,7 @@ void LLSurface::decompressDCTPatch(LLBitPack &bitpack, LLGroupHeader *gopp, bool
     LLPatchHeader  ph;
     S32 j, i;
     S32 patch[LARGE_PATCH_SIZE*LARGE_PATCH_SIZE];
-    LLSurfacePatch *patchp;
+    std::shared_ptr<LLSurfacePatch> patchp;
 
     init_patch_decompressor(gopp->patch_size);
     gopp->stride = mGridsPerEdge;
@@ -877,7 +878,7 @@ void LLSurface::decompressDCTPatch(LLBitPack &bitpack, LLGroupHeader *gopp, bool
             return;
         }
 
-        patchp = &mPatchList[j*mPatchesPerEdge + i];
+        patchp = mPatchList[j*mPatchesPerEdge + i];
 
 
         decode_patch(bitpack, patch);
@@ -1054,7 +1055,7 @@ LLVector3 LLSurface::resolveNormalGlobal(const LLVector3d& pos_global) const
 
 }
 
-LLSurfacePatch *LLSurface::resolvePatchRegion(const F32 x, const F32 y) const
+std::shared_ptr<LLSurfacePatch> LLSurface::resolvePatchRegion(const F32 x, const F32 y) const
 {
 // x and y should be region-local coordinates.
 // If x and y are outside of the surface, then the returned
@@ -1118,17 +1119,17 @@ LLSurfacePatch *LLSurface::resolvePatchRegion(const F32 x, const F32 y) const
         LL_WARNS() << "Clamping out of range patch index " << old_index
                 << " to " << index << LL_ENDL;
     }
-    return &(mPatchList[index]);
+    return mPatchList[index];
 }
 
 
-LLSurfacePatch *LLSurface::resolvePatchRegion(const LLVector3 &pos_region) const
+std::shared_ptr<LLSurfacePatch> LLSurface::resolvePatchRegion(const LLVector3 &pos_region) const
 {
     return resolvePatchRegion(pos_region.mV[VX], pos_region.mV[VY]);
 }
 
 
-LLSurfacePatch *LLSurface::resolvePatchGlobal(const LLVector3d &pos_global) const
+std::shared_ptr<LLSurfacePatch>LLSurface::resolvePatchGlobal(const LLVector3d &pos_global) const
 {
     llassert(mRegionp);
     LLVector3 pos_region = mRegionp->getPosRegionFromGlobal(pos_global);
@@ -1157,10 +1158,14 @@ void LLSurface::createPatchData()
     // Assumes mGridsPerEdge, mGridsPerPatchEdge, and mPatchesPerEdge have been properly set
     // TODO -- check for create() called when surface is not empty
     S32 i, j;
-    LLSurfacePatch *patchp;
+    std::shared_ptr<LLSurfacePatch> patchp;
 
     // Allocate memory
-    mPatchList = new LLSurfacePatch[mNumberOfPatches];
+    mPatchList.resize(mNumberOfPatches);
+    for(int x = 0; x < mNumberOfPatches; x++)
+    {
+        mPatchList[x] = std::make_shared<LLSurfacePatch>();
+    }
 
     // One of each for each camera
     mVisiblePatchCount = mNumberOfPatches;
@@ -1170,7 +1175,7 @@ void LLSurface::createPatchData()
         for (i=0; i<mPatchesPerEdge; i++)
         {
             patchp = getPatch(i, j);
-            patchp->setSurface(this);
+            patchp->setSurface(shared_from_this());
         }
     }
 
@@ -1277,8 +1282,7 @@ void LLSurface::destroyPatchData()
 {
     // Delete all of the cached patch data for these patches.
 
-    delete [] mPatchList;
-    mPatchList = NULL;
+    mPatchList.clear();
     mVisiblePatchCount = 0;
 }
 
@@ -1301,7 +1305,7 @@ U32 LLSurface::getRenderStride(const U32 render_level) const
 }
 
 
-LLSurfacePatch *LLSurface::getPatch(const S32 x, const S32 y) const
+std::shared_ptr<LLSurfacePatch> LLSurface::getPatch(const S32 x, const S32 y) const
 {
     if ((x < 0) || (x >= mPatchesPerEdge))
     {
@@ -1314,7 +1318,7 @@ LLSurfacePatch *LLSurface::getPatch(const S32 x, const S32 y) const
         return NULL;
     }
 
-    return mPatchList + x + y*mPatchesPerEdge;
+    return mPatchList[x + y*mPatchesPerEdge];
 }
 
 
@@ -1323,11 +1327,11 @@ void LLSurface::dirtyAllPatches()
     S32 i;
     for (i = 0; i < mNumberOfPatches; i++)
     {
-        mPatchList[i].dirtyZ();
+        mPatchList[i]->dirtyZ();
     }
 }
 
-void LLSurface::dirtySurfacePatch(LLSurfacePatch *patchp)
+void LLSurface::dirtySurfacePatch(const std::shared_ptr<LLSurfacePatch>& patchp)
 {
     // Put surface patch on dirty surface patch list
     mDirtyPatchList.insert(patchp);

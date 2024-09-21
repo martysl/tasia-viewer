@@ -63,7 +63,7 @@ class LLSurfacePatch;
 class LLBitPack;
 class LLGroupHeader;
 
-class LLSurface
+class LLSurface : public std::enable_shared_from_this<LLSurface>
 {
 public:
     LLSurface(U32 type, LLViewerRegion *regionp = NULL);
@@ -80,8 +80,8 @@ public:
 
     void setOriginGlobal(const LLVector3d &origin_global);
 
-    void connectNeighbor(LLSurface *neighborp, U32 direction);
-    void disconnectNeighbor(LLSurface *neighborp);
+    void connectNeighbor(const std::shared_ptr<LLSurface>& neighborp, U32 direction);
+    void disconnectNeighbor(const std::shared_ptr<LLSurface>& neighborp);
     void disconnectAllNeighbors();
 
 // <FS:CR> Aurora Sim
@@ -110,10 +110,10 @@ public:
     F32 resolveHeightGlobal(const LLVector3d &position_global) const;
     LLVector3 resolveNormalGlobal(const LLVector3d& v) const;               //  Returns normal to surface
 
-    LLSurfacePatch *resolvePatchRegion(const F32 x, const F32 y) const;
-    LLSurfacePatch *resolvePatchRegion(const LLVector3 &position_region) const;
-    LLSurfacePatch *resolvePatchGlobal(const LLVector3d &position_global) const;
-    LLSurfacePatch *getPatch(const S32 x, const S32 y) const;
+    std::shared_ptr<LLSurfacePatch> resolvePatchRegion(const F32 x, const F32 y) const;
+    std::shared_ptr<LLSurfacePatch> resolvePatchRegion(const LLVector3 &position_region) const;
+    std::shared_ptr<LLSurfacePatch> resolvePatchGlobal(const LLVector3d &position_global) const;
+    std::shared_ptr<LLSurfacePatch> getPatch(const S32 x, const S32 y) const;
 
     // Update methods (called during idle, normally)
     template<bool PBR>
@@ -137,7 +137,7 @@ public:
 
     void dirtyAllPatches(); // Use this to dirty all patches when changing terrain parameters
 
-    void dirtySurfacePatch(LLSurfacePatch *patchp);
+    void dirtySurfacePatch(const std::shared_ptr<LLSurfacePatch>& patchp);
     LLVOWater *getWaterObj()                        { return mWaterObjp; }
 
     static void setTextureSize(const S32 texture_size);
@@ -167,7 +167,7 @@ public:
     // +---+---+---+
     // |SW | S | SE|
     // +---+---+---+
-    LLSurface *mNeighbors[8]={}; // Adjacent patches <FS:Beq/> ensure initialised.
+    std::vector<std::weak_ptr<LLSurface>> mNeighbors; // Adjacent patches <FS:Beq/> ensure initialised.
 
     U32 mType;              // Useful for identifying derived classes
 
@@ -182,7 +182,7 @@ protected:
 
 protected:
     LLVector3d  mOriginGlobal;      // In absolute frame
-    LLSurfacePatch *mPatchList;     // Array of all patches
+    std::vector<std::shared_ptr<LLSurfacePatch>> mPatchList;     // Array of all patches
 
     // Array of grid data, mGridsPerEdge * mGridsPerEdge
     F32 *mSurfaceZ;
@@ -190,7 +190,7 @@ protected:
     // Array of grid normals, mGridsPerEdge * mGridsPerEdge
     LLVector3 *mNorm;
 
-    std::set<LLSurfacePatch *> mDirtyPatchList;
+    std::set<std::shared_ptr<LLSurfacePatch>> mDirtyPatchList;
 
 
     // The textures should never be directly initialized - use the setter methods!

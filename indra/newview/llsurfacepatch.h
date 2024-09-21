@@ -58,18 +58,18 @@ public:
 
 
 
-class LLSurfacePatch
+class LLSurfacePatch: public std::enable_shared_from_this<LLSurfacePatch>
 {
 public:
     LLSurfacePatch();
     ~LLSurfacePatch();
 
     void reset(const U32 id);
-    void connectNeighbor(LLSurfacePatch *neighborp, const U32 direction);
-    void disconnectNeighbor(LLSurface *surfacep);
+    void connectNeighbor(const std::shared_ptr<LLSurfacePatch>& neighborp, const U32 direction);
+    void disconnectNeighbor(const std::shared_ptr<LLSurface>& surfacep);
 
-    void setNeighborPatch(const U32 direction, LLSurfacePatch *neighborp);
-    LLSurfacePatch *getNeighborPatch(const U32 direction) const;
+    void setNeighborPatch(const U32 direction, const std::shared_ptr<LLSurfacePatch>& neighborp);
+    std::shared_ptr<LLSurfacePatch> getNeighborPatch(const U32 direction) const;
 
     void colorPatch(const U8 r, const U8 g, const U8 b);
 
@@ -99,7 +99,7 @@ public:
     F32 getMaxComposition() const;
     const LLVector3 &getCenterRegion() const;
     const U64 &getLastUpdateTime() const;
-    LLSurface *getSurface() const { return mSurfacep; }
+    std::shared_ptr<LLSurface> getSurface() const { return mSurfacep.lock(); }
     LLVector3 getPointAgent(const U32 x, const U32 y) const; // get the point at the offset.
     LLVector2 getTexCoords(const U32 x, const U32 y) const;
 
@@ -138,7 +138,7 @@ public:
     U32 getRenderStride() const;
     S32 getRenderLevel() const;
 
-    void setSurface(LLSurface *surfacep);
+    void setSurface(const std::shared_ptr<LLSurface>& surface);
     void setDataZ(F32 *data_z)                  { mDataZ = data_z; }
     void setDataNorm(LLVector3 *data_norm)      { mDataNorm = data_norm; }
     F32 *getDataZ() const                       { return mDataZ; }
@@ -155,7 +155,7 @@ public:
     bool mSTexUpdate;       // Does the surface texture need to be updated?
 
 protected:
-    LLSurfacePatch *mNeighborPatches[8]; // Adjacent patches
+    std::vector<std::weak_ptr<LLSurfacePatch>> mNeighborPatches; // Adjacent patches
     bool mNormalsInvalid[9];  // Which normals are invalid
 
     bool mDirty;
@@ -190,7 +190,7 @@ protected:
                             // of LLSurface that is "connected" to another LLSurface
     U64 mLastUpdateTime;    // Time patch was last updated
 
-    LLSurface *mSurfacep; // Pointer to "parent" surface
+    std::weak_ptr<LLSurface> mSurfacep; // Pointer to "parent" surface
 };
 
 extern template void LLSurfacePatch::updateNormals</*PBR=*/false>();

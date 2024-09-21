@@ -1032,7 +1032,7 @@ F32 LLWorld::resolveStepHeightGlobal(const LLVOAvatar* avatarp, const LLVector3d
 }
 
 
-LLSurfacePatch * LLWorld::resolveLandPatchGlobal(const LLVector3d &pos_global)
+std::shared_ptr<LLSurfacePatch> LLWorld::resolveLandPatchGlobal(const LLVector3d &pos_global)
 {
     //  returns a pointer to the patch at this location
     LLViewerRegion *regionp = getRegionFromPosGlobal(pos_global);

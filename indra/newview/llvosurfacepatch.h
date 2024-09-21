@@ -66,8 +66,8 @@ public:
     /*virtual*/ void updateSpatialExtents(LLVector4a& newMin, LLVector4a& newMax);
     /*virtual*/ bool isActive() const; // Whether this object needs to do an idleUpdate.
 
-    void setPatch(LLSurfacePatch *patchp);
-    LLSurfacePatch  *getPatch() const       { return mPatchp; }
+    void setPatch(const std::shared_ptr<LLSurfacePatch>& patchp);
+    std::shared_ptr<LLSurfacePatch> getPatch() const       { return mPatchp.lock(); }
 
     void dirtyPatch();
     void dirtyGeom();
@@ -91,7 +91,7 @@ protected:
     LLFacePool      *mPool;
     LLFacePool      *getPool();
     S32             mBaseComp;
-    LLSurfacePatch  *mPatchp;
+    std::weak_ptr<LLSurfacePatch>   mPatchp;
     bool            mDirtyTexture;
     bool            mDirtyTerrain;
 

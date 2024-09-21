@@ -117,10 +117,10 @@ public:
     static const S32 ASSET_COUNT = 4;
     static const LLUUID (&getDefaultTextures())[ASSET_COUNT];
 
-    LLVLComposition(LLSurface *surfacep, const U32 width, const F32 scale);
+    LLVLComposition(const std::shared_ptr<LLSurface>& surfacep, const U32 width, const F32 scale);
     /*virtual*/ ~LLVLComposition();
 
-    void setSurface(LLSurface *surfacep);
+    void setSurface(const std::shared_ptr<LLSurface>& surfacep);
 
     // Viewer side hack to generate composition values
     bool generateHeights(const F32 x, const F32 y, const F32 width, const F32 height);
@@ -150,7 +150,7 @@ public:
 
 protected:
     bool mParamsReady = false;
-    LLSurface *mSurfacep;
+    std::weak_ptr<LLSurface> mSurfacep;
 
     // Final minimap raw images
     LLPointer<LLImageRaw> mRawImages[LLTerrainMaterials::ASSET_COUNT];

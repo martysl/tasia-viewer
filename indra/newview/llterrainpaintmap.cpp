@@ -197,7 +197,7 @@ bool LLTerrainPaintMap::bakeHeightNoiseIntoPBRPaintMapRGB(const LLViewerRegion& 
                     }
                 }
 
-                const LLSurfacePatch* patch = surface.getPatch(ri, rj);
+                auto patch = surface.getPatch(ri, rj);
                 for (U32 j = 0; j < vert_size; ++j)
                 {
                     for (U32 i = 0; i < vert_size; ++i)
