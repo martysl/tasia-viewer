@@ -7255,6 +7255,38 @@ void LLCalculateTangentArray(U32 vertexCount, const LLVector4a *vertex, const LL
         U32 i2 = *index_array++;
         U32 i3 = *index_array++;
 
+        if (i1 >= vertexCount)
+        {
+            if (i2 >= vertexCount)
+            {
+                if (i3 >= vertexCount)
+                {
+                    continue;
+                }
+                i2 = i3;
+                i1 = i3;
+            }
+            else
+            {
+                i1 = i2;
+                if (i3 >= vertexCount)
+                {
+                    i3 = i2;
+                }
+            }
+        }
+        else
+        {
+            if (i2 >= vertexCount)
+            {
+                i2 = i1;
+            }
+            if (i3 >= vertexCount)
+            {
+                i3 = i1;
+            }
+        }
+
         const LLVector4a& v1 = vertex[i1];
         const LLVector4a& v2 = vertex[i2];
         const LLVector4a& v3 = vertex[i3];
