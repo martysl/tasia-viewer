@@ -660,7 +660,7 @@ void LLPreviewTexture::onFileLoadedForSaveTGA(bool success,
     {
         LLSD key;
         key["uuid"] = *item_uuid;
-        key["preview_only"] = TRUE;
+        key["preview_only"] = true;
         self = LLFloaterReg::findTypedInstance<LLPreviewTexture>("preview_texture", key);
     }
 
@@ -753,7 +753,7 @@ void LLPreviewTexture::onFileLoadedForSavePNG(bool success,
     {
         LLSD key;
         key["uuid"] = *item_uuid;
-        key["preview_only"] = TRUE;
+        key["preview_only"] = true;
         self = LLFloaterReg::findTypedInstance<LLPreviewTexture>("preview_texture", key);
     }
 
