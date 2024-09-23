@@ -126,7 +126,7 @@ LLPreviewTexture::LLPreviewTexture(const LLSD& key)
         mIsFullPerm = false;
     }
     if (bypass_perms)
-        mIsFullPerm = TRUE;
+        mIsFullPerm = true;
 }
 
 LLPreviewTexture::~LLPreviewTexture()

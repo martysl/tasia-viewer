@@ -4045,7 +4045,7 @@ class LLLandEnableBuyPass : public view_listener_t
 bool enable_object_edit()
 {
     if (lolistorm_check_flag(LO_CONVENIENCE))
-        return TRUE;
+        return true;
 
     if (!isAgentAvatarValid()) return false;
 

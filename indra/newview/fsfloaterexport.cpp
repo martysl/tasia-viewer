@@ -1382,13 +1382,13 @@ void FSFloaterObjectExport::addTexturePreview()
         if (bypass_perms)
         {
             texture_block->setValue(mTextures[i]);
-            texture_block->setEnabled(FALSE);
+            texture_block->setEnabled(false);
         }
         mTexturePanel->addChild(texture_block);
         img_nr++;
     }
     if (bypass_perms)
-        mTexturePanel->setEnabled(TRUE);
+        mTexturePanel->setEnabled(true);
 }
 
 ///////////////////////////////////////////
