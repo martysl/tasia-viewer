@@ -931,6 +931,8 @@ void FSAreaSearch::matchObject(FSObjectProperties& details, LLViewerObject* obje
     std::string group_name;
     std::string object_name = details.name;
     std::string object_description = details.description;
+    std::string object_key = object_id.getString();
+    std::string owner_key = details.ownership_id.getString();
 
     details.name_requested = false;
     getNameFromUUID(details.ownership_id, owner_name, details.group_owned, details.name_requested);
@@ -966,6 +968,14 @@ void FSAreaSearch::matchObject(FSObjectProperties& details, LLViewerObject* obje
                 return;
             }
             if (!mSearchLastOwner.empty() && !boost::regex_match(last_owner_name, mRegexSearchLastOwner))
+            {
+                return;
+            }
+            if (!mSearchObjectKey.empty() && !boost::regex_match(object_key, mRegexSearchObjectKey))
+            {
+                return;
+            }
+            if (!mSearchOwnerKey.empty() && !boost::regex_match(owner_key, mRegexSearchOwnerKey))
             {
                 return;
             }
@@ -1010,6 +1020,14 @@ void FSAreaSearch::matchObject(FSObjectProperties& details, LLViewerObject* obje
             return;
         }
         if (!mSearchLastOwner.empty() && boost::ifind_first(last_owner_name, mSearchLastOwner).empty())
+        {
+            return;
+        }
+        if (!mSearchObjectKey.empty() && boost::ifind_first(object_key, mSearchObjectKey).empty())
+        {
+            return;
+        }
+        if (!mSearchOwnerKey.empty() && boost::ifind_first(owner_key, mSearchOwnerKey).empty())
         {
             return;
         }
@@ -1219,6 +1237,8 @@ void FSAreaSearch::onCommitLine()
     mSearchGroup = mPanelFind->mGroupLineEditor->getText();
     mSearchCreator = mPanelFind->mCreatorLineEditor->getText();
     mSearchLastOwner = mPanelFind->mLastOwnerLineEditor->getText();
+    mSearchObjectKey = mPanelFind->mObjectKeyLineEditor->getText();
+    mSearchOwnerKey = mPanelFind->mOwnerKeyLineEditor->getText();
 
     if (mRegexSearch)
     {
@@ -1294,6 +1314,30 @@ void FSAreaSearch::onCommitLine()
                 mSearchLastOwner.erase();
             }
         }
+
+        if (!mSearchObjectKey.empty())
+        {
+            if (regexTest(mSearchObjectKey))
+            {
+                mRegexSearchObjectKey = mSearchObjectKey.c_str();
+            }
+            else
+            {
+                mSearchObjectKey.erase();
+            }
+        }
+
+        if (!mSearchOwnerKey.empty())
+        {
+            if (regexTest(mSearchOwnerKey))
+            {
+                mRegexSearchOwnerKey = mSearchOwnerKey.c_str();
+            }
+            else
+            {
+                mSearchOwnerKey.erase();
+            }
+        }
     }
 }
 
@@ -1346,6 +1390,8 @@ void FSAreaSearch::clearSearchText()
     mSearchGroup.erase();
     mSearchCreator.erase();
     mSearchLastOwner.erase();
+    mSearchObjectKey.erase();
+    mSearchOwnerKey.erase();
 }
 
 void FSAreaSearch::onButtonClickedSearch()
@@ -2135,6 +2181,12 @@ bool FSPanelAreaSearchFind::postBuild()
 
     mCreatorLineEditor = getChild<LLLineEditor>("creator_search");
     mCreatorLineEditor->setCommitCallback(boost::bind(&FSAreaSearch::onCommitLine, mFSAreaSearch));
+
+    mObjectKeyLineEditor = getChild<LLLineEditor>("object_key_search");
+    mObjectKeyLineEditor->setCommitCallback(boost::bind(&FSAreaSearch::onCommitLine, mFSAreaSearch));
+
+    mOwnerKeyLineEditor = getChild<LLLineEditor>("owner_key_search");
+    mOwnerKeyLineEditor->setCommitCallback(boost::bind(&FSAreaSearch::onCommitLine, mFSAreaSearch));
 
     mLastOwnerLineEditor = getChild<LLLineEditor>("last_owner_search");
     mLastOwnerLineEditor->setCommitCallback(boost::bind(&FSAreaSearch::onCommitLine, mFSAreaSearch));

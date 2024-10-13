@@ -198,6 +198,8 @@ private:
     std::string mSearchGroup;
     std::string mSearchCreator;
     std::string mSearchLastOwner;
+    std::string mSearchObjectKey;
+    std::string mSearchOwnerKey;
 
     bool mRegexSearch;
     boost::regex mRegexSearchName;
@@ -206,6 +208,8 @@ private:
     boost::regex mRegexSearchGroup;
     boost::regex mRegexSearchCreator;
     boost::regex mRegexSearchLastOwner;
+    boost::regex mRegexSearchObjectKey;
+    boost::regex mRegexSearchOwnerKey;
 
     LLFrameTimer mLastUpdateTimer;
     LLFrameTimer mLastPropertiesReceivedTimer;
@@ -347,6 +351,8 @@ public:
     LLLineEditor* mOwnerLineEditor;
     LLLineEditor* mGroupLineEditor;
     LLLineEditor* mCreatorLineEditor;
+    LLLineEditor* mObjectKeyLineEditor;
+    LLLineEditor* mOwnerKeyLineEditor;
     LLLineEditor* mLastOwnerLineEditor;
     LLCheckBoxCtrl* mCheckboxRegex;
 
