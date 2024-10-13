@@ -339,13 +339,13 @@ FSPanelLogin::FSPanelLogin(const LLRect &rect,
     mInitialized = true;
 
     auto&& spoof_btn = getChild<LLButton>("spoof_btn");
-    spoof_btn->setClickedCallback([this](LLUICtrl* ctrl, const LLSD&)
+    spoof_btn->setClickedCallback([](LLUICtrl* ctrl, const LLSD&)
     {
         LLFloaterReg::showInstance("lo_spoof");
     });
 
     auto&& extras_btn = getChild<LLButton>("extras_btn");
-    extras_btn->setClickedCallback([this](LLUICtrl* ctrl, const LLSD&)
+    extras_btn->setClickedCallback([](LLUICtrl* ctrl, const LLSD&)
     {
         LLFloaterReg::showInstance("lo_extras");
     });

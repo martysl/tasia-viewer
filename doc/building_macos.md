@@ -14,14 +14,8 @@ The steps listed below are expected to be run from a shell prompt. Simply copy a
 You will need to install the following tools:
 
 ### Xcode
-- Xcode, It's a free download from Apple, but the latest version (12.x) is too new, so you will need to get an older version.
-- To download a version that will work (11.7 in this case), go [here](https://developer.apple.com/download) and log in with an apple ID.
-- Either find the 11.7 download in the list or use this [direct link](https://download.developer.apple.com/Developer_Tools/Xcode_11.7/Xcode_11.7.xip) (will prompt you to log in if you skipped the above step.)
-- Open the downloaded file and copy the Xcode application to the Applications folder.
-- Open Xcode at least once to set up everything to compile the viewer later on.
-- Test by running `clang --version` from the terminal window.
-- It should report version 11 something (Apple clang version 11.0.3 (clang-1103.0.32.62) for example.)
-- If it reports version 12, something is messed up and you installed Xcode 12.
+- Xcode, It's a free download from Apple.
+- Xcode 16 works fine with Sequoia
 
 ### CMake
 - Download [CMake](http://www.cmake.org/download) version 3.16.0 or higher
@@ -54,47 +48,6 @@ export PATH=$PATH:~/Library/Python/3.7/bin/
 ```
 
 - Check Autobuild version to be "autobuild 3.9.3" or higher: `autobuild --version`
-
-### Additional third party libraries 
-If you want to use licensed FMOD Studio API or KDU build libraries (they are optional) you have to provide these yourself. If you're building Firestorm as part of the project team, ask for the libraries for fmodstudio and kdu. Put them into `/opt/firestorm`.
-
-If you're a community builder, you'll need to build these libraries yourself, then change your autobuild.xml file to point to your own versions, or create a different autobuild.xml with your customizations, and use this with autobuild instead of our default autobuild.xml. There are some examples of how to build FMOD Studio on the LL Wiki and opensource-dev mailing list.
-
-We've created a non-KDU build target to make this easier. Everywhere you see "ReleaseFS" below, use "ReleaseFS_open" instead. This will perform the same build, using openjpeg instead of KDU and omitting FMOD Studio.
-
-Available premade firestorm-specific build targets:
-
-```
-ReleaseFS           (includes KDU, FMOD)
-ReleaseFS_open      (no KDU, no FMOD)
-RelWithDebInfo_open (no KDU, no FMOD)
-```
-
-To build firestorm:
-
-```
-autobuild build -c ReleaseFS                        
-```
-
-Other examples:
-
-```
-autobuild configure -c ReleaseFS                              # basic configuration step, don't build, just configure
-autobuild configure -c ReleaseFS -- --clean                   # clean the output area first, then configure
-autobuild configure -c ReleaseFS -- --chan Private-Yourname   # configure with a custom channel
-
-autobuild build -c ReleaseFS --no-configure                   # default quick rebuild
-autobuild build -c ReleaseFS --no-configure -- --clean        # Clean rebuild
-
-autobuild configure -c ReleaseFS_open --                      # configure with no third-party libraries
-autobuild configure -c ReleaseFS_open -- --fmodstudio         # configure with FMOD Studio but no KDU
-```
-
-Any of the configure options can also be used (and do the same thing) with the build options. Typical LL autobuild configure options should also work, as long as they don't duplicate configuration we are already doing.
-
-Logs: Look for logs in `build-darwin-x86_64/logs`.
-
-Output: Look for output in `build-darwin-x86_64/newview/Release`.
 
 ##  Set up your source code tree
 
@@ -142,11 +95,20 @@ git clone https://github.com/FirestormViewer/3p-fmodstudio.git
 cd 3p-fmodstudio
 ```
 
+- Edit the build-cmd.sh and change darwin) to darwin64), i.e
+
+```
+"darwin64")
+  FMOD_PLATFORM="mac-installer"
+  FMOD_FILEEXTENSION=".dmg"
+  ;;
+```
+
 - Place the installer disk image (.dmg) file you downloaded into the current directory.
 - Issue the following commands:
 ```
-autobuild build
-autobuild package --results-file result.txt
+autobuild build -A 64 --all
+autobuild package -A 64 --results-file result.txt
 ```
 
 Near the top of the output you will see the package name written:

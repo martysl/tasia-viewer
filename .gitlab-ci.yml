@@ -1,0 +1,168 @@
+stages:
+  - start_linux_vm
+  - build_linux
+  - stop_linux_vm
+  - start_windows_vm
+  - build_windows
+  - stop_windows_vm
+  - start_mac_vm
+  - build_mac
+  - stop_mac_vm
+
+start-linux-vm-job:
+  stage: start_linux_vm
+  script:
+    - bash /root/start_engineering_linux.sh
+  tags:
+    - vm-loader
+  only:
+    - pushes
+  resource_group: global_pipeline_lock
+  variables:
+    GIT_STRATEGY: none
+
+build-job-linux:
+  stage: build_linux
+  variables:
+    GIT_STRATEGY: none
+
+  script:
+    - echo $CI_PROJECT_DIR
+    - cd $CI_PROJECT_DIR
+    - rm -rf misfitz-viewer
+    - git clone https://oauth2:${CI_PROJECT_ACCESS_TOKEN}@lab.misfitzgrid.com/viewer/misfitz-viewer.git
+    - cd misfitz-viewer
+    - git reset --hard $CI_COMMIT_SHA
+    - git submodule update --init --recursive
+    - cd ..
+    - cp /home/build/viewer/build.sh .
+    - pwd
+    - chmod +x build.sh
+    - ./build.sh
+  tags:
+    - build
+    - linux
+  artifacts:
+    when: on_success
+    paths:
+      - misfitz-viewer/build-linux-x86_64/newview/Phoenix-*.xz
+      - misfitz-viewer/build-linux-x86_64/newview/Phoenix-*.bz2
+  resource_group: global_pipeline_lock
+  needs:
+    - start-linux-vm-job
+
+stop-linux-vm-job:
+  stage: stop_linux_vm
+  script:
+    - bash /root/stop_engineering_linux.sh
+  tags:
+    - vm-loader
+  when: always
+  resource_group: global_pipeline_lock
+  variables:
+    GIT_STRATEGY: none
+  needs:
+    - build-job-linux
+
+start-windows-vm-job:
+  stage: start_windows_vm
+  script:
+    - bash /root/start_engineering_windows.sh
+  tags:
+    - vm-loader
+  only:
+    - pushes
+  resource_group: global_pipeline_lock
+  variables:
+    GIT_STRATEGY: none
+  needs:
+    - stop-linux-vm-job
+
+build-job-windows:
+  stage: build_windows
+  variables:
+    AUTOBUILD_VARIABLES_FILE: "/root/src/fs-build-variables/variables"
+    GIT_STRATEGY: none
+  script:
+    - C:\src\launch.bat $CI_COMMIT_SHA
+    - New-Item -Path "$CI_PROJECT_DIR\artifacts" -ItemType Directory -Force
+    - Copy-Item -Path "C:\src\misfitz-viewer\build-vc170-64\newview\Release\Phoenix*.exe" -Destination "$CI_PROJECT_DIR\artifacts\"
+    - Copy-Item -Path "C:\src\misfitz-viewer\build-vc170-64\newview\Release\Phoenix*.xz" -Destination "$CI_PROJECT_DIR\artifacts\"
+  tags:
+    - build
+    - windows
+  artifacts:
+    when: on_success
+    paths:
+      - artifacts\*.xz
+      - artifacts\*.exe
+  resource_group: global_pipeline_lock
+  needs:
+    - start-windows-vm-job
+
+stop-windows-vm-job:
+  stage: stop_windows_vm
+  script:
+    - bash /root/stop_engineering_windows.sh
+  tags:
+    - vm-loader
+  when: always
+  resource_group: global_pipeline_lock
+  variables:
+    GIT_STRATEGY: none
+  needs:
+    - build-job-windows
+
+start-mac-vm-job:
+  stage: start_mac_vm
+  script:
+    - bash /root/start_engineering_mac.sh
+  tags:
+    - vm-loader
+  only:
+    - pushes
+  resource_group: global_pipeline_lock
+  variables:
+    GIT_STRATEGY: none
+  needs:
+    - stop-windows-vm-job
+
+build-job-mac:
+  stage: build_mac
+  script:
+    - echo $CI_PROJECT_DIR
+    - cd $CI_PROJECT_DIR
+    - rm -rf misfitz-viewer
+    - git clone https://oauth2:${CI_PROJECT_ACCESS_TOKEN}@lab.misfitzgrid.com/viewer/misfitz-viewer.git
+    - cd misfitz-viewer
+    - git reset --hard $CI_COMMIT_SHA
+    - git submodule update --init --recursive
+    - cd ..
+    - cp /Users/jordan/Projects/build.sh .
+    - pwd
+    - ./build.sh
+  tags:
+    - build
+    - macos
+  artifacts:
+    when: on_success
+    paths:
+      - misfitz-viewer/build-darwin-x86_64/newview/Phoenix-*.dmg
+  resource_group: global_pipeline_lock
+  variables:
+    GIT_STRATEGY: none
+  needs:
+    - start-mac-vm-job
+
+stop-mac-vm-job:
+  stage: stop_mac_vm
+  script:
+    - bash /root/stop_engineering_mac.sh
+  tags:
+    - vm-loader
+  when: always
+  resource_group: global_pipeline_lock
+  variables:
+    GIT_STRATEGY: none
+  needs:
+    - build-job-mac
