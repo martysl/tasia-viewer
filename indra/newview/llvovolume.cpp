@@ -4714,17 +4714,17 @@ void LLVOVolume::updateReflectionProbePtr()
 {
     if (isReflectionProbe())
     {
-        if (mReflectionProbe.isNull() && !getReflectionProbeIsMirror())
+        if (mReflectionProbe.isNull())
         {
             mReflectionProbe = gPipeline.mReflectionMapManager.registerViewerObject(this);
-        }
-        else if (mReflectionProbe.isNull() && getReflectionProbeIsMirror())
-        {
-            // Geenz: This is a special case - what we want here is a hero probe.
-            // What we want to do here is instantiate a hero probe from the hero probe manager.
+            if (getReflectionProbeIsMirror())
+            {
+                // Geenz: This is a special case - what we want here is a hero probe.
+                // What we want to do here is instantiate a hero probe from the hero probe manager.
 
-            if (!mIsHeroProbe)
-                mIsHeroProbe = gPipeline.mHeroProbeManager.registerViewerObject(this);
+                if (!mIsHeroProbe)
+                    mIsHeroProbe = gPipeline.mHeroProbeManager.registerViewerObject(this);
+            }
         }
     }
     else if (mReflectionProbe.notNull() || getReflectionProbeIsMirror())
