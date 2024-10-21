@@ -155,6 +155,10 @@ bool    LLPanelVolume::postBuild()
         childSetCommitCallback("Probe Volume Type", onCommitProbe, this);
         childSetCommitCallback("Probe Ambiance", onCommitProbe, this);
         childSetCommitCallback("Probe Near Clip", onCommitProbe, this);
+        if (!LLPipeline::RenderMirrors)
+        {
+            childSetCommitCallback("Probe Dynamic", onCommitProbe, this);
+        }
     }
 
     // PHYSICS Parameters
@@ -1501,7 +1505,14 @@ void LLPanelVolume::onCommitProbe(LLUICtrl* ctrl, void* userdata)
 
         is_mirror = update_type.find("Mirror") != std::string::npos;
 
+        if (!LLPipeline::RenderMirrors)
+    {
+        volobjp->setReflectionProbeIsDynamic(self->getChild<LLUICtrl>("Probe Dynamic")->getValue().asBoolean());
+    }
+    else
+    {
         volobjp->setReflectionProbeIsDynamic(update_type.find("Dynamic") != std::string::npos);
+    }
         volobjp->setReflectionProbeIsMirror(is_mirror);
     }
     else
