@@ -50,6 +50,9 @@ const F32 LL_WIND_UNDERWATER_CENTER_FREQ = 20.f;
 const F32 ATTACHED_OBJECT_TIMEOUT = 5.0f;
 const F32 DEFAULT_MIN_DISTANCE = 2.0f;
 
+const F32 VORBIS_CLIP_MAX_TIME = 30.0f;
+const F32 VORBIS_CLIP_MAX_TIME_OPENSIM = 60.0f;
+
 #define LL_MAX_AUDIO_CHANNELS 30
 // <FS:Ansariel> FIRE-4276: Increase number of audio buffers
 //#define LL_MAX_AUDIO_BUFFERS 40   // Some extra for preloading, maybe?
@@ -159,6 +162,7 @@ public:
 
     // Internet stream implementation manipulation
     LLStreamingAudioInterface *getStreamingAudioImpl();
+    void setMaxSoundLength(F32 maxLength);
     void setStreamingAudioImpl(LLStreamingAudioInterface *impl);
     // Internet stream methods - these will call down into the *mStreamingAudioImpl if it exists
     void startInternetStream(const std::string& url);
@@ -207,6 +211,7 @@ public:
     friend class LLPipeline; // For debugging
 public:
     F32 mMaxWindGain; // Hack.  Public to set before fade in?
+    F32 mMaxSoundLength;
 
 protected:
     virtual LLAudioBuffer *createBuffer() = 0;

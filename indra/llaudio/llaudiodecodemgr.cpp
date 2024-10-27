@@ -237,6 +237,13 @@ bool LLVorbisDecodeState::initDecode()
         LL_WARNS("AudioEngine") << "No default bitstream found" << LL_ENDL;
     }
 
+    const U32 LLVORBIS_CLIP_MAX_TIME = static_cast<U32>(gAudiop ? gAudiop->mMaxSoundLength : VORBIS_CLIP_MAX_TIME);
+    const U32 LLVORBIS_CLIP_MAX_SAMPLES_PER_CHANNEL = LLVORBIS_CLIP_MAX_TIME * LLVORBIS_CLIP_SAMPLE_RATE;
+    const U32 LLVORBIS_CLIP_MAX_SAMPLES = LLVORBIS_CLIP_MAX_SAMPLES_PER_CHANNEL * LLVORBIS_CLIP_MAX_CHANNELS;
+    const size_t LLVORBIS_CLIP_REJECT_SAMPLES = LLVORBIS_CLIP_MAX_SAMPLES * 3;
+    const size_t LLVORBIS_CLIP_MAX_SAMPLE_DATA = LLVORBIS_CLIP_MAX_SAMPLES * 2; // 2 = 16-bit
+    const size_t LLVORBIS_CLIP_REJECT_SIZE = LLVORBIS_CLIP_MAX_SAMPLE_DATA * 3;
+
     if( (size_t)sample_count > LLVORBIS_CLIP_REJECT_SAMPLES ||
         (size_t)sample_count <= 0)
     {

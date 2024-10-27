@@ -34,6 +34,7 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llaudioengine.h"
 #include "llviewercontrol.h"
 #include "lldrawpool.h"
 #include "llglheaders.h"
@@ -126,6 +127,7 @@ LLWorld::LLWorld() :
     gGL.getTexUnit(0)->bind(mDefaultWaterTexturep);
     mDefaultWaterTexturep->setAddressMode(LLTexUnit::TAM_CLAMP);
     LLViewerRegion::sVOCacheCullingEnabled = gSavedSettings.getBOOL("RequestFullRegionCache") && gSavedSettings.getBOOL("ObjectCacheEnabled");
+    setDefaultSoundLength();
 }
 
 
@@ -239,6 +241,7 @@ void LLWorld::refreshLimits()
         SYSTEM_FROM = "Second Life";
 // </FS:CR> Aurora Sim
     }
+    setDefaultSoundLength();
     LL_DEBUGS("OS_SETTINGS") << "RegionMaxHeight    " << mRegionMaxHeight << LL_ENDL;
     LL_DEBUGS("OS_SETTINGS") << "RegionMinPrimScale " << mRegionMinPrimScale << LL_ENDL;
     LL_DEBUGS("OS_SETTINGS") << "RegionMaxPrimScale " << mRegionMaxPrimScale << LL_ENDL;
@@ -302,6 +305,34 @@ void LLWorld::setMaxPhysPrimScale(F32 val)
         mMaxPhysPrimScale = mRegionMaxPrimScale;
     else
         mMaxPhysPrimScale = val;
+}
+
+void LLWorld::setDefaultSoundLength()
+{
+    if(LLGridManager::getInstance()->isInOpenSim())
+    {
+        mMaxSoundLength = VORBIS_CLIP_MAX_TIME_OPENSIM;
+    }
+    else
+    {
+        mMaxSoundLength = VORBIS_CLIP_MAX_TIME;
+    }
+
+    if (gAudiop)
+    {
+        gAudiop->setMaxSoundLength(mMaxSoundLength);
+    }
+}
+
+void LLWorld::setMaxSoundLength(F32 val)
+{
+    if(val >= 0.0f)
+        mMaxSoundLength = val;
+
+    if (gAudiop)
+    {
+        gAudiop->setMaxSoundLength(mMaxSoundLength);
+    }
 }
 
 void LLWorld::setMaxDragDistance(F32 val)

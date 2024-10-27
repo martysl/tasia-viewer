@@ -70,6 +70,11 @@ LLStreamingAudioInterface* LLAudioEngine::getStreamingAudioImpl()
     return mStreamingAudioImpl;
 }
 
+void LLAudioEngine::setMaxSoundLength(F32 maxLength)
+{
+    mMaxSoundLength = maxLength;
+}
+
 void LLAudioEngine::setStreamingAudioImpl(LLStreamingAudioInterface *impl)
 {
     // <FS> FMOD fixes
@@ -107,6 +112,8 @@ void LLAudioEngine::setDefaults()
 
     for (U32 i = 0; i < LLAudioEngine::AUDIO_TYPE_COUNT; i++)
         mSecondaryGain[i] = 1.0f;
+
+    mMaxSoundLength = 30.0f;
 }
 
 
@@ -1596,10 +1603,6 @@ bool LLAudioSource::isDone() const
         return true ;
     }
 
-    const F32 MAX_AGE = 60.f;
-    const F32 MAX_UNPLAYED_AGE = 15.f;
-    const F32 MAX_MUTED_AGE = 11.f;
-
     if (isLoop())
     {
         // Looped sources never die on their own.
@@ -1618,11 +1621,14 @@ bool LLAudioSource::isDone() const
     }
 
     F32 elapsed = mAgeTimer.getElapsedTimeF32();
+    auto maxMutedAge = gAudiop ? gAudiop->mMaxSoundLength * 1.1f : 11.f;
+    auto maxUnplayedAge = gAudiop ? gAudiop->mMaxSoundLength * 1.5f : 15.f;
+    auto maxAge = gAudiop && gAudiop->mMaxSoundLength > 60.0f ? gAudiop->mMaxSoundLength : 60.0f;
 
     // This is a single-play source
     if (!mChannelp)
     {
-        if ((elapsed > (mSourceMuted ? MAX_MUTED_AGE : MAX_UNPLAYED_AGE)) || mPlayedOnce)
+        if (elapsed > (mSourceMuted ? maxMutedAge : maxUnplayedAge) || mPlayedOnce)
         {
             // We don't have a channel assigned, and it's been
             // over 15 seconds since we tried to play it.  Don't bother.
@@ -1637,7 +1643,7 @@ bool LLAudioSource::isDone() const
 
     if (mChannelp->isPlaying())
     {
-        if (elapsed > MAX_AGE)
+        if (elapsed > maxAge)
         {
             // Arbitarily cut off non-looped sounds when they're old.
             return true;
@@ -1649,7 +1655,7 @@ bool LLAudioSource::isDone() const
         }
     }
 
-    if ((elapsed > MAX_UNPLAYED_AGE) || mPlayedOnce)
+    if (elapsed > maxUnplayedAge || mPlayedOnce)
     {
         // The sound isn't playing back after 15 seconds or we're already done playing it, kill it.
         return true;

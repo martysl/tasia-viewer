@@ -32,6 +32,7 @@
 #include "llagent.h"
 #include "llagentbenefits.h"
 #include "llagentcamera.h"
+#include "llaudioengine.h"
 #include "llfilepicker.h"
 #include "llfloaterreg.h"
 #include "llbuycurrencyhtml.h"
@@ -497,12 +498,12 @@ const void upload_single_file(const std::vector<std::string>& filenames, LLFileP
         {
             // pre-qualify wavs to make sure the format is acceptable
             std::string error_msg;
-            if (check_for_invalid_wav_formats(filename, error_msg, LLGridManager::instance().isInSecondLife()))
+            if (check_for_invalid_wav_formats(filename, error_msg))
             {
                 LL_INFOS() << error_msg << ": " << filename << LL_ENDL;
                 LLSD args;
                 args["FILE"] = filename;
-                args["MAX_LENGTH"] = llformat("%.0f", (LLGridManager::instance().isInSecondLife() ? LLVORBIS_CLIP_MAX_TIME : LLVORBIS_CLIP_MAX_TIME_OPENSIM));
+                args["MAX_LENGTH"] = llformat("%.0f", (gAudiop) ? gAudiop->mMaxSoundLength : VORBIS_CLIP_MAX_TIME);
                 LLNotificationsUtil::add(error_msg, args);
                 return;
             }

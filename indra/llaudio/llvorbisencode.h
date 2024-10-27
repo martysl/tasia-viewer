@@ -40,25 +40,11 @@ const S32 LLVORBISENC_UNSUPPORTED_WORD_SIZE        = 9; // unsupported word size
 const S32 LLVORBISENC_CLIP_TOO_LONG                = 10; // source file is too long
 const S32 LLVORBISENC_CHUNK_SIZE_ERR               = 11; // chunk size is wrong
 
-const F32 LLVORBIS_CLIP_MAX_TIME                               = 30.0f;
-const F32 LLVORBIS_CLIP_MAX_TIME_OPENSIM                       = 60.0f; // <FS:Ansariel> FIRE-17812: Increase sounds length to 60s on OpenSim
-const U8  LLVORBIS_CLIP_MAX_CHANNELS                   = 2;
-const U32 LLVORBIS_CLIP_SAMPLE_RATE                            = 44100;
-const U32 LLVORBIS_CLIP_MAX_SAMPLES_PER_CHANNEL        = (U32)(LLVORBIS_CLIP_MAX_TIME * LLVORBIS_CLIP_SAMPLE_RATE);
-const U32 LLVORBIS_CLIP_MAX_SAMPLES                            = LLVORBIS_CLIP_MAX_SAMPLES_PER_CHANNEL * LLVORBIS_CLIP_MAX_CHANNELS;
-const size_t LLVORBIS_CLIP_MAX_SAMPLE_DATA             = LLVORBIS_CLIP_MAX_SAMPLES * 2; // 2 = 16-bit
- 
-// Treat anything this long as a bad asset. A little fudge factor at the end:
-// Make that a lot of fudge factor. We're allowing 30 sec for now - 3x legal upload
-const size_t LLVORBIS_CLIP_REJECT_SAMPLES              = LLVORBIS_CLIP_MAX_SAMPLES * 3;
-const size_t LLVORBIS_CLIP_REJECT_SIZE                 = LLVORBIS_CLIP_MAX_SAMPLE_DATA * 3;
+const U8  LLVORBIS_CLIP_MAX_CHANNELS               = 2;
+const U32 LLVORBIS_CLIP_SAMPLE_RATE                = 44100;
 
-// <FS:Ansariel> FIRE-17812: Increase sounds length to 60s on OpenSim
-//S32 check_for_invalid_wav_formats(const std::string& in_fname, std::string& error_msg);
-//S32 encode_vorbis_file(const std::string& in_fname, const std::string& out_fname);
-S32 check_for_invalid_wav_formats(const std::string& in_fname, std::string& error_msg, bool is_in_secondlife);
-S32 encode_vorbis_file(const std::string& in_fname, const std::string& out_fname, bool is_in_secondlife);
-// </FS:Ansariel>
+S32 check_for_invalid_wav_formats(const std::string& in_fname, std::string& error_msg);
+S32 encode_vorbis_file(const std::string& in_fname, const std::string& out_fname);
 
 #endif
 

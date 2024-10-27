@@ -178,6 +178,8 @@ public:
     void setMinPrimXPos(F32 val);
     void setMinPrimYPos(F32 val);
     void setMinPrimZPos(F32 val);
+    void setDefaultSoundLength();
+    void setMaxSoundLength(F32 val);
     void setMaxDragDistance(F32 val);
     void setMaxPhysPrimScale(F32 val);
     void setAllowParcelWindLight(bool val);
@@ -294,6 +296,7 @@ private:
     F32     mMinPrimZPos;
     F32     mMaxDragDistance;
     F32     mMaxPhysPrimScale;
+    F32     mMaxSoundLength;
     bool    mAllowParcelWindLight;
     bool    mEnableTeenMode;
     bool    mEnforceMaxBuild;

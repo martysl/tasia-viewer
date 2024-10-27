@@ -253,6 +253,10 @@ void LFSimFeatureHandler::setSupportedFeatures()
             {
                 regionSettings->setMaxPhysPrimScale((F32)extras["MaxPhysPrimScale"].asReal());
             }
+            if(extras.has("MaxSoundLength"))
+            {
+                regionSettings->setMaxSoundLength(extras["MaxSoundLength"].asReal());
+            }
         }
         else // OpenSim specifics are unsupported reset all to default
         {

@@ -457,10 +457,7 @@ LLSD LLNewFileResourceUploadInfo::exportTempFile()
 
         LL_INFOS() << "Attempting to encode wav as an ogg file" << LL_ENDL;
 
-        // <FS:Ansariel> FIRE-17812: Increase sounds length to 60s on OpenSim
-        //encodeResult = encode_vorbis_file(getFileName(), filename);
-        encodeResult = encode_vorbis_file(getFileName(), filename, LLGridManager::instance().isInSecondLife());
-        // </FS:Ansariel>
+        encodeResult = encode_vorbis_file(getFileName(), filename);
 
         if (LLVORBISENC_NOERR != encodeResult)
         {
