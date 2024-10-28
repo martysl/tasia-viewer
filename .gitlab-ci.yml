@@ -30,7 +30,7 @@ build-job-linux:
     - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR
     - rm -rf misfitz-viewer
-    - git clone https://oauth2:${CI_PROJECT_ACCESS_TOKEN}@lab.misfitzgrid.com/viewer/misfitz-viewer.git
+    - git clone $CI_REPOSITORY_URL
     - cd misfitz-viewer
     - git reset --hard $CI_COMMIT_SHA
     - git submodule update --init --recursive
@@ -87,18 +87,14 @@ build-job-windows:
     AUTOBUILD_VARIABLES_FILE: "/root/src/fs-build-variables/variables"
     GIT_STRATEGY: none
   script:
-    - C:\src\launch.bat $CI_COMMIT_SHA
-    - Remove-Item -Path "$CI_PROJECT_DIR\artifacts\*" -Recurse -Force
-    - New-Item -Path "$CI_PROJECT_DIR\artifacts" -ItemType Directory -Force
-    - Copy-Item -Path "C:\src\misfitz-viewer\build-vc170-64\newview\Release\Phoenix*.exe" -Destination "$CI_PROJECT_DIR\artifacts\"
-    - Copy-Item -Path "C:\src\misfitz-viewer\build-vc170-64\newview\Release\Phoenix*.xz" -Destination "$CI_PROJECT_DIR\artifacts\"
+    - C:\src\launch.bat $CI_PROJECT_DIR $CI_COMMIT_SHA
   tags:
     - build
     - windows
   artifacts:
     when: on_success
     paths:
-      - artifacts\*.exe
+      - misfitz-viewer\build-vc170-64\newview\Release\Phoenix*.exe
   resource_group: global_pipeline_lock
   needs:
     - start-windows-vm-job
@@ -136,7 +132,7 @@ build-job-mac:
     - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR
     - rm -rf misfitz-viewer
-    - git clone https://oauth2:${CI_PROJECT_ACCESS_TOKEN}@lab.misfitzgrid.com/viewer/misfitz-viewer.git
+    - git clone $CI_REPOSITORY_URL
     - cd misfitz-viewer
     - git reset --hard $CI_COMMIT_SHA
     - git submodule update --init --recursive
