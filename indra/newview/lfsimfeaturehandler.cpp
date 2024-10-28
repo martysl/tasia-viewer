@@ -255,7 +255,7 @@ void LFSimFeatureHandler::setSupportedFeatures()
             }
             if(extras.has("MaxSoundLength"))
             {
-                regionSettings->setMaxSoundLength(extras["MaxSoundLength"].asReal());
+                regionSettings->setMaxSoundLength((F32)extras["MaxSoundLength"].asReal());
             }
         }
         else // OpenSim specifics are unsupported reset all to default
