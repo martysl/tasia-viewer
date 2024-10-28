@@ -87,7 +87,6 @@ echo "    add_link_options(-fsanitize=address)" >> $CMAKE_FILE
 echo "endif()" >> $CMAKE_FILE
 
 echo "add_subdirectory(indra)" >> $CMAKE_FILE
-echo "file(WRITE \"\${CMAKE_CURRENT_LIST_DIR}/revision.txt\" \"\$ENV{revision}\n\")" >> $CMAKE_FILE
 
 echo "add_custom_target(copy_ca_bundle ALL" >> $CMAKE_FILE
 echo "        COMMAND \${CMAKE_COMMAND} -E copy" >> $CMAKE_FILE
@@ -98,3 +97,7 @@ echo "        VERBATIM" >> $CMAKE_FILE
 echo ")" >> $CMAKE_FILE
 echo "" >> $CMAKE_FILE
 echo "add_dependencies(copy_ca_bundle copy_l_viewer_manifest)" >> $CMAKE_FILE
+
+REVISION_FILE="../revision.txt"
+rm -f ${REVISION_FILE}
+echo "$revision" >> $REVISION_FILE
