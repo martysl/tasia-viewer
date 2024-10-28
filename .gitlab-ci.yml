@@ -36,9 +36,12 @@ build-job-linux:
     - git submodule update --init --recursive
     - cd ..
     - cp /home/build/viewer/build.sh .
+    - cp /home/build/viewer/upload-symbols.sh .
     - pwd
     - chmod +x build.sh
+    - chmod +x upload-symbols.sh
     - ./build.sh
+    - ./upload-symbols.sh
   tags:
     - build
     - linux
