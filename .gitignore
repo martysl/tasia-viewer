@@ -132,5 +132,4 @@ cmake-build-*
 /CMakeLists.txt
 /indra/cmake_tracking
 revision.txt
-
 checks.json
