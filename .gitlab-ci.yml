@@ -88,6 +88,7 @@ build-job-windows:
     GIT_STRATEGY: none
   script:
     - C:\src\launch.bat $CI_COMMIT_SHA
+    - Remove-Item -Path "$CI_PROJECT_DIR\artifacts\*" -Recurse -Force
     - New-Item -Path "$CI_PROJECT_DIR\artifacts" -ItemType Directory -Force
     - Copy-Item -Path "C:\src\misfitz-viewer\build-vc170-64\newview\Release\Phoenix*.exe" -Destination "$CI_PROJECT_DIR\artifacts\"
     - Copy-Item -Path "C:\src\misfitz-viewer\build-vc170-64\newview\Release\Phoenix*.xz" -Destination "$CI_PROJECT_DIR\artifacts\"
