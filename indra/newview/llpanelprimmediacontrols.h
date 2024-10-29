@@ -103,6 +103,7 @@ private:
     void onClickStop();
     void onClickZoom();
     void onClickSkipBack();
+    void onOpenWebInspector();
     void onClickSkipForward();
     void onClickMediaStop();
     void onCommitURL();

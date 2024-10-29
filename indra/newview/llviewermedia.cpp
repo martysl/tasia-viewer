@@ -2220,6 +2220,14 @@ void LLViewerMediaImpl::clearCache()
     }
 }
 
+void LLViewerMediaImpl::showDevTools()
+{
+    if (mMediaSource)
+    {
+        mMediaSource->showWebInspector(true);
+    }
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::setPageZoomFactor( double factor )

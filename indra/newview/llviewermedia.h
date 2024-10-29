@@ -261,6 +261,7 @@ public:
     std::string getMediaEntryURL() { return mMediaEntryURL; }
     void setHomeURL(const std::string& home_url, const std::string& mime_type = LLStringUtil::null) { mHomeURL = home_url; mHomeMimeType = mime_type;};
     void clearCache();
+    void showDevTools();
     void setPageZoomFactor( double factor );
     double getPageZoomFactor() {return mZoomFactor;}
     std::string getMimeType() { return mMimeType; }

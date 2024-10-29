@@ -123,6 +123,7 @@ LLPanelPrimMediaControls::LLPanelPrimMediaControls() :
     mCommitCallbackRegistrar.add("MediaCtrl.HideVolumeSlider",      boost::bind(&LLPanelPrimMediaControls::hideVolumeSlider, this));
     mCommitCallbackRegistrar.add("MediaCtrl.SkipBack",      boost::bind(&LLPanelPrimMediaControls::onClickSkipBack, this));
     mCommitCallbackRegistrar.add("MediaCtrl.SkipForward",   boost::bind(&LLPanelPrimMediaControls::onClickSkipForward, this));
+    mCommitCallbackRegistrar.add("MediaCtrl.Devtools", boost::bind(&LLPanelPrimMediaControls::onOpenWebInspector, this));
 
     buildFromFile( "panel_prim_media_controls.xml");
     mInactivityTimer.reset();
@@ -1068,6 +1069,20 @@ void LLPanelPrimMediaControls::onClickSkipForward()
         impl->skipForward(mSkipStep);
     }
 }
+
+
+void LLPanelPrimMediaControls::onOpenWebInspector()
+{
+    focusOnTarget();
+
+    LLViewerMediaImpl* impl = getTargetMediaImpl();
+
+    if (impl)
+    {
+        impl->showDevTools();
+    }
+}
+
 
 void LLPanelPrimMediaControls::onClickZoom()
 {
