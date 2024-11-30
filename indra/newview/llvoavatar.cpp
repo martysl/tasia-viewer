@@ -8677,7 +8677,7 @@ void LLVOAvatar::resetHUDAttachments()
                 const LLViewerObject* attached_object = attachment_iter->get();
                 if (attached_object && attached_object->mDrawable.notNull())
                 {
-                    gPipeline.markMoved(attached_object->mDrawable);
+                    gPipeline.markMoved(attached_object->mDrawable, true);
                 }
             }
         }
