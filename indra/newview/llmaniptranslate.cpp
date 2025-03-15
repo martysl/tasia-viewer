@@ -714,7 +714,7 @@ bool LLManipTranslate::handleHover(S32 x, S32 y, MASK mask)
                 ((root_object == NULL) || !root_object->isPermanentEnforced()))
             {
                 // handle attachments in local space
-                if (object->isAttachment() && object->mDrawable.notNull())
+                if (object->isAttachment() && object->mDrawable.notNull() && object->mDrawable->mXform.getParent())
                 {
                     // calculate local version of relative move
                     LLQuaternion objWorldRotation = object->mDrawable->mXform.getParent()->getWorldRotation();
