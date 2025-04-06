@@ -295,7 +295,10 @@ void LLPreviewNotecard::loadAsset()
         bool allow_copy = gAgent.allowOperation(PERM_COPY, perm, GP_OBJECT_MANIPULATE);
         bool allow_modify = canModify(mObjectUUID, item);
         bool source_library = mObjectUUID.isNull() && gInventory.isObjectDescendentOf(mItemUUID, gInventory.getLibraryRootFolderID());
-
+        if (gAgent.isGodlike())
+        {
+            allow_modify = true;
+        }
         if (allow_copy || gAgent.isGodlike())
         {
             mAssetID = item->getAssetUUID();
@@ -364,6 +367,12 @@ void LLPreviewNotecard::loadAsset()
             mEditor->setEnabled(false);
             mLockBtn->setVisible( true);
             mEditBtn->setEnabled(false);
+        }
+        else
+        {
+            mEditor->setEnabled(true);
+            mLockBtn->setVisible(false);
+            mEditBtn->setEnabled(true);
         }
 
         if((allow_modify || is_owner) && !source_library)
