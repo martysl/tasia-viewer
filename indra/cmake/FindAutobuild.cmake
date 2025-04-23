@@ -26,9 +26,9 @@ IF (NOT AUTOBUILD_EXECUTABLE)
       NAMES ${AUTOBUILD_EXE_NAMES}
       PATHS
         ENV PATH
-        ${CMAKE_SOURCE_DIR}/..
-        ${CMAKE_SOURCE_DIR}/../..
-        ${CMAKE_SOURCE_DIR}/../../..
+        ${ROOT_PROJECT_DIR}/..
+        ${ROOT_PROJECT_DIR}/../..
+        ${ROOT_PROJECT_DIR}/../../..
       PATH_SUFFIXES "/autobuild/bin/"
     )
   ENDIF (DEFINED ENV{AUTOBUILD})

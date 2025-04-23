@@ -32,7 +32,7 @@ macro(ll_deploy_sharedlibs_command target_exe)
       "-DSEARCH_DIRS=\"${SEARCH_DIRS}\""
       "-DDST_PATH=\"${OUTPUT_PATH}\""
       "-P"
-      "${CMAKE_SOURCE_DIR}/cmake/DeploySharedLibs.cmake"
+      "${ROOT_PROJECT_DIR}/cmake/DeploySharedLibs.cmake"
       )
   endif(NOT DARWIN)
 

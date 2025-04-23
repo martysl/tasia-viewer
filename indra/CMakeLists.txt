@@ -14,9 +14,12 @@ cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
 set(ROOT_PROJECT_NAME "Firestorm" CACHE STRING
     "The root project/makefile/solution name. Defaults to Firestorm.")
+set(ROOT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set(ROOT_PROJECT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
 project(${ROOT_PROJECT_NAME})
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake"  "${CMAKE_CURRENT_BINARY_DIR}")
+set(CMAKE_MODULE_PATH "${ROOT_PROJECT_DIR}/cmake"  "${CMAKE_CURRENT_BINARY_DIR}")
 
 include(conanbuildinfo OPTIONAL RESULT_VARIABLE USE_CONAN )
 if( USE_CONAN )

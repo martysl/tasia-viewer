@@ -1885,7 +1885,7 @@ if (LINUX)
       message( "Will generate ctags database during compilation" )
       set_source_files_properties( TAGS PROPERTIES GENERATED true)
       add_custom_command ( OUTPUT TAGS COMMAND ctags --extra=+q --fields=+aiS --c++-kinds=+p -e --recurse=yes .
-                           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} )
+                           WORKING_DIRECTORY ${ROOT_PROJECT_DIR} )
       list(APPEND viewer_SOURCE_FILES TAGS )
     endif( ND_CTAGS )
     # </FS:ND>
@@ -2139,8 +2139,8 @@ set(viewer_APPSETTINGS_FILES
     #app_settings/toolbars.xml  FS:AO moved to skins
     app_settings/trees.xml
     app_settings/viewerart.xml
-    ${CMAKE_SOURCE_DIR}/../etc/message.xml
-    ${CMAKE_SOURCE_DIR}/../scripts/messages/message_template.msg
+    ${ROOT_PROJECT_DIR}/../etc/message.xml
+    ${ROOT_PROJECT_DIR}/../scripts/messages/message_template.msg
     packages-info.txt
     featuretable.txt
     featuretable_mac.txt
@@ -2283,8 +2283,8 @@ if (WINDOWS)
 
     set(COPY_INPUT_DEPENDENCIES
       # The following commented dependencies are determined at variably at build time. Can't do this here.
-      ${CMAKE_SOURCE_DIR}/../etc/message.xml
-      ${CMAKE_SOURCE_DIR}/../scripts/messages/message_template.msg
+      ${ROOT_PROJECT_DIR}/../etc/message.xml
+      ${ROOT_PROJECT_DIR}/../scripts/messages/message_template.msg
       #${SHARED_LIB_STAGING_DIR}/openjp2.dll # <FS:Ansariel> Only copy OpenJPEG dll if needed
       ${SHARED_LIB_STAGING_DIR}/llwebrtc.dll
       #${SHARED_LIB_STAGING_DIR}/${LL_INTDIR}/SLVoice.exe
@@ -2415,9 +2415,9 @@ if (WINDOWS)
         message(FATAL_ERROR "LOCAL_DIST_DIR ${LOCAL_DIST_DIR} specified but is not valid target directory to copy viewer distribution into.  Please create the directory and try again")
     endif ()  # IS_DIRECTORY ${LOCAL_DIST_DIR}
 
-    if (EXISTS ${CMAKE_SOURCE_DIR}/copy_win_scripts)
+    if (EXISTS ${ROOT_PROJECT_DIR}/copy_win_scripts)
       add_dependencies(${VIEWER_BINARY_NAME} copy_win_scripts)
-    endif (EXISTS ${CMAKE_SOURCE_DIR}/copy_win_scripts)
+    endif (EXISTS ${ROOT_PROJECT_DIR}/copy_win_scripts)
 
     add_dependencies(${VIEWER_BINARY_NAME} SLPlugin)
 

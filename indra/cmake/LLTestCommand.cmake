@@ -5,7 +5,7 @@ MACRO(LL_TEST_COMMAND OUTVAR LD_LIBRARY_PATH)
   # local. Try a MACRO instead.
   SET(value
     ${PYTHON_EXECUTABLE}
-    "${CMAKE_SOURCE_DIR}/cmake/run_build_test.py")
+    "${ROOT_PROJECT_DIR}/cmake/run_build_test.py")
   FOREACH(dir ${LD_LIBRARY_PATH})
     LIST(APPEND value "-l${dir}")
   ENDFOREACH(dir)

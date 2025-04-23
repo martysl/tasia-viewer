@@ -9,10 +9,10 @@ endif(INSTALL_PROPRIETARY)
 set(PREBUILD_TRACKING_DIR ${AUTOBUILD_INSTALL_DIR}/cmake_tracking)
 # For the library installation process;
 # see cmake/Prebuild.cmake for the counterpart code.
-if ("${CMAKE_SOURCE_DIR}/../autobuild.xml" IS_NEWER_THAN "${PREBUILD_TRACKING_DIR}/sentinel_installed")
+if ("${ROOT_PROJECT_DIR}/../autobuild.xml" IS_NEWER_THAN "${PREBUILD_TRACKING_DIR}/sentinel_installed")
   file(MAKE_DIRECTORY ${PREBUILD_TRACKING_DIR})
   file(WRITE ${PREBUILD_TRACKING_DIR}/sentinel_installed "0")
-endif ("${CMAKE_SOURCE_DIR}/../autobuild.xml" IS_NEWER_THAN "${PREBUILD_TRACKING_DIR}/sentinel_installed")
+endif ("${ROOT_PROJECT_DIR}/../autobuild.xml" IS_NEWER_THAN "${PREBUILD_TRACKING_DIR}/sentinel_installed")
 
 # The use_prebuilt_binary macro handles automated installation of package
 # dependencies using autobuild.  The goal is that 'autobuild install' should
@@ -36,7 +36,7 @@ macro (use_prebuilt_binary _binary)
 
     if(${PREBUILD_TRACKING_DIR}/sentinel_installed IS_NEWER_THAN ${PREBUILD_TRACKING_DIR}/${_binary}_installed OR NOT ${${_binary}_installed} EQUAL 0)
         if(DEBUG_PREBUILT)
-            message(STATUS "cd ${CMAKE_SOURCE_DIR} && ${AUTOBUILD_EXECUTABLE} install
+            message(STATUS "cd ${ROOT_PROJECT_DIR} && ${AUTOBUILD_EXECUTABLE} install
         --install-dir=${AUTOBUILD_INSTALL_DIR}
         ${_binary} ")
         endif(DEBUG_PREBUILT)
@@ -44,7 +44,7 @@ macro (use_prebuilt_binary _binary)
                 install
                 --install-dir=${AUTOBUILD_INSTALL_DIR}
                 ${_binary}
-                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                WORKING_DIRECTORY "${ROOT_PROJECT_DIR}"
                 RESULT_VARIABLE ${_binary}_installed
                 )
         file(WRITE ${PREBUILD_TRACKING_DIR}/${_binary}_installed "${${_binary}_installed}")

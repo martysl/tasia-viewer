@@ -8,8 +8,8 @@
 
 include(CMakeCopyIfDifferent)
 
-set(win_scripts-src ${CMAKE_SOURCE_DIR}/copy_win_scripts)
-set(win_scripts-dst ${CMAKE_BINARY_DIR}/batch)
+set(win_scripts-src ${ROOT_PROJECT_DIR}/copy_win_scripts)
+set(win_scripts-dst ${ROOT_BINARY_DIR}/batch)
 
 set(file-list
     llstart.py 

@@ -25,7 +25,7 @@ include_guard()
 # Relative and absolute paths to subtrees.
 
 if(NOT DEFINED COMMON_CMAKE_DIR)
-    set(COMMON_CMAKE_DIR "${CMAKE_SOURCE_DIR}/cmake")
+    set(COMMON_CMAKE_DIR "${ROOT_PROJECT_DIR}/cmake")
 endif(NOT DEFINED COMMON_CMAKE_DIR)
 
 set(LIBS_CLOSED_PREFIX)
@@ -41,27 +41,27 @@ set(VIEWER_SYMBOL_FILE "" CACHE STRING "Name of tarball into which to place symb
 if(LIBS_CLOSED_DIR)
   file(TO_CMAKE_PATH "${LIBS_CLOSED_DIR}" LIBS_CLOSED_DIR)
 else(LIBS_CLOSED_DIR)
-  set(LIBS_CLOSED_DIR ${CMAKE_SOURCE_DIR}/${LIBS_CLOSED_PREFIX})
+  set(LIBS_CLOSED_DIR ${ROOT_PROJECT_DIR}/${LIBS_CLOSED_PREFIX})
 endif(LIBS_CLOSED_DIR)
 if(LIBS_COMMON_DIR)
   file(TO_CMAKE_PATH "${LIBS_COMMON_DIR}" LIBS_COMMON_DIR)
 else(LIBS_COMMON_DIR)
-  set(LIBS_COMMON_DIR ${CMAKE_SOURCE_DIR}/${LIBS_OPEN_PREFIX})
+  set(LIBS_COMMON_DIR ${ROOT_PROJECT_DIR}/${LIBS_OPEN_PREFIX})
 endif(LIBS_COMMON_DIR)
 set(LIBS_OPEN_DIR ${LIBS_COMMON_DIR})
 
-set(SCRIPTS_DIR ${CMAKE_SOURCE_DIR}/${SCRIPTS_PREFIX})
-set(VIEWER_DIR ${CMAKE_SOURCE_DIR}/${VIEWER_PREFIX})
+set(SCRIPTS_DIR ${ROOT_PROJECT_DIR}/${SCRIPTS_PREFIX})
+set(VIEWER_DIR ${ROOT_PROJECT_DIR}/${VIEWER_PREFIX})
 
-set(AUTOBUILD_INSTALL_DIR ${CMAKE_BINARY_DIR}/packages)
+set(AUTOBUILD_INSTALL_DIR ${ROOT_BINARY_DIR}/packages)
 
 set(LIBS_PREBUILT_DIR ${AUTOBUILD_INSTALL_DIR} CACHE PATH
     "Location of prebuilt libraries.")
 
-if (EXISTS ${CMAKE_SOURCE_DIR}/Server.cmake)
+if (EXISTS ${ROOT_PROJECT_DIR}/Server.cmake)
   # We use this as a marker that you can try to use the proprietary libraries.
   set(INSTALL_PROPRIETARY ON CACHE BOOL "Install proprietary binaries")
-endif (EXISTS ${CMAKE_SOURCE_DIR}/Server.cmake)
+endif (EXISTS ${ROOT_PROJECT_DIR}/Server.cmake)
 set(TEMPLATE_VERIFIER_OPTIONS "" CACHE STRING "Options for scripts/template_verifier.py")
 set(TEMPLATE_VERIFIER_MASTER_URL "https://github.com/secondlife/master-message-template/raw/master/message_template.msg" CACHE STRING "Location of the master message template")
 

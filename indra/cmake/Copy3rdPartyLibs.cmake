@@ -280,15 +280,15 @@ elseif(LINUX)
 
 else(WINDOWS)
     message(STATUS "WARNING: unrecognized platform for staging 3rd party libs, skipping...")
-    set(vivox_lib_dir "${CMAKE_SOURCE_DIR}/newview/vivox-runtime/i686-linux")
+    set(vivox_lib_dir "${ROOT_PROJECT_DIR}/newview/vivox-runtime/i686-linux")
     set(vivox_libs "")
     # *TODO - update this to use LIBS_PREBUILT_DIR and LL_ARCH_DIR variables
     # or ARCH_PREBUILT_DIRS
-    set(debug_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-linux/lib/debug")
+    set(debug_src_dir "${ROOT_PROJECT_DIR}/../libraries/i686-linux/lib/debug")
     set(debug_files "")
     # *TODO - update this to use LIBS_PREBUILT_DIR and LL_ARCH_DIR variables
     # or ARCH_PREBUILT_DIRS
-    set(release_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-linux/lib/release")
+    set(release_src_dir "${ROOT_PROJECT_DIR}/../libraries/i686-linux/lib/release")
     set(release_files "")
 
     set(debug_llkdu_src "")
@@ -339,6 +339,6 @@ if(DARWIN)
     # that end up in any of the above SHARED_LIB_STAGING_DIR_MUMBLE
     # directories.
     add_custom_command( TARGET stage_third_party_libs POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E create_symlink ${SHARED_LIB_STAGING_DIR} ${CMAKE_BINARY_DIR}/sharedlibs/Resources
+            COMMAND ${CMAKE_COMMAND} -E create_symlink ${SHARED_LIB_STAGING_DIR} ${ROOT_BINARY_DIR}/sharedlibs/Resources
             )
 endif()

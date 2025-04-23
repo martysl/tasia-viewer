@@ -158,8 +158,10 @@ if (LINUX)
      )
 
 
-  if ( ${FORTIFY_SOURCE_RES} EQUAL 0 )
-   add_definitions(-D_FORTIFY_SOURCE=2)
+  if(CMAKE_BUILD_TYPE MATCHES "Release|RelWithDebInfo")
+    if(${FORTIFY_SOURCE_RES} EQUAL 0)
+      add_definitions(-D_FORTIFY_SOURCE=2)
+    endif()
   endif()
 
   # gcc 4.3 and above don't like the LL boost and also

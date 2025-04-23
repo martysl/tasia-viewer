@@ -44,6 +44,7 @@ WANTS_TRACY=$FALSE
 WANTS_BUILD=$FALSE
 WANTS_CRASHREPORTING=$FALSE
 WANTS_CACHE=$FALSE
+WANTS_CMAKE=$FALSE
 TARGET_PLATFORM="darwin" # darwin, windows, linux
 BTYPE="Release"
 CHANNEL="" # will be overwritten later with platform-specific values unless manually specified.
@@ -91,6 +92,7 @@ showUsage()
     echo "  --vscode                 : Exports compile commands for VSCode (Linux only)"
     echo "  --compiler-cache         : Try to detect and use compiler cache (needs also --ninja for OSX and Windows)"
     echo "  --vstools                : Use vstool to setup project startup properties (Windows only)"
+    echo "  --cmake                  : Output CMakeLists.txt for IDEs such as CLion"
     echo
     echo "All arguments not in the above list will be passed through to LL's configure/build."
     echo
@@ -100,7 +102,7 @@ getArgs()
 # $* = the options passed in from main
 {
     if [ $# -gt 0 ]; then
-      while getoptex "clean build config version package no-package fmodstudio openal ninja vscode compiler-cache vstools jobs: platform: kdu opensim no-opensim singlegrid: havok avx avx2 tracy crashreporting testbuild: help chan: btype:" "$@" ; do
+      while getoptex "clean build config version package no-package fmodstudio openal ninja vscode compiler-cache vstools jobs: platform: kdu opensim no-opensim singlegrid: havok avx avx2 tracy crashreporting testbuild: help chan: btype: cmake" "$@" ; do
 
           #ensure options are valid
           if [  -z "$OPTOPT"  ] ; then
@@ -144,7 +146,7 @@ getArgs()
           vscode)         WANTS_VSCODE=$TRUE;;
           compiler-cache) WANTS_CACHE=$TRUE;;
           vstools)        USE_VSTOOL=$TRUE;;
-
+          cmake)          WANTS_CMAKE=$TRUE;;
           help)           showUsage && exit 0;;
 
           -*)             showUsage && exit 1;;
@@ -335,6 +337,7 @@ echo -e "          CLEAN: `b2a $WANTS_CLEAN`"                                  |
 echo -e "          BUILD: `b2a $WANTS_BUILD`"                                  | tee -a "$LOG"
 echo -e "         CONFIG: `b2a $WANTS_CONFIG`"                                 | tee -a "$LOG"
 echo -e "          NINJA: `b2a $WANTS_NINJA`"                                  | tee -a "$LOG"
+echo -e "          CMAKE: `b2a $WANTS_CMAKE`"                                  | tee -a $LOG
 echo -e "         VSCODE: `b2a $WANTS_VSCODE`"                                 | tee -a "$LOG"
 echo -e " COMPILER CACHE: `b2a $WANTS_CACHE`"                                  | tee -a "$LOG"
 echo -e "       PASSTHRU: $LL_ARGS_PASSTHRU"                                   | tee -a "$LOG"
@@ -588,9 +591,19 @@ if [ $WANTS_CONFIG -eq $TRUE ] ; then
         fi
     fi
 
-    cmake -G "$TARGET" $CMAKE_ARCH ../indra $CHANNEL ${GITHASH} $FMODSTUDIO $OPENAL $KDU $OPENSIM $SINGLEGRID $HAVOK $AVX_OPTIMIZATION $AVX2_OPTIMIZATION $TRACY_PROFILER $TESTBUILD $PACKAGE \
-          $UNATTENDED -DLL_TESTS:BOOL=OFF -DADDRESS_SIZE:STRING=$AUTOBUILD_ADDRSIZE -DCMAKE_BUILD_TYPE:STRING=$BTYPE $CACHE_OPT \
-          $CRASH_REPORTING -DVIEWER_SYMBOL_FILE:STRING="${VIEWER_SYMBOL_FILE:-}" $LL_ARGS_PASSTHRU ${VSCODE_FLAGS:-} | tee "$LOG"
+    CMAKE_ARGS="$CHANNEL ${GITHASH} $FMODSTUDIO $OPENAL $KDU $OPENSIM $SINGLEGRID $HAVOK $AVX_OPTIMIZATION $AVX2_OPTIMIZATION $TRACY_PROFILER $TESTBUILD $PACKAGE \
+              $UNATTENDED -DLL_TESTS:BOOL=OFF -DADDRESS_SIZE:STRING=$AUTOBUILD_ADDRSIZE -DCMAKE_BUILD_TYPE:STRING=$BTYPE $CACHE_OPT \
+              $CRASH_REPORTING -DVIEWER_SYMBOL_FILE:STRING=\"${VIEWER_SYMBOL_FILE:-}\" $LL_ARGS_PASSTHRU ${VSCODE_FLAGS:-}"
+
+    ORIGINAL_PWD="$(pwd)"
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+    if [ $WANTS_CMAKE -eq $TRUE ]; then
+        cd "$SCRIPT_DIR"
+        . ./output-cmake.sh
+        cd "$ORIGINAL_PWD"
+    fi
+
+    cmake -G "$TARGET" $CMAKE_ARCH ../indra $CMAKE_ARGS | tee "$LOG"
 
     if [ $TARGET_PLATFORM == "windows" -a $USE_VSTOOL -eq $TRUE ] ; then
         echo "Setting startup project via vstool"

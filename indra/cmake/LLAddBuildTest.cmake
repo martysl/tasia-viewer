@@ -26,8 +26,8 @@ MACRO(LL_ADD_PROJECT_UNIT_TESTS project sources)
   #project(UNITTEST_PROJECT_${project})
   # Setup includes, paths, etc
   set(alltest_SOURCE_FILES
-          ${CMAKE_SOURCE_DIR}/test/test.cpp
-          ${CMAKE_SOURCE_DIR}/test/lltut.cpp
+          ${ROOT_PROJECT_DIR}/test/test.cpp
+          ${ROOT_PROJECT_DIR}/test/lltut.cpp
           )
   set(alltest_DEP_TARGETS
           # needed by the test harness itself
@@ -44,7 +44,7 @@ MACRO(LL_ADD_PROJECT_UNIT_TESTS project sources)
   endif()
 
   # Headers, for convenience in targets.
-  set(alltest_HEADER_FILES ${CMAKE_SOURCE_DIR}/test/test.h)
+  set(alltest_HEADER_FILES ${ROOT_PROJECT_DIR}/test/test.h)
 
   # start the source test executable definitions
   set(${project}_TEST_OUTPUT "")
@@ -191,8 +191,8 @@ FUNCTION(LL_ADD_INTEGRATION_TEST
 
   set(source_files
           tests/${testname}_test.cpp
-          ${CMAKE_SOURCE_DIR}/test/test.cpp
-          ${CMAKE_SOURCE_DIR}/test/lltut.cpp
+          ${ROOT_PROJECT_DIR}/test/test.cpp
+          ${ROOT_PROJECT_DIR}/test/lltut.cpp
           ${additional_source_files}
           )
 

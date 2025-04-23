@@ -127,5 +127,10 @@ firestorm.code-workspace
 *-compiled.glsl
 
 .github/release.yaml
+cmake-build-*
+.idea
+/CMakeLists.txt
+/indra/cmake_tracking
+revision.txt
 
 checks.json
