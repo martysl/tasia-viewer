@@ -533,12 +533,12 @@ bool LLVLComposition::generateHeights(const F32 x, const F32 y,
 
             LLVector3 location(i*mScale, j*mScale, 0.f);
 
-            F32 height = mSurfacep->resolveHeightRegion(location) + z_offset;
+            F32 heightp = mSurfacep->resolveHeightRegion(location) + z_offset;
 
             // Step 0: Measure the exact height at this texel
             vec[0] = (F32)(origin_global.mdV[VX]+location.mV[VX])*xyScaleInv;   //  Adjust to non-integer lattice
             vec[1] = (F32)(origin_global.mdV[VY]+location.mV[VY])*xyScaleInv;
-            vec[2] = height*zScaleInv;
+            vec[2] = heightp*zScaleInv;
             //
             //  Choose material value by adding to the exact height a random value
             //
@@ -550,7 +550,7 @@ bool LLVLComposition::generateHeights(const F32 x, const F32 y,
             twiddle += turbulence2(vec, 2)*slope_squared;   //  High frequency component
             twiddle *= noise_magnitude;
 
-            F32 scaled_noisy_height = (height + twiddle - start_height) * F32(ASSET_COUNT) / height_range;
+            F32 scaled_noisy_height = (heightp + twiddle - start_height) * F32(ASSET_COUNT) / height_range;
 
             scaled_noisy_height = llmax(0.f, scaled_noisy_height);
             scaled_noisy_height = llmin(3.f, scaled_noisy_height);

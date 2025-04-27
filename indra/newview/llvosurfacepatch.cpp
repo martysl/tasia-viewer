@@ -910,8 +910,8 @@ bool LLVOSurfacePatch::lineSegmentIntersect(const LLVector4a& start, const LLVec
 
                 if (intersection)
                 {
-                    F32 height = mRegionp->getLandHeightRegion(sample);
-                    if (fabsf(sample.mV[2]-height) < delta.length()*tdelta)
+                    F32 heightp = mRegionp->getLandHeightRegion(sample);
+                    if (fabsf(sample.mV[2]-heightp) < delta.length()*tdelta)
                     {
                         sample.mV[2] = mRegionp->getLandHeightRegion(sample);
                     }
