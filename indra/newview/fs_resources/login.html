@@ -126,7 +126,7 @@ async function get_remote_news()
 			}, delay_time);
 		}));
 
-		delay_time += 5000;
+		delay_time += 3000;
 	});
 
 	await Promise.race(promises);
@@ -146,7 +146,7 @@ async function render_downtime()
 
 async function load_remote_news(news)
 {
-	var timeout_id = setTimeout(() => render_downtime(), 10000);
+	var timeout_id = setTimeout(() => render_downtime(), 15000);
 	var news = await get_remote_news();
 	clearTimeout(timeout_id);
 	if (news)
