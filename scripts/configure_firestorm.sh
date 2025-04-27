@@ -386,11 +386,7 @@ fi
 
 CHANNEL_SIMPLE="$CHANNEL"
 if [ -z $CHANNEL ] ; then
-    if [ $TARGET_PLATFORM == "darwin" ] ; then
-        CHANNEL="private-`hostname -s` "
-    else
-        CHANNEL="private-`hostname`"
-    fi
+    CHANNEL="Releasex64"
 else
     CHANNEL=`echo $CHANNEL | sed -e "s/[^a-zA-Z0-9\-]*//g"` # strip out difficult characters from channel
 fi
@@ -432,18 +428,13 @@ fi
 if [ \( $WANTS_VERSION -eq $TRUE \) -o \( $WANTS_CONFIG -eq $TRUE \) ] ; then
     echo "Versioning..."
     pushd ..
-    if [ -d .git ]
-    then
-        buildVer=`git rev-list --count HEAD`
-    else
-        buildVer=`hg summary | head -1 | cut -d " "  -f 2 | cut -d : -f 1 | grep "[0-9]*"`
-    fi
+    buildVer=78266
     export revision=${buildVer}
 
     majorVer=`cat indra/newview/VIEWER_VERSION.txt | cut -d "." -f 1`
     minorVer=`cat indra/newview/VIEWER_VERSION.txt | cut -d "." -f 2`
     patchVer=`cat indra/newview/VIEWER_VERSION.txt | cut -d "." -f 3`
-    gitHash=`git describe --always --exclude '*'`
+    gitHash=c836a19aa8
     echo "Channel : ${CHANNEL}"
     echo "Version : ${majorVer}.${minorVer}.${patchVer}.${buildVer} [${gitHash}]"
     GITHASH=-DVIEWER_VERSION_GITHASH=\"${gitHash}\"

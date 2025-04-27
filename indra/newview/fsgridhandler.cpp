@@ -150,7 +150,7 @@ void gridDownloadComplete( LLSD const &aData, LLGridManager* mOwner, GridEntry* 
     }
 }
 
-const char* DEFAULT_LOGIN_PAGE = "x-lostorm:///login.html";
+const char* DEFAULT_LOGIN_PAGE = "x-freestorm:///login.html";
 
 const char* SYSTEM_GRID_SLURL_BASE = "secondlife://%s/secondlife/";
 const char* MAIN_GRID_SLURL_BASE = "http://maps.secondlife.com/secondlife/";

@@ -943,7 +943,7 @@ void FSPanelLogin::loadLoginPage()
 
     LLURI real_login_page = LLURI(LLGridManager::getInstance()->getLoginPage());
 
-    // Redirect SL login pages to LOstorm news page instead
+    // Redirect SL login pages to Freestorm news page instead
     std::string host = real_login_page.hostName();
     std::string grid = LLGridManager::getInstance()->getGrid();
     // Catch left-over references to the old login page in user_settings
@@ -952,7 +952,7 @@ void FSPanelLogin::loadLoginPage()
     LLURI login_page = is_sl_login ? LLURI(DEFAULT_LOGIN_PAGE) : real_login_page;
 
     // Translate login page URL to local file
-    if (login_page.scheme() == "x-lostorm")
+    if (login_page.scheme() == "x-freestorm")
     {
         std::string p = login_page.path();
         std::string q = login_page.query();

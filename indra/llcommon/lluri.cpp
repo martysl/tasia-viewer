@@ -362,7 +362,7 @@ void LLURI::parseAuthorityAndPathUsingOpaque()
 {
     if (mScheme == "http" || mScheme == "https" || mScheme == "hop" ||
         mScheme == "ftp" || mScheme == "secondlife" ||
-        mScheme == "file" || mScheme == "x-lostorm" ||
+        mScheme == "file" || mScheme == "x-freestorm" ||
         mScheme == "x-grid-location-info")
     {
         if (mEscapedOpaque.substr(0,2) != "//")

@@ -1,5 +1,5 @@
 /**
- * LOstorm Extras floater
+ * Freestorm Extras floater
  */
 
 #include "llviewerprecompiledheaders.h"

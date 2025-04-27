@@ -627,8 +627,8 @@
         </menu_item_call>
 
         <menu_item_call
-         label="LOStorm Extras"
-         name="LOStorm Extras">
+         label="Freestorm Extras"
+         name="Freestorm Extras">
             <menu_item_call.on_click
              function="Floater.Toggle"
              parameter="lo_extras" />

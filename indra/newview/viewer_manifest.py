@@ -193,8 +193,8 @@ class ViewerManifest(LLManifest,FSViewerManifest):
                 
             # <FS:AO> Include firestorm resources
             with self.prefix(src_dst="fs_resources"):
-                self.path("*.html") # LOstorm
-                self.path("*.webp") # LOstorm
+                self.path("*.html") # Freestorm
+                self.path("*.webp") # Freestorm
                 self.path("*.lsltxt")
                 self.path("*.dae") # <FS:Beq> FIRE-30963 - better physics defaults
                 

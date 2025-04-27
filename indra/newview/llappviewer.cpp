@@ -1518,7 +1518,7 @@ bool LLAppViewer::init()
     {
         LLSD subs;
         subs["[MESSAGE]"] =
-            "New LOStorm features have been enabled. Please review them "
+            "New features have been enabled. Please review them "
             "by using the \"Extra Features\" button on the login screen.";
         LLNotificationsUtil::add("GenericAlertOK", subs);
     }
@@ -4271,7 +4271,7 @@ std::string LLAppViewer::getViewerInfoString(bool unfaked_string) const
     LLSD info(getViewerInfo());
 
     if (!unfaked_string)
-        lolistorm_fake_support_info(info, LLTrans::getString("FSWithHavok"));
+        lolistorm_fake_support_info(info, LLTrans::getString("FSWithOpensim"));
 
     // Render the LLSD from getInfo() as a format_map_t
     LLStringUtil::format_map_t args;

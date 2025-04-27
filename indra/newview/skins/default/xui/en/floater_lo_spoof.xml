@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater
- name="LOstorm ID Spoofing"
- title="LOstorm ID Spoofing"
+ name="Freestorm ID Spoofing"
+ title="Freestorm ID Spoofing"
  single_instance="true"
  width="630"
  height="230">

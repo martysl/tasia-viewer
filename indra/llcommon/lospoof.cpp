@@ -248,28 +248,67 @@ const std::string& lolistorm_get_faux_machineid_str() { return faux_machineid_st
 
 void lolistorm_fake_support_info(LLSD& info, std::string build_type_string)
 {
-    // Firestorm 7.1.13.77930
+    // Firestorm 7.1.13.78266
 #if LL_WINDOWS
-    info["BUILD_DATE"] = "Apr 24 2025";
-    info["BUILD_TIME"] = "18:41:18";
+    // Windows
+    info["BUILD_DATE"] = "Jun 14 2025";
+    info["BUILD_TIME"] = "21:43:49";
     info["COMPILER"] = "MSVC";
     info["COMPILER_VERSION"] = "1943";
     info["J2C_VERSION"] = "KDU v8.5";
     info["AUDIO_DRIVER_VERSION"] = "FMOD Studio 2.03.07";
+
+    std::ostringstream cef_ver_codec;
+    cef_ver_codec << "Dullahan: ";
+    cef_ver_codec << "1.14.0.202408091639";
+    cef_ver_codec << std::endl;
+    cef_ver_codec << "  CEF: ";
+    cef_ver_codec << "118.4.1+g3dd6078+chromium-118.0.5993.54";
+    cef_ver_codec << std::endl;
+    cef_ver_codec << "  Chromium: ";
+    cef_ver_codec << "118.0.5993.54";
+
+    info["LIBCEF_VERSION"] = cef_ver_codec.str();
 #elif LL_DARWIN
-    info["BUILD_DATE"] = "Apr 24 2025";
-    info["BUILD_TIME"] = "18:12:38";
+    // Mac
+    info["BUILD_DATE"] = "Jun 14 2025";
+    info["BUILD_TIME"] = "21:11:11";
     info["COMPILER"] = "Clang";
-    info["COMPILER_VERSION"] = "15.0.0 (clang-1500.3.9.4)";
+    info["COMPILER_VERSION"] = "Apple LLVM 15.0.0 (clang-1500.3.9.4)";
     info["J2C_VERSION"] = "KDU v8.5";
     info["AUDIO_DRIVER_VERSION"] = "FMOD Studio 2.03.07";
+
+    std::ostringstream cef_ver_codec;
+    cef_ver_codec << "Dullahan: ";
+    cef_ver_codec << "1.14.0.202408091638";
+    cef_ver_codec << std::endl;
+    cef_ver_codec << "  CEF: ";
+    cef_ver_codec << "118.4.1+g3dd6078+chromium-118.0.5993.54";
+    cef_ver_codec << std::endl;
+    cef_ver_codec << "  Chromium: ";
+    cef_ver_codec << "118.0.5993.54";
+
+    info["LIBCEF_VERSION"] = cef_ver_codec.str();
 #else
-    info["BUILD_DATE"] = "Apr 24 2025";
-    info["BUILD_TIME"] = "18:11:13";
+    // Linux
+    info["BUILD_DATE"] = "Jun 14 2025";
+    info["BUILD_TIME"] = "21:16:53";
     info["COMPILER"] = "GCC";
     info["COMPILER_VERSION"] = "110400";
     info["J2C_VERSION"] = "KDU v8.5";
     info["AUDIO_DRIVER_VERSION"] = "FMOD Studio 2.03.07";
+
+    std::ostringstream cef_ver_codec;
+    cef_ver_codec << "Dullahan: ";
+    cef_ver_codec << "1.14.0.202408091637";
+    cef_ver_codec << std::endl;
+    cef_ver_codec << "  CEF: ";
+    cef_ver_codec << "118.4.1+g3dd6078+chromium-118.0.5993.54";
+    cef_ver_codec << std::endl;
+    cef_ver_codec << "  Chromium: ";
+    cef_ver_codec << "118.0.5993.54";
+
+    info["LIBCEF_VERSION"] = cef_ver_codec.str();
 #endif
 
     info["SIMD"] = "AVX2";

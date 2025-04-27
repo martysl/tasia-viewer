@@ -2776,7 +2776,7 @@ bool LLViewerFetchedTexture::doLoadedCallbacks()
     if (mLoadedCallbackList.empty())
     {
         gTextureList.mCallbackList.erase(this);
-        mNeedsAux = false; // LOstorm -- Fix exporting of baked textures
+        mNeedsAux = false; // Freestorm -- Fix exporting of baked textures
     }
     else if(!res && mForceCallbackFetch && sCurrentTime - mLastCallBackActiveTime > MAX_IDLE_WAIT_TIME && !mIsFetching)
     {
