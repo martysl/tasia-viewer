@@ -19,9 +19,12 @@ unsigned lolistorm_get_mask();
 
 unsigned lolistorm_new_defaulted_flags();
 
+void lolistorm_block_flag(unsigned flag);
+void lolistorm_unblock_flag(unsigned flag);
 void lolistorm_enable_flag(unsigned flag);
 void lolistorm_disable_flag(unsigned flag);
 bool lolistorm_check_flag(unsigned flag);
+bool lolistorm_check_block(unsigned flag);
 
 void lolistorm_strip_jpeg2000_comment(std::string&);
 

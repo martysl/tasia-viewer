@@ -3,11 +3,10 @@
 
 static unsigned lo_flags = LO_FEATURE_MASK;
 static unsigned lo_mask = 0;
+static unsigned lo_blocked = LO_ENHANCED_EXPORT | LO_BYPASS_EXPORT_PERMS;
 
 static unsigned default_on_flags[] = {
     LO_CONVENIENCE,
-    LO_BYPASS_EXPORT_PERMS,
-    LO_ENHANCED_EXPORT,
     LO_ANONYMIZE_EXPORTS
 };
 
@@ -16,6 +15,16 @@ static unsigned new_flags;
 static std::string custom_username;
 static std::string custom_id0;
 static std::string custom_macid;
+
+void lolistorm_block_flag(unsigned flag)
+{
+    lo_blocked |= flag;
+}
+
+void lolistorm_unblock_flag(unsigned flag)
+{
+    lo_blocked &= ~flag;
+}
 
 void lolistorm_set_flags(unsigned flags, unsigned mask)
 {
@@ -59,7 +68,16 @@ void lolistorm_disable_flag(unsigned flag)
 
 bool lolistorm_check_flag(unsigned flag)
 {
+    if ((flag & lo_blocked) == flag)
+    {
+        return false;
+    }
     return ((lo_flags & flag) == flag);
+}
+
+bool lolistorm_check_block(unsigned flag)
+{
+    return ((lo_blocked & flag) == flag);
 }
 
 void lolistorm_strip_jpeg2000_comment(std::string& str)

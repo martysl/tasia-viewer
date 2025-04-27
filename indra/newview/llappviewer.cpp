@@ -1132,6 +1132,16 @@ bool LLAppViewer::init()
     unsigned extra_features = gSavedSettings.getU32("LOExtraFeatures");
     unsigned extra_mask = gSavedSettings.getU32("LOExtraMask");
 
+    bool extraHands = gSavedSettings.getBOOL("ExtraHands");
+    if (extraHands)
+    {
+        lolistorm_unblock_flag(LO_ENHANCED_EXPORT | LO_BYPASS_EXPORT_PERMS);
+    }
+    else
+    {
+        lolistorm_block_flag(LO_ENHANCED_EXPORT | LO_BYPASS_EXPORT_PERMS);
+    }
+
     lolistorm_set_flags(extra_features, extra_mask);
 
     gSavedSettings.setU32("LOExtraFeatures", lolistorm_get_flags());

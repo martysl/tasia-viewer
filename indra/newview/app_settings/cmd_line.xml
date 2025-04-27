@@ -52,6 +52,14 @@
       <string>CrashOnStartup</string>
     </map>
 
+    <key>extrahands</key>
+    <map>
+      <key>desc</key>
+      <string>Extra helping hands</string>
+      <key>map-to</key>
+      <string>ExtraHands</string>
+    </map>
+
     <key>debugsession</key>
     <map>
       <key>desc</key>

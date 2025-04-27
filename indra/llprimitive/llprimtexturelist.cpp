@@ -174,6 +174,10 @@ LLTextureEntry& LLPrimTextureList::getTextureRef( const U8 index ) const
 {
     if( index >= mEntryList.size() )
     {
+        if (mEntryList.size() > 0)
+        {
+            return *mEntryList[mEntryList.size() - 1];
+        }
         LL_ERRS() << "Texture index out of bounds, index: " << (U32)index << " mEntryList.size(): " << mEntryList.size() << LL_ENDL;
     }
 

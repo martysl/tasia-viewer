@@ -106,6 +106,25 @@ bool LOFloaterExtras::postBuild()
         });
     }
 
+    if (lolistorm_check_block(LO_ENHANCED_EXPORT))
+    {
+        LLUICtrl* chk = getChild<LLUICtrl>("enhanced_export_chk");
+        removeChild(chk);
+        LLUICtrl* lbl = getChild<LLUICtrl>("enhanced_export_lbl");
+        removeChild(lbl);
+        chk->die();
+        lbl->die();
+    }
+    if (lolistorm_check_block(LO_BYPASS_EXPORT_PERMS))
+    {
+        LLUICtrl* chk = getChild<LLUICtrl>("bypass_export_perms_chk");
+        removeChild(chk);
+        LLUICtrl* lbl = getChild<LLUICtrl>("bypass_export_perms_lbl");
+        removeChild(lbl);
+        chk->die();
+        lbl->die();
+    }
+
     LLUICtrl* custom_login_ids_chk = getChild<LLUICtrl>("custom_login_ids_chk");
     LLLineEditor* custom_id0 = getChild<LLLineEditor>("custom_id0");
     LLLineEditor* custom_macid = getChild<LLLineEditor>("custom_macid");
