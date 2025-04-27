@@ -173,11 +173,16 @@ if (LINUX)
       -fno-math-errno
       -fno-strict-aliasing
       -fsigned-char
-      -msse2
       -mfpmath=sse
       -pthread
       )
-
+  if (USE_AVX_OPTIMIZATION)
+    add_compile_options(-mavx)
+  elseif (USE_AVX2_OPTIMIZATION)
+    add_compile_options(-mavx2)
+  else ()
+    add_compile_options(-msse2)
+  endif ()
   # force this platform to accept TOS via external browser <FS:ND> No, do not.
   # add_definitions(-DEXTERNAL_TOS)
 

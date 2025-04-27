@@ -2230,6 +2230,14 @@ add_executable(${VIEWER_BINARY_NAME}
     ${viewer_SOURCE_FILES}
     )
 
+if (pch_output)
+	add_custom_target(pch_target
+		DEPENDS ${pch_output}
+	)
+	add_dependencies(${VIEWER_BINARY_NAME} pch_target)
+	target_compile_options(${VIEWER_BINARY_NAME} PRIVATE ${pch_flag})
+endif()
+
 # add package files
 file(GLOB EVENT_HOST_SCRIPT_GLOB_LIST
      ${CMAKE_CURRENT_SOURCE_DIR}/../viewer_components/*.py)
@@ -2486,6 +2494,9 @@ else (WINDOWS)
         PROPERTIES
         LINK_FLAGS_RELEASE "${LINK_FLAGS_RELEASE} -Wl,--Map=${VIEWER_BINARY_NAME}.MAP"
         )
+    if (USE_PRECOMPILED_HEADERS)
+        target_precompile_headers( ${VIEWER_BINARY_NAME} PRIVATE llviewerprecompiledheaders.h )
+    endif ()
 endif (WINDOWS)
 
 # *NOTE: - this list is very sensitive to ordering, test carefully on all
