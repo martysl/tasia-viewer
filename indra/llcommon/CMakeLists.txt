@@ -247,6 +247,7 @@ set(llcommon_HEADER_FILES
     hbxxh.h
     lospoof.h
     loextras.h
+    loversion.h
     lockstatic.h
     stdtypes.h
     stringize.h

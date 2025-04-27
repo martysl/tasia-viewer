@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Freestorm 17.0</title>
+<style>
+body
+{
+	padding: 0;
+	margin: 0;
+
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	background: #a0a0a0 center center fixed;
+	background-repeat: no-repeat;
+	background-size: cover;
+
+	font-family: sans-serif;
+	font-size: 10pt;
+}
+
+#contentbox
+{
+	overflow: auto;
+
+	position: absolute;
+	top: 1em;
+	left: 1em;
+
+	width: 32em;
+
+	padding: 0.4em 1.5ex;
+	border: solid #ff67ac;
+	border-width: 3px 7px;
+	border-radius: 8px 0px;
+
+	background-color: rgba(204, 224, 255, 0.8);
+	backdrop-filter: blur(4px);
+	opacity: 1.0;
+	color: #202020;
+	text-shadow: #ffffff 0 0 4px;
+	font-size: 1.15vw;
+}
+
+#contentbox.flipped
+{
+	left: auto;
+	right: 1em;
+}
+
+#overlay
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(192, 192, 192, 0.25);
+}
+
+#overlayinner
+{
+	margin: 5vw auto;
+	width: 50vw;
+	background-color: white;
+	border: solid #CF3F3F 0.5vw;
+
+	font-size: 1.6vw;
+	text-align: center;
+	line-height: 2.2vw;
+}
+
+#overlayinner h2
+{
+	color: #CF3F3F;
+}
+</style>
+<noscript>
+<style>
+body { background-image:url('perv13.webp'); }
+</style>
+</noscript>
+<script>
+var news_urls = [
+	"https://cdn.lop-sync.com/lostorm/news_v16.html",
+	"https://git.allthefallen.moe/lostorm/lostorm/-/raw/zz-news/news_v16.html",
+	"https://lostorm.neocities.org/login_news_v16.txt",
+	"https://gitlab.com/lostorm/lostorm/-/raw/zz-news/news_v16.html"
+];
+
+async function get_remote_news()
+{
+	var news = null;
+	var delay_time = 0;
+
+	var promises = [];
+
+	news_urls.forEach((url) => {
+		promises.push(new Promise((resolve) => {
+			setTimeout(() => {
+				if (news !== null)
+					return;
+				console.log("Fetching news from", url);
+				fetch(url).then(async (data) => {
+					if (data.ok)
+					{
+						var body = await data.text();
+
+						if (news !== null)
+							return;
+
+						if (body.search("<!--LOstorm-->") < 0)
+						{
+							console.log("Unrecognized data from", url);
+							console.log(body.substr(0, 500));
+							return;
+						}
+
+						console.log("Loaded news from", url);
+						news = body;
+						resolve();
+					}
+				});
+			}, delay_time);
+		}));
+
+		delay_time += 5000;
+	});
+
+	await Promise.race(promises);
+	return news;
+}
+
+async function render_remote_news(news)
+{
+	document.getElementById("news-anchor").innerHTML = news;
+}
+
+async function render_downtime()
+{
+	document.getElementById("news-anchor").innerHTML
+		= "<p style=\"color:#ff3030\">Latest news is not loading.<br>Please visit <a href=\"https://lostorm.neocities.org/\" target=\"_blank\">lostorm.neocities.org</a> for updates/information.</p>";
+}
+
+async function load_remote_news(news)
+{
+	var timeout_id = setTimeout(() => render_downtime(), 10000);
+	var news = await get_remote_news();
+	clearTimeout(timeout_id);
+	if (news)
+		render_remote_news(news);
+	else
+		render_downtime();
+}
+
+function has_ext(s)
+{
+	var exts = [".jpg", ".jpeg", ".png", ".gif"];
+	for (i = 0; i < exts.length; ++i)
+	{
+		if (s.substr(-exts[i].length) == exts[i])
+			return true;
+	}
+	return false;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+	var params = new URLSearchParams(window.location.search.substring(1));
+	var bg_image = params.get('bg_image');
+
+	//var r = Math.max(1, Math.min(6, Math.floor(new Date() / 25200000) % 6 + 1));
+	//var r = Math.max(7, Math.min(10, Math.floor(new Date() / 25200000) % 4 + 7));
+	var r = 13;
+
+	if (!bg_image)
+	{
+		bg_image = 'perv' + r + '.webp';
+		if (r == 10 || r == 13)
+		{
+			var contentbox = document.getElementById('contentbox')
+			contentbox.className = 'flipped';
+		}
+	}
+	else
+	{
+		//var contentbox = document.getElementById('contentbox')
+		//contentbox.className = 'flipped';
+		document.getElementById('artist-credit').style.display = 'none';
+	}
+
+	// URL too long :u
+	if (bg_image.length > 1000)
+	{
+		var lolibooru_matches = bg_image.match(/https?:\/\/lolibooru\.moe\/image\/([0-9a-f]{32})\//);
+
+		if (lolibooru_matches && !has_ext(bg_image))
+		{
+			url1 = "https://lolibooru.moe/image/" + lolibooru_matches[1] + ".jpg";
+			url2 = "https://lolibooru.moe/image/" + lolibooru_matches[1] + ".png";
+
+			document.body.style.backgroundImage='url(\'' + url1.replace(/'/, '\\\'') + '\'), url(\'' + url2.replace(/'/, '\\\'') + '\')';
+		}
+		else
+		{
+			document.body.style.backgroundImage='url(\'' + bg_image.replace(/'/, '\\\'') + '\')';
+		}
+	}
+	else
+	{
+		document.body.style.backgroundImage='url(\'' + bg_image.replace(/'/, '\\\'') + '\')';
+	}
+
+	load_remote_news();
+});
+</script>
+<div id="contentbox" class="flipped">
+<div id="news-anchor">
+<p><b>Latest News:</b><br>
+<p>Loading...
+<noscript>
+<p>(Javascript must be enabled)
+</noscript>
+</div>
+<hr style="color:#ff67ac;border-color:#ff67ac;background-color:#ff67ac;clear:both;border:none;height:1px;">
+<p style="text-align:center;color:#f0418c;margin:0;padding:4px 0;">You are running <b id="version-anchor">Freestorm 17.0</b> based on Firestorm 7.1.13
+</div>
+<div style="position:absolute;bottom:2px;right:2px;font-size:12px;padding:2px;color:white;background-color:rgba(0, 0, 0, 0.8)" id="artist-credit">
+<a href="https://www.pixiv.net/en/users/16384242" style="color:#f0418c" target="_blank">Artist: perv</a>
+</div>
+<div id="overlay" onclick="this.style.display = 'none'" style="display:none">
+<div id="overlayinner" onclick="return false">
+<h2>Warning!</h2>
+<div id="warning"></div>
+</div>
+</div>
+<script>
+var w = document.getElementById("warning");
+if (URLSearchParams != 'undefined')
+{
+	var params = new URLSearchParams(window.location.search.substring(1));
+	var channel = params.get('channel');
+	var grid = params.get('grid')
+	var os = params.get('os')
+	var nowarn = params.get('nowarn');
+	var version = params.get('version');
+	var loversion = params.get('loversion');
+
+	var bad_version = false;
+	var bad_channel = false;
+
+	var linux = (os != null && os.match(/Linux/));
+
+	if (loversion)
+	{
+		var vera = document.getElementById('version-anchor');
+		vera.innerText = "Freestorm 17." + loversion;
+	}
+
+	if (channel != null && grid != null && os != null && version != null)
+	{
+		// if (grid == 'agni')
+		{
+			if (version != "7.1.13 (77930)")
+				bad_version = true;
+
+			if (channel != "Firestorm-Betax64")
+				bad_channel = true;
+		}
+	}
+
+	if (!nowarn)
+	{
+		if (bad_version)
+			w.innerHTML += "<p>Viewer is configured with the wrong version number.<br>Logging in to Second Life may put your account at risk.";
+
+		if (bad_channel)
+			w.innerHTML += "<p>Viewer is configured with the wrong channel name.<br>Logging in to Second Life may put your account at risk.";
+
+		if (bad_version || bad_channel)
+		{
+			document.getElementById("overlay").style.display = 'block';
+		}
+	}
+}
+</script>

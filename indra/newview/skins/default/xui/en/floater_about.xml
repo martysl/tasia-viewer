@@ -44,14 +44,14 @@ https://www.firestormviewer.org
         bg_readonly_color="Transparent"
         left="5"
         max_length="65536"
-        name="support_editor"
+        name="fake_support_editor"
         top_pad="5"
         width="489"
         word_wrap="true" />
       <button
         follows="left|top" 
-        label="Copy to Clipboard"
-        name="copy_btn"
+        label="Copy Fake Info to Clipboard"
+        name="fake_copy_btn"
         left="5"
         top_pad="5"
         height="25"

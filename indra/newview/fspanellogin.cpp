@@ -74,6 +74,7 @@
 
 #include "lospoof.h"
 #include "loextras.h"
+#include "loversion.h"
 
 #include "fsdata.h"
 
@@ -1000,7 +1001,7 @@ void FSPanelLogin::loadLoginPage()
 
     if (login_page.scheme() == "file")
     {
-        params["loversion"] = 0;
+        params["loversion"] = LO_VERSION_MINOR;
 
         std::string bg_image = (gSavedSettings.getString("LOCustomLoginBackground"));
 

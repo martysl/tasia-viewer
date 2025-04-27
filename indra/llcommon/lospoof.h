@@ -5,6 +5,8 @@
 
 #include <string>
 
+class LLSD;
+
 // Identifying information in Second Life:
 //
 // NodeID / mac_address (viewer stats):
@@ -63,5 +65,7 @@ const std::string& lolistorm_get_faux_machineid_str();
 // The original functions are modified to return the spoofed IDs instead
 S32 LLUUID_getNodeID_real(unsigned char* node_id);
 S32 LLMachineID_getUniqueID_real(unsigned char* unique_id, size_t len);
+
+void lolistorm_fake_support_info(LLSD& info);
 
 #endif // LOLISTORM_LOSPOOF_H

@@ -299,6 +299,7 @@ using namespace LL;
 
 #include "lospoof.h"
 #include "loextras.h"
+#include "loversion.h"
 
 #if LL_LINUX && LL_GTK
 #include "glib.h"
@@ -4252,11 +4253,15 @@ LLSD LLAppViewer::getViewerInfo() const
     return info;
 }
 
-std::string LLAppViewer::getViewerInfoString(bool default_string) const
+std::string LLAppViewer::getViewerInfoString(bool unfaked_string) const
 {
+    bool default_string = false;
     std::ostringstream support;
 
     LLSD info(getViewerInfo());
+
+    if (!unfaked_string)
+        lolistorm_fake_support_info(info);
 
     // Render the LLSD from getInfo() as a format_map_t
     LLStringUtil::format_map_t args;
@@ -4291,6 +4296,8 @@ std::string LLAppViewer::getViewerInfoString(bool default_string) const
     }
 
     // Now build the various pieces
+    if (unfaked_string)
+        support << "Freestorm " << LO_VERSION_MAJOR << '.' << LO_VERSION_MINOR << '\n';
     support << LLTrans::getString("AboutHeader", args, default_string);
     //if (info.has("BUILD_CONFIG"))
     //{

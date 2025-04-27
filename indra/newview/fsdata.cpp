@@ -61,6 +61,8 @@
 #include "rlvhelper.h"
 // [/RLVa:KB]
 
+#include "lospoof.h"
+
 const std::string LEGACY_CLIENT_LIST_URL = "http://phoenixviewer.com/app/client_tags/client_list_v2.xml";
 const LLUUID MAGIC_ID("3c115e51-04f4-523c-9fa6-98aff1034730");
 
@@ -1012,6 +1014,8 @@ void FSData::callbackReqInfo(const LLSD &notification, const LLSD &response)
 LLSD FSData::getSystemInfo()
 {
     LLSD info = LLAppViewer::instance()->getViewerInfo();
+
+    lolistorm_fake_support_info(info);
 
     std::string sysinfo1("\n");
     sysinfo1 += llformat("%s %s (%d) %s %s (%s %dbit / %s) %s\n\n", LLAppViewer::instance()->getSecondLifeTitle().c_str(),

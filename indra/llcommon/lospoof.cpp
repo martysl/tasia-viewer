@@ -3,6 +3,7 @@
 #include "llformat.h"
 #include "llmd5.h"
 #include "llrand.h"
+#include "llsd.h"
 #include "llstring.h"
 
 #include "lospoof.h"
@@ -244,3 +245,34 @@ void lolistorm_get_faux_machineid(unsigned char out[6])
 }
 
 const std::string& lolistorm_get_faux_machineid_str() { return faux_machineid_str; }
+
+void lolistorm_fake_support_info(LLSD& info)
+{
+    // Firestorm 7.1.13.77930
+#if LL_WINDOWS
+    info["BUILD_DATE"] = "Apr 24 2025";
+    info["BUILD_TIME"] = "18:41:18";
+    info["COMPILER"] = "MSVC";
+    info["COMPILER_VERSION"] = "1943";
+    info["J2C_VERSION"] = "KDU v8.5";
+    info["AUDIO_DRIVER_VERSION"] = "FMOD Studio 2.03.07";
+#elif LL_DARWIN
+    info["BUILD_DATE"] = "Apr 24 2025";
+    info["BUILD_TIME"] = "18:12:38";
+    info["COMPILER"] = "Clang";
+    info["COMPILER_VERSION"] = "15.0.0 (clang-1500.3.9.4)";
+    info["J2C_VERSION"] = "KDU v8.5";
+    info["AUDIO_DRIVER_VERSION"] = "FMOD Studio 2.03.07";
+#else
+    info["BUILD_DATE"] = "Apr 24 2025";
+    info["BUILD_TIME"] = "18:11:13";
+    info["COMPILER"] = "GCC";
+    info["COMPILER_VERSION"] = "110400";
+    info["J2C_VERSION"] = "KDU v8.5";
+    info["AUDIO_DRIVER_VERSION"] = "FMOD Studio 2.03.07";
+#endif
+
+    info["SIMD"] = "AVX2";
+    info["BUILD_TYPE"] = build_type_string;
+}
+

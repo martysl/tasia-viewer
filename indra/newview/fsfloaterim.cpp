@@ -436,7 +436,7 @@ void FSFloaterIM::sendMsgFromInputEditor(EChatType type)
                     //OpenSim check
                     std::string str_opensim_tag;
 #ifdef OPENSIM
-                    str_opensim_tag = " os";
+                    //str_opensim_tag = " os";
 #endif
 
                     //Operating System check
