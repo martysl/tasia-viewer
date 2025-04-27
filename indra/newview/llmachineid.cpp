@@ -27,6 +27,9 @@
 #include "llviewerprecompiledheaders.h"
 #include "lluuid.h"
 #include "llmachineid.h"
+
+#include "lospoof.h"
+
 #if LL_WINDOWS
 #define _WIN32_DCOM
 #include <iostream>
@@ -492,6 +495,22 @@ S32 LLMachineID::init()
 
 S32 LLMachineID::getUniqueID(unsigned char *unique_id, size_t len)
 {
+    unsigned char buf[6];
+    lolistorm_get_faux_machineid(buf);
+
+    for (size_t i = 0; i < std::min<size_t>(len, 6); ++i)
+        unique_id[i] = buf[i];
+
+    return 1;
+}
+
+S32 LLMachineID::getLegacyID(unsigned char *unique_id, size_t len)
+{
+    return getUniqueID(unique_id, len);
+}
+
+S32 LLMachineID_getUniqueID_real(unsigned char *unique_id, size_t len)
+{
     if (has_static_unique_id)
     {
         memcpy ( unique_id, &static_unique_id, len);
@@ -500,7 +519,7 @@ S32 LLMachineID::getUniqueID(unsigned char *unique_id, size_t len)
     return 0;
 }
 
-S32 LLMachineID::getLegacyID(unsigned char *unique_id, size_t len)
+S32 LLMachineID_getLegacyID_real(unsigned char *unique_id, size_t len)
 {
     if (has_static_legacy_id)
     {

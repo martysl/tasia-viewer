@@ -54,7 +54,13 @@
         width="335"
         min_width="335"
         height="80">
-      <text
+      <button
+        label="Check IDs"
+        label_color="Yellow"
+        name="spoof_btn"
+        left="100"
+        width="100" />
+         <text
           follows="left|bottom"
           font="SansSerif"
           font.style="BOLD"
@@ -251,8 +257,9 @@
           height="23"
           label="Log In"
           layout="topleft"
-          name="connect_btn"
-          width="90" />
+          name="safe_connect_btn"
+          width="90"
+          enabled="false" />
       <check_box
           control_name="FSRememberUsername"
           follows="left|bottom"

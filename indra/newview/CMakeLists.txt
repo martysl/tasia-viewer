@@ -857,6 +857,7 @@ set(viewer_SOURCE_FILES
     llworldmapview.cpp
     llxmlrpclistener.cpp
     llxmlrpctransaction.cpp
+    lofloaterspoof.cpp
     noise.cpp
     particleeditor.cpp
     permissionstracker.cpp

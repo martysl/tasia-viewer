@@ -69,6 +69,10 @@
 #include "llglheaders.h"
 #include "llpanelloginlistener.h"
 
+#include "lofloaterspoof.h"
+
+#include "lospoof.h"
+
 #include "fsdata.h"
 
 #if LL_WINDOWS
@@ -231,7 +235,8 @@ FSPanelLogin::FSPanelLogin(const LLRect &rect,
     LLComboBox* server_choice_combo = getChild<LLComboBox>("server_combo");
     server_choice_combo->setCommitCallback(boost::bind(&FSPanelLogin::onSelectServer, this));
 #ifdef OPENSIM
-    server_choice_combo->setToolTip(getString("ServerComboTooltip"));
+    if (hasString("ServerComboTooltip"))
+        server_choice_combo->setToolTip(getString("ServerComboTooltip"));
 #endif
 #ifdef SINGLEGRID
     server_choice_combo->setEnabled(false);
@@ -296,10 +301,10 @@ FSPanelLogin::FSPanelLogin(const LLRect &rect,
     }
 
     childSetAction("remove_user_btn", onClickRemove, this);
-    childSetAction("connect_btn", onClickConnect, this);
+    childSetAction("safe_connect_btn", onClickConnect, this);
 
-    getChild<LLPanel>("login")->setDefaultBtn(findChild<LLButton>("connect_btn"));
-    getChild<LLPanel>("start_location_panel")->setDefaultBtn(findChild<LLButton>("connect_btn"));
+    getChild<LLPanel>("login")->setDefaultBtn(findChild<LLButton>("safe_connect_btn"));
+    getChild<LLPanel>("start_location_panel")->setDefaultBtn(findChild<LLButton>("safe_connect_btn"));
 
     std::string channel = LLVersionInfo::getInstance()->getChannel();
     std::string version = llformat("%s (%d)",
@@ -994,6 +999,15 @@ void FSPanelLogin::onClickConnect(void *)
         else
         {
             sCredentialSet = false;
+
+            // Fail-safe in case it hasn't been updated yet
+            lolistorm_set_username(canonicalize_username(username));
+
+            auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
+
+            if (floater_spoof)
+                floater_spoof->update_labels();
+
             LLPointer<LLCredential> cred;
             bool remember;
             getFields(cred, remember);
@@ -1162,9 +1176,12 @@ void FSPanelLogin::updateServer()
 
 void FSPanelLogin::updateLoginButtons()
 {
-    LLButton* login_btn = getChild<LLButton>("connect_btn");
+    LLButton* login_btn = getChild<LLButton>("safe_connect_btn");
 
     login_btn->setEnabled(mUsernameLength != 0 && mPasswordLength != 0);
+
+    LLButton* unsafe_login_btn = getChild<LLButton>("connect_btn");
+    unsafe_login_btn->setEnabled(false);
 }
 
 void FSPanelLogin::onSelectServer()
@@ -1252,9 +1269,9 @@ std::string canonicalize_username(const std::string& name)
     std::string cname = name;
 
     size_t arobase = cname.find("@");
-    if (arobase > 0)
+    if (arobase != std::string::npos)
     {
-        cname = cname.substr(0, arobase - 1);
+        cname = cname.substr(0, arobase);
     }
 
     // determine if the username is a first/last form or not.
@@ -1389,6 +1406,13 @@ void FSPanelLogin::onRemoveCallback(const LLSD& notification, const LLSD& respon
             {
                 sInstance->getChild<LLUICtrl>("username_combo")->clear();
                 sInstance->getChild<LLUICtrl>("password_edit")->clear();
+
+                lolistorm_set_username("");
+
+                auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
+
+                if (floater_spoof)
+                    floater_spoof->update_labels();
             }
         }
     }
@@ -1437,7 +1461,7 @@ void FSPanelLogin::onSelectUser()
         }
         sInstance->addFavoritesToStartLocation();
         sInstance->mPreviousUsername = combo->getValue().asString();
-        sInstance->mUsernameLength = combo->getValue().asString().length();
+        sInstance->mUsernameLength = username.length();
         sInstance->updateLoginButtons();
         sInstance->getChild<LLButton>("remove_user_btn")->setEnabled(false);
         return;

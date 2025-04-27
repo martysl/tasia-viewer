@@ -141,7 +141,7 @@ public:
     static U32 getObjectCacheVersion() ;
     static U32 getDiskCacheVersion() ;
 
-    const std::string& getSerialNumber() { return mSerialNumber; }
+    const std::string& getSerialNumber();
 
     bool getPurgeCache() const { return mPurgeCache; }
 

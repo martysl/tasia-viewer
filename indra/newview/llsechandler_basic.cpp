@@ -51,6 +51,7 @@
 #include <time.h>
 #include "llmachineid.h"
 
+#include "lospoof.h"
 
 static const std::string DEFAULT_CREDENTIAL_STORAGE = "credential";
 
@@ -1393,14 +1394,14 @@ void LLSecAPIBasicHandler::_readProtectedData()
     try
     {
         // try default id
-        LLMachineID::getUniqueID(unique_id, sizeof(unique_id));
+        LLMachineID_getUniqueID_real(unique_id, sizeof(unique_id));
         _readProtectedData(unique_id, sizeof(unique_id));
     }
     catch(LLProtectedDataException&)
     {
         // try with legacy id, it will return false if it is identical to getUniqueID
         // or if it is not assigned/not in use
-        if (LLMachineID::getLegacyID(unique_id, sizeof(unique_id)))
+        if (LLMachineID_getLegacyID_real(unique_id, sizeof(unique_id)))
         {
             _readProtectedData(unique_id, sizeof(unique_id));
         }
@@ -1446,7 +1447,7 @@ void LLSecAPIBasicHandler::_writeProtectedData()
 
         EVP_EncryptInit(ctx, EVP_rc4(), salt, NULL);
         unsigned char unique_id[MAC_ADDRESS_BYTES];
-        LLMachineID::getUniqueID(unique_id, sizeof(unique_id));
+        LLMachineID_getUniqueID_real(unique_id, sizeof(unique_id));
         LLXORCipher cipher(unique_id, sizeof(unique_id));
         cipher.encrypt(salt, STORE_SALT_SIZE);
         protected_data_stream.write((const char *)salt, STORE_SALT_SIZE);
@@ -1887,7 +1888,7 @@ std::string LLSecAPIBasicHandler::_legacyLoadPassword()
 
     // Decipher with MAC address
     unsigned char unique_id[MAC_ADDRESS_BYTES];
-    LLMachineID::getUniqueID(unique_id, sizeof(unique_id));
+    LLMachineID_getUniqueID_real(unique_id, sizeof(unique_id));
     LLXORCipher cipher(unique_id, sizeof(unique_id));
     cipher.decrypt(&buffer[0], static_cast<U32>(buffer.size()));
 

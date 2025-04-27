@@ -46,6 +46,9 @@
 #include "hbxxh.h"
 
 #include "llprofiler.h"
+
+#include "lospoof.h"
+
 const LLUUID LLUUID::null;
 const LLTransactionID LLTransactionID::tnull;
 
@@ -459,6 +462,13 @@ static void get_random_bytes(void* buf, int nbytes)
     return;
 }
 
+// static
+S32 LLUUID::getNodeID(unsigned char* node_id)
+{
+    lolistorm_get_faux_nodeid(node_id);
+    return 1;
+}
+
 #if LL_WINDOWS
 
 typedef struct _ASTAT_
@@ -467,8 +477,7 @@ typedef struct _ASTAT_
     NAME_BUFFER    NameBuff[30];
 }ASTAT, * PASTAT;
 
-// static
-S32 LLUUID::getNodeID(unsigned char* node_id)
+S32 LLUUID_getNodeID_real(unsigned char* node_id)
 {
     ASTAT Adapter;
     NCB Ncb;
@@ -525,8 +534,7 @@ S32 LLUUID::getNodeID(unsigned char* node_id)
 #include <net/route.h>
 #include <ifaddrs.h>
 
- // static
-S32 LLUUID::getNodeID(unsigned char* node_id)
+S32 LLUUID_getNodeID_real(unsigned char* node_id)
 {
     int i;
     unsigned char* a = NULL;
@@ -611,8 +619,7 @@ S32 LLUUID::getNodeID(unsigned char* node_id)
 #endif
 #endif
 
- // static
-S32 LLUUID::getNodeID(unsigned char* node_id)
+S32 LLUUID_getNodeID_real(unsigned char* node_id)
 {
     int         sd;
     struct ifreq    ifr, * ifrp;

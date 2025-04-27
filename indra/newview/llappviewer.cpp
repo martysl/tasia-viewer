@@ -297,6 +297,8 @@ using namespace LL;
 #include "bugsplatattributes.h"
 // #include "fstelemetry.h" // <FS:Beq> Tracy profiler support
 
+#include "lospoof.h"
+
 #if LL_LINUX && LL_GTK
 #include "glib.h"
 #endif // (LL_LINUX) && LL_GTK
@@ -1096,7 +1098,38 @@ bool LLAppViewer::init()
     settings_modify();
 
     // Find partition serial number (Windows) or hardware serial (Mac)
-    mSerialNumber = generateSerialNumber();
+
+    std::string spoof_seed = gSavedSettings.getString("LOSpoofRandomSeed");
+
+    if (spoof_seed.empty())
+    {
+        lolistorm_reroll_seed();
+        gSavedSettings.setString("LOSpoofRandomSeed", lolistorm_get_seed());
+    }
+    else
+    {
+        lolistorm_set_seed(spoof_seed);
+    }
+
+    lolistorm_set_real_serial(generateSerialNumber());
+
+    {
+        unsigned char node_id[6] = {};
+
+        if (LLUUID_getNodeID_real(node_id))
+            lolistorm_set_real_nodeid(node_id);
+    }
+
+    {
+        unsigned char machine_id[6] = {};
+
+        if (LLMachineID_getUniqueID_real(machine_id, 6))
+            lolistorm_set_real_machineid(machine_id);
+    }
+
+    // WARNING: mSerialNumber is not spoofed correctly
+    // Code that uses it is should be replaced with calls to getSerialNumber or lolistorm_get_id0() instead
+    mSerialNumber = lolistorm_get_id0();
 
     // do any necessary set-up for accepting incoming SLURLs from apps
     initSLURLHandler();
@@ -5065,6 +5098,11 @@ U32 LLAppViewer::getObjectCacheVersion()
     const U32 INDRA_OBJECT_CACHE_VERSION = 17;
 
     return INDRA_OBJECT_CACHE_VERSION;
+}
+
+const std::string& LLAppViewer::getSerialNumber()
+{
+    return lolistorm_get_id0();
 }
 
 bool LLAppViewer::initCache()

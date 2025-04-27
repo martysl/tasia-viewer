@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ name="LOstorm ID Spoofing"
+ title="LOstorm ID Spoofing"
+ single_instance="true"
+ width="630"
+ height="230">
+   <text
+    font="SansSerifBold"
+    height="26"
+    name="title"
+    value="Original IDs"
+    top="10"
+    left="205" />
+   <text
+    font="SansSerifBold"
+    height="26"
+    name="title"
+    value="Spoofed IDs"
+    top="10"
+    left="445" />
+    <text
+        type="string"
+        height="10"
+        left="5"
+        top="40">
+        Node ID (MAC):
+      </text>
+      <line_editor
+        top_delta="-4"
+        height="23"
+        left="130"
+        name="real_nodeid"
+        width="240"
+        enabled="false" />
+      <line_editor
+        top_delta="0"
+        left_delta="250"
+        height="23"
+        name="faux_nodeid"
+        width="240"
+        enabled="false" />
+    <text
+        type="string"
+        height="10"
+        left="5"
+        top_delta="30">
+        Machine ID (Serial):
+      </text>
+      <line_editor
+        top_delta="-4"
+        height="23"
+        left="130"
+        name="real_machineid"
+        width="240"
+        enabled="false" />
+      <line_editor
+        top_delta="0"
+        left_delta="250"
+        height="23"
+        name="faux_machineid"
+        width="240"
+        enabled="false" />
+    <text
+        type="string"
+        height="10"
+        left="5"
+        top_delta="30">
+        Drive ID (id0):
+      </text>
+      <line_editor
+        top_delta="-4"
+        height="23"
+        left="130"
+        name="real_id0"
+        width="240"
+        enabled="false" />
+      <line_editor
+        top_delta="0"
+        left_delta="250"
+        height="23"
+        name="spoof_id0"
+        width="240"
+        enabled="false" />
+    <text
+        type="string"
+        height="10"
+        left="5"
+        top_delta="30">
+        Unique ID (macid):
+      </text>
+      <line_editor
+        top_delta="-4"
+        height="23"
+        left="130"
+        name="real_macid"
+        width="240"
+        enabled="false" />
+      <line_editor
+        top_delta="0"
+        left_delta="250"
+        height="23"
+        name="spoof_macid"
+        width="240"
+        enabled="false" />
+    <text
+        type="string"
+        height="10"
+        left="5"
+        top_delta="50">
+        Current Username:
+      </text>
+      <line_editor
+        top_delta="-4"
+        height="23"
+        left="130"
+        name="username"
+        width="150"
+        enabled="false" />
+    <text
+        type="string"
+        height="10"
+        left="5"
+        top_delta="30">
+        Random Seed:
+      </text>
+      <line_editor
+        top_delta="-4"
+        height="23"
+        left="130"
+        name="seed"
+        width="150"
+        enabled="false" />
+      <button
+        top_delta="0"
+        height="23"
+        left_delta="160"
+        name="reroll_btn"
+        width="100"
+        label="Re-roll IDs" />
+</floater>
