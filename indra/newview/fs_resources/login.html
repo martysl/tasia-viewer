@@ -84,10 +84,7 @@ body { background-image:url('perv13.webp'); }
 </noscript>
 <script>
 var news_urls = [
-	"https://cdn.lop-sync.com/lostorm/news_v16.html",
-	"https://git.allthefallen.moe/lostorm/lostorm/-/raw/zz-news/news_v16.html",
-	"https://lostorm.neocities.org/login_news_v16.txt",
-	"https://gitlab.com/lostorm/lostorm/-/raw/zz-news/news_v16.html"
+	"https://www.misfitzgrid.com/welcome"
 ];
 
 async function get_remote_news()
@@ -111,7 +108,7 @@ async function get_remote_news()
 						if (news !== null)
 							return;
 
-						if (body.search("<!--LOstorm-->") < 0)
+						if (body.search("<gridmanager-root>") < 0)
 						{
 							console.log("Unrecognized data from", url);
 							console.log(body.substr(0, 500));
@@ -141,7 +138,7 @@ async function render_remote_news(news)
 async function render_downtime()
 {
 	document.getElementById("news-anchor").innerHTML
-		= "<p style=\"color:#ff3030\">Latest news is not loading.<br>Please visit <a href=\"https://lostorm.neocities.org/\" target=\"_blank\">lostorm.neocities.org</a> for updates/information.</p>";
+		= "<p style=\"color:#ff3030\">Latest news is not loading.<br>Please visit <a href=\"https://misfitzgrid.com/\" target=\"_blank\">misfitzgrid.com</a> for updates/information.</p>";
 }
 
 async function load_remote_news(news)

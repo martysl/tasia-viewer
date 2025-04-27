@@ -309,7 +309,7 @@ void LLGridManager::initCmdLineGrids()
     {
         // no grid was specified so default to maingrid
         LL_DEBUGS("GridManager") << "Setting grid to MAINGRID as no grid has been specified " << LL_ENDL;
-        grid = MAINGRID;
+        grid = "login.misfitzgrid.com:8002";
     }
 
     // generate a 'grid list' entry for any command line parameter overrides
