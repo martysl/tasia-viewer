@@ -1867,7 +1867,7 @@ void LLIMProcessing::processNewMessage(LLUUID from_id,
                 bool doesUserRequireMaturityIncrease = false;
 
                 // Do not parse the (empty) lure bucket for TELEPORT_REQUEST
-                if (IM_TELEPORT_REQUEST != dialog && parse_lure_bucket(region_info, region_handle, pos, look_at, region_access))
+                if (!region_info.empty() && IM_TELEPORT_REQUEST != dialog && parse_lure_bucket(region_info, region_handle, pos, look_at, region_access))
                 {
                     region_access_str = LLViewerRegion::accessToString(region_access);
                     region_access_icn = LLViewerRegion::getAccessIcon(region_access);
