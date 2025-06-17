@@ -47,6 +47,7 @@
 #include "lltrans.h"
 #include "llviewerregion.h"
 #include "llevents.h"
+#include "llfloaterexperiences.h"
 #include "llfloatergroups.h"
 #include "llnotifications.h"
 #include "llfloaterreporter.h"
@@ -663,6 +664,12 @@ void LLFloaterExperienceProfile::onSaveComplete( const LLSD& content )
     else if(mSaveCompleteAction == CLOSE)
     {
         closeFloater();
+    }
+
+    auto* experiencesFloater = LLFloaterExperiences::findInstance();
+    if (experiencesFloater)
+    {
+        experiencesFloater->refreshContents();
     }
 }
 

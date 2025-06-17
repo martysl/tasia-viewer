@@ -41,6 +41,8 @@ public:
 
     virtual void onOpen(const LLSD& key);
     static LLFloaterExperiences* findInstance();
+    void refreshContents();
+
 protected:
     typedef std::map<std::string, std::string> NameMap_t;
     typedef boost::function<void(LLPanelExperiences*, const LLSD&)> Callback_t;
@@ -48,7 +50,6 @@ protected:
     void clearFromRecent(const LLSD& ids);
     void resizeToTabs();
     /*virtual*/ bool    postBuild();
-    void refreshContents();
     void setupRecentTabs();
     LLPanelExperiences* addTab(const std::string& name, bool select);
 
