@@ -428,6 +428,7 @@ public:
     virtual std::string getDescription() const;
     std::string getHttpUrl() const { return mHttpUrl; } // <FS:Ansariel> [UDP Assets]
     std::string getViewerAssetUrl() const { return mViewerAssetUrl; }
+    std::string getSimulatorAssetUrl() const { return mSimulatorAssetUrl; }
 
     U32 getNumOfVisibleGroups() const;
     U32 getNumOfActiveCachedObjects() const;
@@ -598,6 +599,7 @@ public:
     std::string mProductName;
     std::string mHttpUrl; // <FS:Ansariel> [UDP Assets]
     std::string mViewerAssetUrl ;
+    std::string mSimulatorAssetUrl;
 
     // Maps local ids to cache entries.
     // Regions can have order 10,000 objects, so assume

@@ -920,13 +920,7 @@ bool LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 bool LLImageJ2COJ::encodeImpl(LLImageJ2C &base, const LLImageRaw &raw_image, const char* comment_text, F32 encode_time, bool reversible)
 {
     JPEG2KEncode encode(comment_text, reversible);
-    bool encoded = encode.encode(raw_image, base);
-    if (encoded)
-    {
-        LL_WARNS() << "Openjpeg encoding implementation isn't complete, returning false" << LL_ENDL;
-    }
-    return encoded;
-    //return false;
+    return encode.encode(raw_image, base);
 }
 
 bool LLImageJ2COJ::getMetadata(LLImageJ2C &base)

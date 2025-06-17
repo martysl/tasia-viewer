@@ -596,6 +596,7 @@ private:
     bool mInCache;
     bool                        mCanUseHTTP,
                                 mCanUseNET ; //can get from asset server. // <FS:Ansariel> OpenSim compatibility
+    bool mSimAsset = false;
     S32 mRetryAttempt;
     S32 mActiveCount;
     LLCore::HttpStatus mGetStatus;
@@ -1389,22 +1390,46 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 //      if (mHost != LLHost::invalid) get_url = false;
         //if ( use_http && mCanUseHTTP && mUrl.empty())//get http url.
+
+        if (!mSimAsset && mCanUseHTTP)
+        {
+            static constexpr uint8_t OPENSIM_DYNAMIC_TEXTURE[6] = { 0x32, 0xF8, 0xE6, 0x53, 0xAF, 0xA3 };
+            if (mFTType == FTT_HOST_BAKE || std::memcmp(mID.mData, OPENSIM_DYNAMIC_TEXTURE, sizeof(OPENSIM_DYNAMIC_TEXTURE)) == 0)
+            {
+                mCanUseHTTP = false;
+            }
+        }
+
+        LLViewerRegion* region = getRegion();
+        std::string http_url;
+        if (region)
+        {
+            http_url= region->getViewerAssetUrl();
+            if (http_url.empty())
+            {
+                http_url = region->getHttpUrl();
+            }
+            if (!LLGridManager::instance().isInSecondLife() && (!mCanUseHTTP || mSimAsset))
+            {
+                if (auto simAssets = region->getSimulatorAssetUrl(); !simAssets.empty())
+                {
+                    mSimAsset = true;
+                    mCanUseHTTP = true;
+                    http_url = simAssets;
+                }
+            }
+        }
+
+        // <FS:Ansariel> [UDP Assets]
         if ( use_http_textures() && mCanUseHTTP && mUrl.empty())//get http url.
         // </FS:Ansariel>
         {
-            LLViewerRegion* region = getRegion();
             if (region)
             {
-                std::string http_url = region->getViewerAssetUrl();
-                // <FS:Ansariel> [UDP Assets]
-                if (http_url.empty())
-                {
-                    http_url = region->getHttpUrl();
-                }
                 // </FS:Ansariel> [UDP Assets]
                 if (!http_url.empty())
                 {
-                    if (mFTType != FTT_DEFAULT)
+                    if (mFTType != FTT_DEFAULT && !mSimAsset)
                     {
                         LL_WARNS(LOG_TXT) << "Trying to fetch a texture of non-default type by UUID. This probably won't work!" << LL_ENDL;
                     }

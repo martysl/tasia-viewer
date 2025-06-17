@@ -3576,6 +3576,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
     constexpr char OpenSimPBRTerrain[]{"VETPBR"};
     capabilityNames.append(OpenSimPBRTerrain);
     // </FS:Beq>
+    capabilityNames.append("ExtSimulatorAsset");
 
     // Please add new capabilities alphabetically to reduce
     // merge conflicts.
@@ -3667,6 +3668,10 @@ void LLViewerRegion::setCapability(const std::string& name, const std::string& u
             mHttpUrl = url;
         }
         // </FS:Ansariel> [UDP Assets]
+        else if (name == "ExtSimulatorAsset")
+        {
+            mSimulatorAssetUrl = url;
+        }
     }
 }
 
@@ -3697,6 +3702,10 @@ void LLViewerRegion::setCapabilityDebug(const std::string& name, const std::stri
             mHttpUrl = url;
         }
         // </FS:Ansariel> [UDP Assets]
+        else if (name == "ExtSimulatorAsset")
+        {
+            mSimulatorAssetUrl = url;
+        }
     }
 }
 

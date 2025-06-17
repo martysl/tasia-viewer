@@ -9972,7 +9972,10 @@ void LLVOAvatar::updateMeshTextures()
     mBakedTextureDebugText += "indx layerset linvld ltda ilb ulkg ltid\n";
     // <FS:Beq> BOM OS
     // for (U32 i=0; i < mBakedTextureDatas.size(); i++)
-    for (S32 i=0; i < getNumBakes(); i++)
+    const S32 num_bakes  = getNumBakes();
+    const S32 data_count = static_cast<S32>(mBakedTextureDatas.size());
+    const S32 maxIndex  = std::max<S32>(0, std::min(num_bakes, data_count));
+    for (S32 i=0; i < maxIndex; i++)
     {
         is_layer_baked[i] = isTextureDefined(mBakedTextureDatas[i].mTextureIndex);
         LLViewerTexLayerSet* layerset = NULL;
@@ -10022,7 +10025,7 @@ void LLVOAvatar::updateMeshTextures()
     }
     // <FS:Beq> BOM OS
     // for (U32 i=0; i < mBakedTextureDatas.size(); i++)
-    for (S32 i=0; i < getNumBakes(); i++)
+    for (S32 i=0; i < maxIndex; i++)
     // </FS:Beq>
     {
         debugColorizeSubMeshes(i, LLColor4::white);

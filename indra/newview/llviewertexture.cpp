@@ -1125,12 +1125,10 @@ LLViewerFetchedTexture::LLViewerFetchedTexture(const LLUUID& id, FTType f_type, 
 {
     init(true);
     mFTType = f_type;
-    if (mFTType == FTT_HOST_BAKE)
+    static constexpr uint8_t OPENSIM_DYNAMIC_TEXTURE[6] = { 0x32, 0xF8, 0xE6, 0x53, 0xAF, 0xA3 };
+    if (mFTType == FTT_HOST_BAKE || std::memcmp(id.mData, OPENSIM_DYNAMIC_TEXTURE, sizeof(OPENSIM_DYNAMIC_TEXTURE)) == 0)
     {
-        // <FS:Ansariel> [Legacy Bake]
-        //LL_WARNS() << "Unsupported fetch type " << mFTType << LL_ENDL;
         mCanUseHTTP = false;
-        // </FS:Ansariel> [Legacy Bake]
     }
     generateGLTexture();
 }
