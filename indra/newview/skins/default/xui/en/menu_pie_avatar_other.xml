@@ -184,6 +184,13 @@
 					<pie_slice.on_click
 						function="Avatar.ResetMeshLOD" />
 				</pie_slice>
+				<pie_slice
+						enabled="true"
+						label="Reload"
+						name="ReloadAvatar">
+					<pie_slice.on_click
+							function="Avatar.Reload" />
+				</pie_slice>
 			</pie_menu>
 			<pie_slice
 				label="Dump XML"

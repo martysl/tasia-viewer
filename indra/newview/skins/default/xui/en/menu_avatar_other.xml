@@ -193,6 +193,13 @@
       <menu_item_call.on_click
        function="Avatar.TexRefresh" />
     </menu_item_call>
+    <menu_item_call
+            enabled="true"
+            label="Reload Avatar"
+            name="ReloadAvatar">
+        <menu_item_call.on_click
+                function="Avatar.Reload" />
+    </menu_item_call>
 
    <menu_item_separator />
     

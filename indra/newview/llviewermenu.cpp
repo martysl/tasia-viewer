@@ -40,6 +40,7 @@
 #include "llfloaterreg.h"
 #include "llfloatersidepanelcontainer.h"
 #include "llinventorypanel.h"
+#include "llmeshrepository.h"
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
 #include "llviewereventrecorder.h"
@@ -3456,6 +3457,26 @@ void destroy_texture(const LLUUID& id)      // will be used by the texture refre
     LLAppViewer::getTextureCache()->removeFromCache(id);
 }
 
+void handle_object_reload(LLViewerObject* object, LLSelectNode* node)
+{
+    handle_object_tex_refresh(object, node);
+
+    if (!object->isMesh())
+    {
+        return;
+    }
+    if (!object->mDrawable.notNull())
+    {
+        return;
+    }
+    const auto voVolume = object->mDrawable->getVOVolume();
+    LLMeshRepository::clearAndReloadMesh(voVolume);
+    object->dirtyMesh();
+    object->dirtySpatialGroup();
+
+
+}
+
 void handle_object_tex_refresh(LLViewerObject* object, LLSelectNode* node)
 {
     U8 te_count = object->getNumTEs();
@@ -3494,7 +3515,9 @@ void handle_object_tex_refresh(LLViewerObject* object, LLSelectNode* node)
     map_t::iterator it;
     for (it = faces_per_texture.begin(); it != faces_per_texture.end(); ++it)
     {
+        const auto fetched = LLViewerTextureManager::getFetchedTexture(it->first);
         destroy_texture(it->first);
+        fetched->forceToRefetchTexture(fetched->getDiscardLevel());
     }
 
     // Refresh sculpt texture
@@ -3542,6 +3565,43 @@ class LLObjectTexRefresh : public view_listener_t
     }
 };
 
+
+class LLObjectReload : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+    {
+        std::vector<std::pair<LLSelectNode*, LLViewerObject*>> objects;
+        for (LLObjectSelection::valid_iterator iter = LLSelectMgr::getInstance()->getSelection()->valid_begin();
+            iter != LLSelectMgr::getInstance()->getSelection()->valid_end(); iter++)
+        {
+            LLSelectNode* node = *iter;
+            objects.push_back(std::make_pair(node, node->getObject()));
+        }
+
+        for (const auto& obj: objects)
+        {
+            handle_object_reload(obj.second, obj.first);
+        }
+
+        return true;
+    }
+};
+
+void avatar_reload(LLVOAvatar* avatar)
+{
+    avatar_tex_refresh(avatar);
+    auto attachments = avatar->getChildren();
+    for (const auto& att: attachments)
+    {
+        handle_object_reload(att.get(), nullptr);
+        auto children = att->getChildren();
+        for(const auto& child: children)
+        {
+            handle_object_reload(child.get(), nullptr);
+        }
+    }
+}
+
 void avatar_tex_refresh(LLVOAvatar* avatar)
 {
     // I bet this can be done more elegantly, but this is just straightforward
@@ -3568,6 +3628,20 @@ class LLAvatarTexRefresh : public view_listener_t
     }
 };
 // </FS:Zi> Texture Refresh
+
+class LLAvatarReload : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+    {
+        LLVOAvatar* avatar = find_avatar_from_object(LLSelectMgr::getInstance()->getSelection()->getPrimaryObject());
+        if (avatar)
+        {
+            avatar_reload(avatar);
+        }
+
+        return true;
+    }
+};
 
 class LLObjectReportAbuse : public view_listener_t
 {
@@ -12962,6 +13036,7 @@ void initialize_menus()
 // [/RLVa:KB]
     view_listener_t::addMenu(new LLAvatarReportAbuse(), "Avatar.ReportAbuse");
     view_listener_t::addMenu(new LLAvatarTexRefresh(), "Avatar.TexRefresh");    // ## Zi: Texture Refresh
+    view_listener_t::addMenu(new LLAvatarReload(), "Avatar.Reload");
 
     view_listener_t::addMenu(new LLAvatarToggleMyProfile(), "Avatar.ToggleMyProfile");
     view_listener_t::addMenu(new LLAvatarTogglePicks(), "Avatar.TogglePicks");
@@ -12993,6 +13068,7 @@ void initialize_menus()
     view_listener_t::addMenu(new LLObjectMute(), "Object.Mute");
     view_listener_t::addMenu(new LLObjectDerender(), "Object.Derender");
     view_listener_t::addMenu(new LLObjectDerenderPermanent(), "Object.DerenderPermanent"); // <FS:Ansariel> Optional derender & blacklist
+    view_listener_t::addMenu(new LLObjectReload(), "Object.Reload");
     enable.add("Object.EnableDerender", boost::bind(&enable_derender_object));  // <FS:CR> FIRE-10082 - Don't enable derendering own attachments when RLVa is enabled as well
     view_listener_t::addMenu(new LLObjectTexRefresh(), "Object.TexRefresh");    // ## Zi: Texture Refresh
     view_listener_t::addMenu(new LLEditParticleSource(), "Object.EditParticles");

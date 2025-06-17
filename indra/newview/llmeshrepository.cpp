@@ -4289,6 +4289,52 @@ S32 LLMeshRepository::update()
     return static_cast<S32>(size);
 }
 
+void LLMeshRepository::clearAndReloadMesh(LLVOVolume* vobj)
+{
+    const LLVolumeParams& params = vobj->getVolume()->getParams();
+    const LLUUID mesh_id = params.getSculptID();
+    if (mesh_id.isNull()) return;
+
+    gMeshRepo.unregisterMesh(vobj);
+    if (LLFileSystem fs(mesh_id, LLAssetType::AT_MESH, LLFileSystem::READ_WRITE); !fs.remove())
+    {
+        LL_WARNS() << mesh_id << " Failed to remove cache file" << LL_ENDL;
+    }
+
+    LLVolumeLODGroup* group = LLPrimitive::getVolumeManager()->getGroup(params);
+
+    if (group)
+    {
+        for (S32 i = 0; i < LLVolumeLODGroup::NUM_LODS; ++i)
+        {
+            LLVolume* lod = group->refLOD(i);
+            if (lod && lod->isMeshAssetLoaded() && lod->getNumVolumeFaces() > 0)
+            {
+                lod->setMeshAssetLoaded(false);
+                lod->setDirty();
+            }
+            group->derefLOD(lod);
+        }
+    }
+
+    {
+        LLMutexLock lock(gMeshRepo.mThread->mHeaderMutex);
+        gMeshRepo.mThread->mMeshHeader.erase(mesh_id);
+    }
+
+    {
+        LLMutexLock lock(gMeshRepo.mThread->mMutex);
+        std::erase_if(
+            gMeshRepo.mThread->mSkinRequests,
+            [&](auto const& req){ return req.mId == mesh_id; }
+        );
+        gMeshRepo.mThread->mDecompositionRequests.erase({mesh_id});
+        gMeshRepo.mThread->mPhysicsShapeRequests.erase({mesh_id});
+    }
+
+    gMeshRepo.loadMesh(vobj, params, 0, -1);
+}
+
 void LLMeshRepository::unregisterMesh(LLVOVolume* vobj)
 {
     for (auto& lod : mLoadingMeshes)

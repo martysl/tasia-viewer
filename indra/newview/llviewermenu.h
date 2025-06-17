@@ -87,6 +87,7 @@ void handle_script_info();
 //void handle_zoom_to_object(const LLUUID& object_id);
 void handle_zoom_to_object(const LLUUID& object_id, const LLVector3d& object_pos = LLVector3d(-1.f, -1.f, -1.f));
 // </FS:Ansariel> Option to try via exact position
+void handle_object_reload(LLViewerObject* object);
 void handle_object_return();
 void handle_object_delete();
 void handle_object_edit();

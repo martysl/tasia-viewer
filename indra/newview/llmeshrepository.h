@@ -821,6 +821,7 @@ public:
     bool hasPhysicsShape(const LLUUID& mesh_id);
     bool hasSkinInfo(const LLUUID& mesh_id);
     bool hasHeader(const LLUUID& mesh_id) const;
+    static void clearAndReloadMesh(LLVOVolume* vobj);
 
     void buildHull(const LLVolumeParams& params, S32 detail);
     void buildPhysicsMesh(LLModel::Decomposition& decomp);
