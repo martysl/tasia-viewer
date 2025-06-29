@@ -15,7 +15,9 @@ build-job-linux:
     - echo $CI_REPOSITORY_URL
     - echo $CI_COMMIT_SHA
     - git clone $CI_REPOSITORY_URL
+    - ls --full
     - cd misfitz-viewer
+    - ls --full
     - pwd
     - git reset --hard $CI_COMMIT_SHA
     - git submodule update --init --recursive
