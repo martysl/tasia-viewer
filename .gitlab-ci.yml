@@ -12,6 +12,8 @@ build-job-linux:
     - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR
     - rm -rf misfitz-viewer
+    - echo $CI_REPOSITORY_URL
+    - echo $CI_COMMIT_SHA
     - git clone $CI_REPOSITORY_URL
     - cd misfitz-viewer
     - git reset --hard $CI_COMMIT_SHA
