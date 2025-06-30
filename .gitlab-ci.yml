@@ -43,7 +43,6 @@ build-job-linux:
 build-job-windows:
   stage: build_windows
   variables:
-    AUTOBUILD_VARIABLES_FILE: "/root/src/fs-build-variables/variables"
     GIT_STRATEGY: none
   script:
     - C:\src\launch.bat $CI_PROJECT_DIR $CI_COMMIT_SHA
