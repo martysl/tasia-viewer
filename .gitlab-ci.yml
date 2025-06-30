@@ -53,7 +53,7 @@ build-job-windows:
   artifacts:
     when: on_success
     paths:
-      - misfitz-viewer\build-vc170-64\newview\Release\Phoenix*.exe
+      - misfitz-viewer/build-vc170-64/newview/Release/Phoenix*.exe
 
 build-job-mac:
   stage: build_mac
