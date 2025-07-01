@@ -45,7 +45,7 @@ build-job-windows:
   stage: build_windows
   variables:
     GIT_STRATEGY: none
-    ARTIFACT_STRIP_PATH: "misfitz-viewer\build-vc170-64\newview\Release"
+    ARTIFACT_STRIP_PATH: "misfitz-viewer\\build-vc170-64\\newview\\Release"
   script:
     - C:\src\launch.bat $CI_PROJECT_DIR $CI_COMMIT_SHA
   tags:
