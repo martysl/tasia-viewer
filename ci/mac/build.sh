@@ -1,6 +1,8 @@
 #!/usr/bin/env zsh
 set -euo pipefail
-source /Users/jordan/Projects/myvenv/bin/activate
+
+python3 -m venv "$(pwd)/venv"
+source "$(pwd)/venv/bin/activate"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 git clone https://github.com/FirestormViewer/fs-build-variables.git
