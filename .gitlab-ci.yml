@@ -1,6 +1,6 @@
 stages:
-  - build_linux
   - build_windows
+  - build_linux
   - build_mac
 
 build-job-linux:
@@ -45,7 +45,9 @@ build-job-windows:
     GIT_STRATEGY: none
     ARTIFACT_STRIP_PATH: "viewer/build-vc170-64/newview/Release"
   script:
-    - C:\src\launch.bat $CI_PROJECT_DIR $CI_COMMIT_SHA
+    - cd $CI_PROJECT_DIR
+    - git clone $CI_REPOSITORY_URL viewer
+    - viewer/ci/windows/launch.bat $CI_PROJECT_DIR $CI_COMMIT_SHA
   tags:
     - build
     - windows
