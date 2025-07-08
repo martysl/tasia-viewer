@@ -7,18 +7,18 @@ build-job-linux:
   stage: build_linux
   variables:
     GIT_STRATEGY: none
-    ARTIFACT_STRIP_PATH: "misfitz-viewer/build-linux-x86_64/newview"
+    ARTIFACT_STRIP_PATH: "viewer/build-linux-x86_64/newview"
 
   script:
     - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR
-    - rm -rf misfitz-viewer
+    - rm -rf viewer
     - echo $CI_REPOSITORY_URL
     - echo $CI_COMMIT_SHA
     - git clone $CI_REPOSITORY_URL
     - ls --full
-    - cd $CI_PROJECT_DIR/misfitz-viewer
-    - echo $CI_PROJECT_DIR/misfitz-viewer
+    - cd $CI_PROJECT_DIR/viewer
+    - echo $CI_PROJECT_DIR/viewer
     - ls --full
     - pwd
     - git reset --hard $CI_COMMIT_SHA
@@ -37,15 +37,15 @@ build-job-linux:
   artifacts:
     when: on_success
     paths:
-      - misfitz-viewer/build-linux-x86_64/newview/Phoenix-*.xz
-      - misfitz-viewer/build-linux-x86_64/newview/Phoenix-*.bz2
+      - viewer/build-linux-x86_64/newview/Phoenix-*.xz
+      - viewer/build-linux-x86_64/newview/Phoenix-*.bz2
   resource_group: global_pipeline_lock
 
 build-job-windows:
   stage: build_windows
   variables:
     GIT_STRATEGY: none
-    ARTIFACT_STRIP_PATH: "misfitz-viewer/build-vc170-64/newview/Release"
+    ARTIFACT_STRIP_PATH: "viewer/build-vc170-64/newview/Release"
   script:
     - C:\src\launch.bat $CI_PROJECT_DIR $CI_COMMIT_SHA
   tags:
@@ -54,18 +54,18 @@ build-job-windows:
   artifacts:
     when: on_success
     paths:
-      - misfitz-viewer\build-vc170-64\newview\Release\Phoenix*.exe
+      - viewer\build-vc170-64\newview\Release\Phoenix*.exe
 
 build-job-mac:
   stage: build_mac
   script:
     - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR
-    - rm -rf misfitz-viewer
+    - rm -rf viewer
     - echo $CI_REPOSITORY_URL
     - echo $CI_COMMIT_SHA
     - git clone $CI_REPOSITORY_URL
-    - cd misfitz-viewer
+    - cd viewer
     - git reset --hard $CI_COMMIT_SHA
     - git submodule update --init --recursive
     - cd ..
@@ -80,8 +80,8 @@ build-job-mac:
   artifacts:
     when: on_success
     paths:
-      - misfitz-viewer/build-darwin-x86_64/newview/Phoenix-*.dmg
+      - viewer/build-darwin-x86_64/newview/Phoenix-*.dmg
   resource_group: global_pipeline_lock
   variables:
     GIT_STRATEGY: none
-    ARTIFACT_STRIP_PATH: "misfitz-viewer/build-darwin-x86_64/newview"
+    ARTIFACT_STRIP_PATH: "viewer/build-darwin-x86_64/newview"
