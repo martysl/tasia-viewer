@@ -9,7 +9,7 @@ cd viewer
 git reset --hard $1
 
 python -m venv "$(pwd)/venv"
-source "$(pwd)/venv/bin/activate"
+source "$(pwd)/venv/Scripts/activate"
 pip install -r requirements.txt
 
 git submodule update --init --recursive
