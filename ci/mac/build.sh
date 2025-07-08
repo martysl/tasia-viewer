@@ -4,7 +4,6 @@ set -euo pipefail
 python3 -m venv "$(pwd)/venv"
 source "$(pwd)/venv/bin/activate"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 git clone https://github.com/FirestormViewer/fs-build-variables.git
 export AUTOBUILD_VARIABLES_FILE="$(pwd)/fs-build-variables/variables"
 
@@ -12,6 +11,13 @@ cd "$CI_PROJECT_DIR"
 cd viewer
 pip install -r requirements.txt
 
-echo "Installing fmodstudio: file://$CI_PROJECT_DIR/viewer/ci/mac/artifacts/fmodstudio-2.02.24-darwin64-242921144.tar.bz2"
-autobuild installables edit fmodstudio platform=darwin64 hash=2fa4a9dbb2365ef8c4b6acd735ef08e7 url=file://$CI_PROJECT_DIR/viewer/ci/mac/artifacts/fmodstudio-2.02.24-darwin64-242921144.tar.bz2
-XZ_DEFAULTS=-T0 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB=$BUGSPLAT_DATABASE
+FMOD_ARCHIVE_PATH="$CI_PROJECT_DIR/viewer/ci/mac/artifacts/fmodstudio-2.02.24-darwin64-242921144.tar.bz2"
+
+if [ ! -f "$FMOD_ARCHIVE_PATH" ]; then
+  echo "Error: FMOD archive not found at $FMOD_ARCHIVE_PATH"
+  exit 1
+fi
+
+echo "Installing fmodstudio: file://${FMOD_ARCHIVE_PATH}"
+autobuild installables edit fmodstudio platform=darwin64 hash=2fa4a9dbb2365ef8c4b6acd735ef08e7 url="file://${FMOD_ARCHIVE_PATH}"
+XZ_DEFAULTS=-T0 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"
