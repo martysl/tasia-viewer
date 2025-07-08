@@ -5,8 +5,8 @@ git clone https://github.com/FirestormViewer/fs-build-variables.git
 export AUTOBUILD_VARIABLES_FILE="$(pwd)/fs-build-variables/variables"
 
 cd viewer
-pip install -r requirements.txt
 git reset --hard $1
+pip install -r requirements.txt
 git submodule update --init --recursive
 echo "Setting fmod to file://$SCRIPT_DIR/artifacts/fmodstudio-2.02.23-windows64-242661809.tar.bz2"
 autobuild installables edit fmodstudio platform=windows64 hash=f5844bc284eb47cd3e0642175eba80f1 url=file://$SCRIPT_DIR/artifacts/fmodstudio-2.02.23-windows64-242661809.tar.bz2
