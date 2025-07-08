@@ -1,4 +1,3 @@
-set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 git clone https://github.com/FirestormViewer/fs-build-variables.git
 export AUTOBUILD_VARIABLES_FILE="$(pwd)/fs-build-variables/variables"

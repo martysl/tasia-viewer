@@ -1,7 +1,7 @@
 stages:
-  - build_windows
-  - build_linux
   - build_mac
+  - build_linux
+  - build_windows
 
 build-job-linux:
   stage: build_linux
@@ -70,16 +70,13 @@ build-job-mac:
     - rm -rf viewer
     - echo $CI_REPOSITORY_URL
     - echo $CI_COMMIT_SHA
-    - git clone $CI_REPOSITORY_URL
+    - git clone $CI_REPOSITORY_URL viewer
     - cd viewer
     - git reset --hard $CI_COMMIT_SHA
     - git submodule update --init --recursive
     - cd ..
-    - cp /Users/jordan/Projects/build.sh .
-    - cp /Users/jordan/Projects/upload-symbols.sh .
-    - pwd
-    - ./build.sh
-    - ./upload-symbols.sh
+    - ./viewer/ci/mac/build.sh
+    - ./viewer/ci/mac/upload-symbols.sh
   tags:
     - build
     - macos
