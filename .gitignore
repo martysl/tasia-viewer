@@ -14,7 +14,6 @@
 *.stamp
 *.rc
 
-*.tar.bz2
 *.code-workspace
 *~
 
