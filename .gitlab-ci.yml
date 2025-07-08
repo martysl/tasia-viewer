@@ -15,7 +15,7 @@ build-job-linux:
     - rm -rf viewer
     - echo $CI_REPOSITORY_URL
     - echo $CI_COMMIT_SHA
-    - git clone $CI_REPOSITORY_URL
+    - git clone $CI_REPOSITORY_URL viewer
     - ls --full
     - cd $CI_PROJECT_DIR/viewer
     - echo $CI_PROJECT_DIR/viewer
@@ -24,13 +24,11 @@ build-job-linux:
     - git reset --hard $CI_COMMIT_SHA
     - git submodule update --init --recursive
     - cd ..
-    - cp /home/build/viewer/build.sh .
-    - cp /home/build/viewer/upload-symbols.sh .
     - pwd
-    - chmod +x build.sh
-    - chmod +x upload-symbols.sh
-    - ./build.sh
-    - ./upload-symbols.sh
+    - chmod +x ./ci/linux/build.sh
+    - chmod +x ./ci/linux/upload-symbols.sh
+    - ./ci/linux/build.sh
+    - ./ci/linux/upload-symbols.sh
   tags:
     - build
     - linux
