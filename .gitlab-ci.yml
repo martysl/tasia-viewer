@@ -23,10 +23,12 @@ build-job-linux:
     - pwd
     - git reset --hard $CI_COMMIT_SHA
     - git submodule update --init --recursive
-    - chmod +x ./ci/linux/build.sh
-    - chmod +x ./ci/linux/upload-symbols.sh
-    - ./ci/linux/build.sh
-    - ./ci/linux/upload-symbols.sh
+    - cd ..
+    - pwd
+    - chmod +x ./viewer/ci/linux/build.sh
+    - chmod +x ./viewer/ci/linux/upload-symbols.sh
+    - ./viewer/ci/linux/build.sh
+    - ./viewer/ci/linux/upload-symbols.sh
   tags:
     - build
     - linux
