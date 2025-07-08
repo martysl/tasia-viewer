@@ -8,7 +8,7 @@ export AUTOBUILD_VARIABLES_FILE="$(pwd)/fs-build-variables/variables"
 cd viewer
 git reset --hard $1
 
-python3 -m venv "$(pwd)/venv"
+python -m venv "$(pwd)/venv"
 source "$(pwd)/venv/bin/activate"
 pip install -r requirements.txt
 
