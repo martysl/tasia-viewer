@@ -75,6 +75,8 @@ build-job-mac:
     - git reset --hard $CI_COMMIT_SHA
     - git submodule update --init --recursive
     - cd ..
+    - chmod +x ./viewer/ci/mac/build.sh
+    - chmod +x ./viewer/ci/mac/upload-symbols.sh
     - ./viewer/ci/mac/build.sh
     - ./viewer/ci/mac/upload-symbols.sh
   tags:
