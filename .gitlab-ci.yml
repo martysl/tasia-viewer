@@ -45,13 +45,13 @@ build-job-windows:
     GIT_STRATEGY: none
     ARTIFACT_STRIP_PATH: "viewer/build-vc170-64/newview/Release"
   script:
-    - echo "Changing to work dir $CI_PROJECT_DIR"
+    - echo Changing to work dir $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR
-    - echo "Cloning $CI_REPOSITORY_URL to viewer"
+    - echo Cloning $CI_REPOSITORY_URL to viewer
     - git clone $CI_REPOSITORY_URL viewer
-    - echo "Resetting to commit $CI_COMMIT_SHA"
+    - echo Resetting to commit $CI_COMMIT_SHA
     - git reset --hard $CI_COMMIT_SHA
-    - echo "Running batch script $CI_PROJECT_DIR/viewer/ci/windows/launch.bat $CI_PROJECT_DIR $CI_COMMIT_SHA"
+    - echo Running batch script $CI_PROJECT_DIR/viewer/ci/windows/launch.bat $CI_PROJECT_DIR $CI_COMMIT_SHA
     - $CI_PROJECT_DIR/viewer/ci/windows/launch.bat $CI_PROJECT_DIR $CI_COMMIT_SHA
   tags:
     - build
