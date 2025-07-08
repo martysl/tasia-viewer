@@ -23,8 +23,6 @@ build-job-linux:
     - pwd
     - git reset --hard $CI_COMMIT_SHA
     - git submodule update --init --recursive
-    - cd ..
-    - pwd
     - chmod +x ./ci/linux/build.sh
     - chmod +x ./ci/linux/upload-symbols.sh
     - ./ci/linux/build.sh
