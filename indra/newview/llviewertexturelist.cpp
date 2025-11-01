@@ -1391,6 +1391,11 @@ F32 LLViewerTextureList::updateImagesCreateTextures(F32 max_time)
     while (!mCreateTextureList.empty())
     {
         LLViewerFetchedTexture* imagep = mCreateTextureList.front();
+        if (!imagep)
+        {
+            mCreateTextureList.pop();
+            continue;
+        }
         llassert(imagep->mCreatePending);
 
         // desired discard may change while an image is being decoded. If the texture in VRAM is sufficient
@@ -1405,7 +1410,6 @@ F32 LLViewerTextureList::updateImagesCreateTextures(F32 max_time)
 
         imagep->postCreateTexture();
         imagep->mCreatePending = false;
-        mCreateTextureList.pop();
 
         if (imagep->hasGLTexture() && imagep->getDiscardLevel() < imagep->getDesiredDiscardLevel() &&
            // <FS:minerjr> [FIRE-35081] Blurry prims not changing with graphics settings
@@ -1421,6 +1425,7 @@ F32 LLViewerTextureList::updateImagesCreateTextures(F32 max_time)
             imagep->scaleDown();
         }
 
+        mCreateTextureList.pop();
         if (create_timer.getElapsedTimeF32() > max_time * 0.5f)
         {
             break;
