@@ -31,4 +31,4 @@ XZ_DEFAULTS=-T0 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 -
 version=$(tr -d '\n' < ./indra/newview/VIEWER_VERSION.txt)
 revision=$(tr -d '\n' < ./revision.txt)
 VIEWER_VERSION="${version}.${revision}"
-npx -y @bugsplat/symbol-upload -d "build-*" -f "**/*.pdb" -a "Firestorm-Releasex64" -v "${VIEWER_VERSION}"
+npx -y @bugsplat/symbol-upload@10.1.11 -d "build-*" -f "**/*.pdb" -a "Firestorm-Releasex64" -v "${VIEWER_VERSION}"
