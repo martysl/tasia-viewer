@@ -102,13 +102,6 @@ namespace Details
         mHttpPolicy = app_core_http.getPolicy(LLAppCoreHttp::AP_LONG_POLL);
         // <FS:Ansariel> Restore pre-coro behavior (60s timeout, no retries)
         mHttpOptions = LLCore::HttpOptions::ptr_t(new LLCore::HttpOptions);
-#ifdef OPENSIM
-        if (LLGridManager::instance().isInOpenSim())
-        {
-            mHttpOptions->setRetries(0);
-            mHttpOptions->setTransferTimeout(60);
-        }
-#endif
         // </FS:Ansariel>
         mSenderIp = sender.getIPandPort();
     }
