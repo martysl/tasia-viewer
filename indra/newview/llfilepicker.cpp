@@ -315,7 +315,7 @@ bool LLFilePicker::getOpenFile(ELoadFilter filter, bool blocking)
     success = GetOpenFileName(&mOFN);
     if (success)
     {
-        std::string filename = utf16str_to_utf8str(llutf16string(mFilesW));
+        std::string filename = ll_convert_wide_to_string(mFilesW);
         mFiles.push_back(filename);
     }
 
@@ -381,7 +381,7 @@ bool LLFilePicker::getMultipleOpenFiles(ELoadFilter filter, bool blocking)
         // lengths.
         if( wcslen(mOFN.lpstrFile) > mOFN.nFileOffset ) /*Flawfinder: ignore*/
         {
-            std::string filename = utf16str_to_utf8str(llutf16string(mFilesW));
+            std::string filename = ll_convert_wide_to_string(mFilesW);
             mFiles.push_back(filename);
         }
         else
@@ -395,7 +395,7 @@ bool LLFilePicker::getMultipleOpenFiles(ELoadFilter filter, bool blocking)
                     break;
                 if (*tptrw == 0)
                     tptrw++; // shouldn't happen?
-                std::string filename = utf16str_to_utf8str(llutf16string(tptrw));
+                std::string filename = ll_convert_wide_to_string(tptrw);
                 if (dirname.empty())
                     dirname = filename + "\\";
                 else
@@ -441,7 +441,7 @@ bool LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename, 
     mOFN.lpstrFile = mFilesW;
     if (!filename.empty())
     {
-        llutf16string tstring = utf8str_to_utf16str(filename);
+        std::wstring tstring = ll_convert_string_to_wide(filename);
         wcsncpy(mFilesW, tstring.c_str(), FILENAME_BUFFER_SIZE);    }   /*Flawfinder: ignore*/
     else
     {
@@ -654,7 +654,7 @@ bool LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename, 
             success = GetSaveFileName(&mOFN);
             if (success)
             {
-                std::string filename = utf16str_to_utf8str(llutf16string(mFilesW));
+                std::string filename = ll_convert_wide_to_string(mFilesW);
                 mFiles.push_back(filename);
             }
         }

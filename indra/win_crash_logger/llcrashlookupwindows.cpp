@@ -90,7 +90,7 @@ bool LLCrashLookupWindows::initFromDump(const std::string& strDumpPath)
     if ( (!m_pDbgClient) || (!m_pDbgControl) || (!m_pDbgSymbols) )
         return false;
 
-    std::wstring strDumpPathW = utf8str_to_utf16str( strDumpPath );
+    std::wstring strDumpPathW = ll_convert_string_to_wide( strDumpPath );
     // Open the minidump and wait to finish processing
     HRESULT hRes(S_OK);
 

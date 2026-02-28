@@ -318,7 +318,7 @@ void ll_nvapi_init(NvDRSSessionHandle hSession)
 
     NvAPI_UnicodeString profile_name;
     std::string app_name = LLTrans::getString("APP_NAME");
-    llutf16string w_app_name = utf8str_to_utf16str(app_name);
+    std::wstring w_app_name = ll_convert_string_to_wide(app_name);
     wsprintf(profile_name, L"%s", w_app_name.c_str());
     NvDRSProfileHandle hProfile = 0;
     // (3) Check if we already have an application profile for the viewer
@@ -351,7 +351,7 @@ void ll_nvapi_init(NvDRSSessionHandle hSession)
     NVDRS_APPLICATION profile_application;
     profile_application.version = NVDRS_APPLICATION_VER;
 
-    llutf16string w_exe_name = utf8str_to_utf16str(exe_name);
+    std::wstring w_exe_name = ll_convert_string_to_wide(exe_name);
     NvAPI_UnicodeString profile_app_name;
     wsprintf(profile_app_name, L"%s", w_exe_name.c_str());
 
@@ -722,7 +722,7 @@ void LLAppViewerWin32::disableWinErrorReporting()
 {
     std::string executable_name = gDirUtilp->getExecutableFilename();
 
-    if( S_OK == WerAddExcludedApplication( utf8str_to_utf16str(executable_name).c_str(), FALSE ) )
+    if( S_OK == WerAddExcludedApplication( ll_convert_string_to_wide(executable_name).c_str(), FALSE ) )
     {
         LL_INFOS() << "WerAddExcludedApplication() succeeded for " << executable_name << LL_ENDL;
     }

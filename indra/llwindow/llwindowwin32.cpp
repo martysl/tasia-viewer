@@ -3371,7 +3371,7 @@ bool LLWindowWin32::copyTextToClipboard(const LLWString& wstr)
         // Provide a copy of the data in Unicode format.
         LLWString sanitized_string(wstr);
         LLWStringUtil::addCRLF(sanitized_string);
-        llutf16string out_utf16 = wstring_to_utf16str(sanitized_string);
+        std::wstring out_utf16 = ll_convert_wstring_to_wide(sanitized_string);
         const size_t size_utf16 = (out_utf16.length() + 1) * sizeof(WCHAR);
 
         // Memory is allocated and then ownership of it is transfered to the system.
@@ -3874,8 +3874,7 @@ S32 OSMessageBoxWin32(const std::string& text, const std::string& caption, U32 t
 }
 void LLWindowWin32::openFile(const std::string& file_name )
 {
-    LLWString url_wstring = utf8str_to_wstring( file_name );
-    llutf16string url_utf16 = wstring_to_utf16str( url_wstring );
+    std::wstring url_utf16 = ll_convert_string_to_wide( file_name );
 
     SHELLEXECUTEINFO sei = { sizeof( sei ) };
     sei.fMask = SEE_MASK_FLAG_DDEWAIT;
@@ -3909,8 +3908,7 @@ void LLWindowWin32::spawnWebBrowser(const std::string& escaped_url, bool async)
     // reliablly on Vista.
 
     // this is madness.. no, this is..
-    LLWString url_wstring = utf8str_to_wstring( escaped_url );
-    llutf16string url_utf16 = wstring_to_utf16str( url_wstring );
+    std::wstring url_utf16 = ll_convert_string_to_wide( escaped_url );
 
     // let the OS decide what to use to open the URL
     SHELLEXECUTEINFO sei = { sizeof( sei ) };
@@ -4198,7 +4196,7 @@ void LLWindowWin32::fillCompositionLogfont(LOGFONT *logfont)
 U32 LLWindowWin32::fillReconvertString(const LLWString &text,
     S32 focus, S32 focus_length, RECONVERTSTRING *reconvert_string)
 {
-    const llutf16string text_utf16 = wstring_to_utf16str(text);
+    const std::wstring text_utf16 = ll_convert_wstring_to_wide(text);
     const DWORD required_size = sizeof(RECONVERTSTRING) + (static_cast<DWORD>(text_utf16.length()) + 1) * sizeof(WCHAR);
     if (reconvert_string && reconvert_string->dwSize >= required_size)
     {
@@ -4298,7 +4296,7 @@ void LLWindowWin32::handleCompositionMessage(const U32 indexes)
             size = LLWinImm::getCompositionString(himc, GCS_RESULTSTR, data, size);
             if (size > 0)
             {
-                result_string = utf16str_to_wstring(llutf16string(data, size / sizeof(WCHAR)));
+                result_string = ll_convert_wide_to_wstring(std::wstring(data, size / sizeof(WCHAR)));
             }
             delete[] data;
             needs_update = true;
@@ -4315,7 +4313,7 @@ void LLWindowWin32::handleCompositionMessage(const U32 indexes)
             if (size > 0)
             {
                 preedit_string_utf16_length = size / sizeof(WCHAR);
-                preedit_string = utf16str_to_wstring(llutf16string(data, size / sizeof(WCHAR)));
+                preedit_string = ll_convert_wide_to_wstring(std::wstring(data, size / sizeof(WCHAR)));
             }
             delete[] data;
             needs_update = true;

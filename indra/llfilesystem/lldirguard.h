@@ -46,8 +46,8 @@ public:
             (wcsncmp(mOrigDir,mFinalDir,mOrigDirLen)!=0))
         {
             // Dir has changed
-            std::string mOrigDirUtf8 = utf16str_to_utf8str(llutf16string(mOrigDir));
-            std::string mFinalDirUtf8 = utf16str_to_utf8str(llutf16string(mFinalDir));
+            std::string mOrigDirUtf8 = ll_convert_wide_to_string(mOrigDir);
+            std::string mFinalDirUtf8 = ll_convert_wide_to_string(mFinalDir);
             LL_INFOS() << "Resetting working dir from " << mFinalDirUtf8 << " to " << mOrigDirUtf8 << LL_ENDL;
             SetCurrentDirectory(mOrigDir);
         }

@@ -733,7 +733,7 @@ bool LLLocalMeshFile::updateLastModified(LLLocalMeshFileLOD lod)
     #ifndef LL_WINDOWS
         const std::time_t temp_time = boost::filesystem::last_write_time(boost::filesystem::path(current_filename), ec);
     #else
-        const std::time_t temp_time = boost::filesystem::last_write_time(boost::filesystem::path(utf8str_to_utf16str(current_filename)), ec);
+        const std::time_t temp_time = boost::filesystem::last_write_time(boost::filesystem::path(ll_convert_string_to_wide(current_filename)), ec);
     #endif
 
     if (LLSD new_last_modified = asctime(localtime(&temp_time)); new_last_modified.asString() != current_last_modified.asString() && !ec.failed())
