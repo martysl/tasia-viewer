@@ -63,7 +63,7 @@ void GLTFSceneManager::load()
     {
         // Load a scene from disk
         LLFilePickerReplyThread::startPicker(
-            [](const std::vector<std::string>& filenames, LLFilePicker::ELoadFilter load_filter, LLFilePicker::ESaveFilter save_filter)
+            [](const std::vector<std::string>& filenames, ELoadFilter load_filter, ESaveFilter save_filter)
             {
                 if (LLAppViewer::instance()->quitRequested())
                 {
@@ -81,7 +81,7 @@ void GLTFSceneManager::load()
                     LLNotificationsUtil::add("CannotOpenFileTooBig");
                 }
             },
-            LLFilePicker::FFLOAD_GLTF,
+            FFLOAD_GLTF,
             false);
     }
     else
@@ -96,7 +96,7 @@ void GLTFSceneManager::saveAs()
     if (obj && obj->mGLTFAsset)
     {
         LLFilePickerReplyThread::startPicker(
-            [](const std::vector<std::string>& filenames, LLFilePicker::ELoadFilter load_filter, LLFilePicker::ESaveFilter save_filter)
+            [](const std::vector<std::string>& filenames, ELoadFilter load_filter, ESaveFilter save_filter)
             {
                 if (LLAppViewer::instance()->quitRequested())
                 {
@@ -107,7 +107,7 @@ void GLTFSceneManager::saveAs()
                     GLTFSceneManager::instance().save(filenames[0]);
                 }
             },
-            LLFilePicker::FFSAVE_GLTF,
+            FFSAVE_GLTF,
             "scene.gltf");
     }
     else

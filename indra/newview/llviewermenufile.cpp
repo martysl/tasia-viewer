@@ -302,10 +302,10 @@ void LLFilePickerThread::clearDead()
     }
 }
 
-LLFilePickerReplyThread::LLFilePickerReplyThread(const file_picked_signal_t::slot_type& cb, LLFilePicker::ELoadFilter filter, bool get_multiple, const file_picked_signal_t::slot_type& failure_cb)
+LLFilePickerReplyThread::LLFilePickerReplyThread(const file_picked_signal_t::slot_type& cb, ELoadFilter filter, bool get_multiple, const file_picked_signal_t::slot_type& failure_cb)
     : LLFilePickerThread(filter, get_multiple),
     mLoadFilter(filter),
-    mSaveFilter(LLFilePicker::FFSAVE_ALL),
+    mSaveFilter(FFSAVE_ALL),
     mFilePickedSignal(NULL),
     mFailureSignal(NULL)
 {
@@ -316,9 +316,9 @@ LLFilePickerReplyThread::LLFilePickerReplyThread(const file_picked_signal_t::slo
     mFailureSignal->connect(failure_cb);
 }
 
-LLFilePickerReplyThread::LLFilePickerReplyThread(const file_picked_signal_t::slot_type& cb, LLFilePicker::ESaveFilter filter, const std::string &proposed_name, const file_picked_signal_t::slot_type& failure_cb)
+LLFilePickerReplyThread::LLFilePickerReplyThread(const file_picked_signal_t::slot_type& cb, ESaveFilter filter, const std::string &proposed_name, const file_picked_signal_t::slot_type& failure_cb)
     : LLFilePickerThread(filter, proposed_name),
-    mLoadFilter(LLFilePicker::FFLOAD_ALL),
+    mLoadFilter(FFLOAD_ALL),
     mSaveFilter(filter),
     mFilePickedSignal(NULL),
     mFailureSignal(NULL)
@@ -336,12 +336,12 @@ LLFilePickerReplyThread::~LLFilePickerReplyThread()
     delete mFailureSignal;
 }
 
-void LLFilePickerReplyThread::startPicker(const file_picked_signal_t::slot_type & cb, LLFilePicker::ELoadFilter filter, bool get_multiple, const file_picked_signal_t::slot_type & failure_cb)
+void LLFilePickerReplyThread::startPicker(const file_picked_signal_t::slot_type & cb, ELoadFilter filter, bool get_multiple, const file_picked_signal_t::slot_type & failure_cb)
 {
     (new LLFilePickerReplyThread(cb, filter, get_multiple, failure_cb))->getFile();
 }
 
-void LLFilePickerReplyThread::startPicker(const file_picked_signal_t::slot_type & cb, LLFilePicker::ESaveFilter filter, const std::string & proposed_name, const file_picked_signal_t::slot_type & failure_cb)
+void LLFilePickerReplyThread::startPicker(const file_picked_signal_t::slot_type & cb, ESaveFilter filter, const std::string & proposed_name, const file_picked_signal_t::slot_type & failure_cb)
 {
     (new LLFilePickerReplyThread(cb, filter, proposed_name, failure_cb))->getFile();
 }
@@ -365,13 +365,13 @@ void LLFilePickerReplyThread::notify(const std::vector<std::string>& filenames)
 }
 
 
-LLMediaFilePicker::LLMediaFilePicker(LLPluginClassMedia* plugin, LLFilePicker::ELoadFilter filter, bool get_multiple)
+LLMediaFilePicker::LLMediaFilePicker(LLPluginClassMedia* plugin, ELoadFilter filter, bool get_multiple)
     : LLFilePickerThread(filter, get_multiple),
     mPlugin(plugin->getSharedPtr())
 {
 }
 
-LLMediaFilePicker::LLMediaFilePicker(LLPluginClassMedia* plugin, LLFilePicker::ESaveFilter filter, const std::string &proposed_name)
+LLMediaFilePicker::LLMediaFilePicker(LLPluginClassMedia* plugin, ESaveFilter filter, const std::string &proposed_name)
     : LLFilePickerThread(filter, proposed_name),
     mPlugin(plugin->getSharedPtr())
 {
@@ -396,27 +396,27 @@ static std::string ALL_FILE_EXTENSIONS = "*.*";
 static std::string MODEL_EXTENSIONS = "dae";
 static std::string MATERIAL_EXTENSIONS = "gltf glb";
 
-std::string build_extensions_string(LLFilePicker::ELoadFilter filter)
+std::string build_extensions_string(ELoadFilter filter)
 {
     switch(filter)
     {
 #if LL_WINDOWS
-    case LLFilePicker::FFLOAD_IMAGE:
+    case FFLOAD_IMAGE:
         return IMAGE_EXTENSIONS;
-    case LLFilePicker::FFLOAD_WAV:
+    case FFLOAD_WAV:
         return SOUND_EXTENSIONS;
-    case LLFilePicker::FFLOAD_ANIM:
+    case FFLOAD_ANIM:
         return ANIM_EXTENSIONS;
     case LLFilePicker::FFLOAD_SLOBJECT:
         return SLOBJECT_EXTENSIONS;
-    case LLFilePicker::FFLOAD_MODEL:
+    case FFLOAD_MODEL:
         return MODEL_EXTENSIONS;
-    case LLFilePicker::FFLOAD_MATERIAL:
+    case FFLOAD_MATERIAL:
         return MATERIAL_EXTENSIONS;
-    case LLFilePicker::FFLOAD_XML:
+    case FFLOAD_XML:
         return XML_EXTENSIONS;
-    case LLFilePicker::FFLOAD_ALL:
-    case LLFilePicker::FFLOAD_EXE:
+    case FFLOAD_ALL:
+    case FFLOAD_EXE:
         return ALL_FILE_EXTENSIONS;
 #endif
     default:
@@ -425,7 +425,7 @@ std::string build_extensions_string(LLFilePicker::ELoadFilter filter)
 }
 
 
-const bool check_file_extension(const std::string& filename, LLFilePicker::ELoadFilter type)
+const bool check_file_extension(const std::string& filename, ELoadFilter type)
 {
     std::string ext = gDirUtilp->getExtension(filename);
 
@@ -487,14 +487,14 @@ const bool check_file_extension(const std::string& filename, LLFilePicker::ELoad
     return true;
 }
 
-const void upload_single_file(const std::vector<std::string>& filenames, LLFilePicker::ELoadFilter type)
+const void upload_single_file(const std::vector<std::string>& filenames, ELoadFilter type)
 {
     std::string filename = filenames[0];
     if (!check_file_extension(filename, type)) return;
 
     if (!filename.empty())
     {
-        if (type == LLFilePicker::FFLOAD_WAV)
+        if (type == FFLOAD_WAV)
         {
             // pre-qualify wavs to make sure the format is acceptable
             std::string error_msg;
@@ -512,11 +512,11 @@ const void upload_single_file(const std::vector<std::string>& filenames, LLFileP
                 LLFloaterReg::showInstance("upload_sound", LLSD(filename));
             }
         }
-        if (type == LLFilePicker::FFLOAD_IMAGE)
+        if (type == FFLOAD_IMAGE)
         {
             LLFloaterReg::showInstance("upload_image", LLSD(filename));
         }
-        if (type == LLFilePicker::FFLOAD_ANIM)
+        if (type == FFLOAD_ANIM)
         {
             std::string filename_lc(filename);
             LLStringUtil::toLower(filename_lc);
@@ -530,7 +530,7 @@ const void upload_single_file(const std::vector<std::string>& filenames, LLFileP
             }
         }
         // <FS:CR> Import Linkset
-        if (type == LLFilePicker::FFLOAD_IMPORT)
+        if (type == FFLOAD_IMPORT)
         {
             LLFloaterReg::showInstance("fs_import", LLSD(filename));
         }
@@ -783,7 +783,7 @@ const void upload_bulk(const std::vector<std::string>& filtered_filenames, bool 
 
 }
 
-const void upload_bulk(const std::vector<std::string>& filenames, LLFilePicker::ELoadFilter type, bool allow_2k)
+const void upload_bulk(const std::vector<std::string>& filenames, ELoadFilter type, bool allow_2k)
 {
     // TODO:
     // Check user balance for entire cost
@@ -816,7 +816,7 @@ class LLFileUploadImage : public view_listener_t
         {
             gAgentCamera.changeCameraToDefault();
         }
-        LLFilePickerReplyThread::startPicker(boost::bind(&upload_single_file, _1, _2), LLFilePicker::FFLOAD_IMAGE, false);
+        LLFilePickerReplyThread::startPicker(boost::bind(&upload_single_file, _1, _2), FFLOAD_IMAGE, false);
         return true;
     }
 };
@@ -847,7 +847,7 @@ class LLFileUploadSound : public view_listener_t
         {
             gAgentCamera.changeCameraToDefault();
         }
-        LLFilePickerReplyThread::startPicker(boost::bind(&upload_single_file, _1, _2), LLFilePicker::FFLOAD_WAV, false);
+        LLFilePickerReplyThread::startPicker(boost::bind(&upload_single_file, _1, _2), FFLOAD_WAV, false);
         return true;
     }
 };
@@ -860,7 +860,7 @@ class LLFileUploadAnim : public view_listener_t
         {
             gAgentCamera.changeCameraToDefault();
         }
-        LLFilePickerReplyThread::startPicker(boost::bind(&upload_single_file, _1, _2), LLFilePicker::FFLOAD_ANIM, false);
+        LLFilePickerReplyThread::startPicker(boost::bind(&upload_single_file, _1, _2), FFLOAD_ANIM, false);
         return true;
     }
 };
@@ -873,7 +873,7 @@ class LLFileUploadBulk : public view_listener_t
         {
             gAgentCamera.changeCameraToDefault();
         }
-        LLFilePickerReplyThread::startPicker(boost::bind(&upload_bulk, _1, _2, true), LLFilePicker::FFLOAD_ALL, true);
+        LLFilePickerReplyThread::startPicker(boost::bind(&upload_bulk, _1, _2, true), FFLOAD_ALL, true);
         return true;
     }
 };
@@ -887,7 +887,7 @@ class FSFileImportLinkset : public view_listener_t
         {
             gAgentCamera.changeCameraToDefault();
         }
-        LLFilePickerReplyThread::startPicker(boost::bind(&upload_single_file, _1, _2), LLFilePicker::FFLOAD_IMPORT, false);
+        LLFilePickerReplyThread::startPicker(boost::bind(&upload_single_file, _1, _2), FFLOAD_IMPORT, false);
         return true;
     }
 };
@@ -1078,7 +1078,7 @@ class LLFileQuit : public view_listener_t
 void handle_compress_image()
 {
     LLFilePicker& picker = LLFilePicker::instance();
-    if (picker.getMultipleOpenFiles(LLFilePicker::FFLOAD_IMAGE))
+    if (picker.getMultipleOpenFiles(FFLOAD_IMAGE))
     {
         std::string infile = picker.getFirstFile();
         while (!infile.empty())
@@ -1438,7 +1438,7 @@ void on_windlight_imported(LLUUID inventory_id, LLSD results, const std::string&
     }
 }
 
-const void import_windlight_bulk(const std::vector<std::string>& filenames, LLFilePicker::ELoadFilter filter_type, LLSettingsType::type_e settings_type)
+const void import_windlight_bulk(const std::vector<std::string>& filenames, ELoadFilter filter_type, LLSettingsType::type_e settings_type)
 {
     LLSD messages;
     LLSettingsBase::ptr_t settings;
@@ -1496,7 +1496,7 @@ class FSFileImportWindlightBulk : public view_listener_t
     bool handleEvent(const LLSD& userdata)
     {
         LLSettingsType::type_e settings_type = (LLSettingsType::type_e)userdata.asInteger();
-        LLFilePickerReplyThread::startPicker(boost::bind(&import_windlight_bulk, _1, _2, settings_type), LLFilePicker::FFLOAD_XML, true);
+        LLFilePickerReplyThread::startPicker(boost::bind(&import_windlight_bulk, _1, _2, settings_type), FFLOAD_XML, true);
         return true;
     }
 };

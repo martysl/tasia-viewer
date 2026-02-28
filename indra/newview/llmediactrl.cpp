@@ -1216,11 +1216,11 @@ void LLMediaCtrl::handleMediaEvent(LLPluginClassMedia* self, EMediaEvent event)
                 // pick a file from SAVE FILE dialog
                 // for now the only thing that should be allowed to save is 360s
                 std::string suggested_filename = self->getFileDownloadFilename();
-                LLFilePicker::ESaveFilter filter = LLFilePicker::FFSAVE_ALL;
+                ESaveFilter filter = FFSAVE_ALL;
                 if (suggested_filename.find(".jpg") != std::string::npos || suggested_filename.find(".jpeg") != std::string::npos)
-                    filter = LLFilePicker::FFSAVE_JPEG;
+                    filter = FFSAVE_JPEG;
                 if (suggested_filename.find(".png") != std::string::npos)
-                    filter = LLFilePicker::FFSAVE_PNG;
+                    filter = FFSAVE_PNG;
 
                 (new LLMediaFilePicker(self, filter, suggested_filename))->getFile();
             }

@@ -1245,15 +1245,15 @@ void LLFloaterTexturePicker::onBtnAdd(void* userdata)
 
     if (self->mInventoryPickType == PICK_TEXTURE_MATERIAL)
     {
-        LLFilePickerReplyThread::startPicker(boost::bind(&onPickerCallback, _1, self->getHandle()), LLFilePicker::FFLOAD_MATERIAL_TEXTURE, true);
+        LLFilePickerReplyThread::startPicker(boost::bind(&onPickerCallback, _1, self->getHandle()), FFLOAD_MATERIAL_TEXTURE, true);
     }
     else if (self->mInventoryPickType == PICK_TEXTURE)
     {
-        LLFilePickerReplyThread::startPicker(boost::bind(&onPickerCallback, _1, self->getHandle()), LLFilePicker::FFLOAD_IMAGE, true);
+        LLFilePickerReplyThread::startPicker(boost::bind(&onPickerCallback, _1, self->getHandle()), FFLOAD_IMAGE, true);
     }
     else if (self->mInventoryPickType == PICK_MATERIAL)
     {
-        LLFilePickerReplyThread::startPicker(boost::bind(&onPickerCallback, _1, self->getHandle()), LLFilePicker::FFLOAD_MATERIAL, true);
+        LLFilePickerReplyThread::startPicker(boost::bind(&onPickerCallback, _1, self->getHandle()), FFLOAD_MATERIAL, true);
     }
 }
 

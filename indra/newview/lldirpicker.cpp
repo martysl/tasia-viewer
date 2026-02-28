@@ -203,7 +203,7 @@ void LLDirPicker::reset()
 //static
 bool LLDirPicker::getDir(std::string* filename, bool blocking)
 {
-    LLFilePicker::ELoadFilter filter=LLFilePicker::FFLOAD_DIRECTORY;
+    ELoadFilter filter=LLFilePicker::FFLOAD_DIRECTORY;
 
     return mFilePicker->getOpenFile(filter, true);
 }

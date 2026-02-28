@@ -1066,7 +1066,7 @@ void LLFloaterUIPreview::onClickEditFloater()
 void LLFloaterUIPreview::onClickBrowseForEditor()
 {
     // Let the user choose an executable through the file picker dialog box
-    LLFilePickerReplyThread::startPicker(boost::bind(&LLFloaterUIPreview::getExecutablePath, this, _1), LLFilePicker::FFLOAD_EXE, false);
+    LLFilePickerReplyThread::startPicker(boost::bind(&LLFloaterUIPreview::getExecutablePath, this, _1), FFLOAD_EXE, false);
 }
 
 void LLFloaterUIPreview::getExecutablePath(const std::vector<std::string>& filenames)
@@ -1122,7 +1122,7 @@ void LLFloaterUIPreview::getExecutablePath(const std::vector<std::string>& filen
 void LLFloaterUIPreview::onClickBrowseForDiffs()
 {
     // create load dialog box
-    LLFilePickerReplyThread::startPicker(boost::bind(&LLFloaterUIPreview::getDiffsFilePath, this, _1), LLFilePicker::FFLOAD_XML, false);
+    LLFilePickerReplyThread::startPicker(boost::bind(&LLFloaterUIPreview::getDiffsFilePath, this, _1), FFLOAD_XML, false);
 }
 
 void LLFloaterUIPreview::getDiffsFilePath(const std::vector<std::string>& filenames)

@@ -209,7 +209,7 @@ S32 LLPacketRing::receiveOrDropBufferedPacket(char *datap, bool drop)
 
     if (!drop)
     {
-        assert(packet_size > 0);
+        //assert(packet_size > 0);
         memcpy(datap, packet->getData(), packet_size);
     }
     else

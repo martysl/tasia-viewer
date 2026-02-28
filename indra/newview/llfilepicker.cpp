@@ -48,6 +48,10 @@
 
 #if LL_LINUX
 #include "llhttpconstants.h"    // file picker uses some of thes constants on Linux
+#if LL_XDG_PORTAL
+#include <cstdint>
+#include "llfilepicker_portal.h"
+#endif
 #endif
 
 //
@@ -812,7 +816,7 @@ bool LLFilePicker::doNavChooseDialogModeless(ELoadFilter filter,
     return true;
 }
 
-void set_nav_save_data(LLFilePicker::ESaveFilter filter, std::string &extension, std::string &type, std::string &creator)
+void set_nav_save_data(ESaveFilter filter, std::string &extension, std::string &type, std::string &creator)
 {
     switch (filter)
     {
@@ -821,12 +825,12 @@ void set_nav_save_data(LLFilePicker::ESaveFilter filter, std::string &extension,
             creator = "TVOD";
             extension = "wav";
             break;
-        case LLFilePicker::FFSAVE_TGA:
+        case FFSAVE_TGA:
             type = "TPIC";
             creator = "prvw";
             extension = "tga";
             break;
-        case LLFilePicker::FFSAVE_TGAPNG:
+        case FFSAVE_TGAPNG:
             type = "PNG";
             creator = "prvw";
             extension = "png,tga";
@@ -836,12 +840,12 @@ void set_nav_save_data(LLFilePicker::ESaveFilter filter, std::string &extension,
             creator = "prvw";
             extension = "bmp";
             break;
-        case LLFilePicker::FFSAVE_JPEG:
+        case FFSAVE_JPEG:
             type = "JPEG";
             creator = "prvw";
             extension = "jpeg";
             break;
-        case LLFilePicker::FFSAVE_PNG:
+        case FFSAVE_PNG:
             type = "PNG ";
             creator = "prvw";
             extension = "png";
@@ -857,21 +861,21 @@ void set_nav_save_data(LLFilePicker::ESaveFilter filter, std::string &extension,
             creator = "\?\?\?\?";
             extension = "xaf";
             break;
-        case LLFilePicker::FFSAVE_GLTF:
+        case FFSAVE_GLTF:
             type = "\?\?\?\?";
             creator = "\?\?\?\?";
             extension = "gltf";
             break;
 
         // <FS:TS> Compile fix
-        //case LLFilePicker::FFSAVE_XML:
+        //case FFSAVE_XML:
         //    type = "\?\?\?\?";
         //    creator = "\?\?\?\?";
         //    extension = "xml";
         //    break;
         // </FS:TS> Compile fix
 
-        case LLFilePicker::FFSAVE_RAW:
+        case FFSAVE_RAW:
             type = "\?\?\?\?";
             creator = "\?\?\?\?";
             extension = "raw";
@@ -883,38 +887,38 @@ void set_nav_save_data(LLFilePicker::ESaveFilter filter, std::string &extension,
             extension = "j2c";
             break;
 
-        case LLFilePicker::FFSAVE_SCRIPT:
+        case FFSAVE_SCRIPT:
             type = "LSL ";
             creator = "\?\?\?\?";
             extension = "lsl";
             break;
 
         // <FS:CR> Export filter
-        case LLFilePicker::FFSAVE_EXPORT:
+        case FFSAVE_EXPORT:
             type = "OXP ";
             creator = "\?\?\?\?";
             extension = "oxp";
             break;
-        case LLFilePicker::FFSAVE_COLLADA:
+        case FFSAVE_COLLADA:
             type = "DAE ";
             creator = "\?\?\?\?";
             extension = "dae";
             break;
         // <FS:CR> CSV Filter
-        case LLFilePicker::FFSAVE_CSV:
+        case FFSAVE_CSV:
             type = "CSV ";
             creator = "\?\?\?\?";
             extension = "csv";
             break;
         // </FS:CR>
-        case LLFilePicker::FFSAVE_BEAM:
-        case LLFilePicker::FFSAVE_XML:
+        case FFSAVE_BEAM:
+        case FFSAVE_XML:
             type = "XML ";
             creator = "\?\?\?\?";
             extension = "xml";
             break;
 
-        case LLFilePicker::FFSAVE_ALL:
+        case FFSAVE_ALL:
         default:
             type = "\?\?\?\?";
             creator = "\?\?\?\?";
@@ -1791,6 +1795,89 @@ bool LLFilePicker::openFileDialog( int32_t filter, bool blocking, EType aType )
     if ( check_local_file_access_enabled() == false )
         return false;
 
+#if LL_XDG_PORTAL
+    if (LLPortalFileChooser::IsPortalAvailable())
+    {
+        gViewerWindow->getWindow()->beforeDialog();
+        reset();
+
+        std::string title;
+        if (aType == eSaveFile)
+        {
+            title = LLTrans::getString("save_file_verb");
+        }
+        else if (aType == eOpenMultiple)
+        {
+            title = LLTrans::getString("load_files");
+        }
+        else
+        {
+            title = LLTrans::getString("load_file_verb");
+        }
+
+        std::uint64_t x11WindowId = 0;
+#if LL_SDL
+        x11WindowId = static_cast<std::uint64_t>(LLWindowSDL::get_SDL_XWindowID());
+#endif
+
+        LLPortalFileChooser::Result portalResult;
+        bool save = false;
+        if (aType == eSaveFile)
+        {
+            save = true;
+            portalResult = LLPortalFileChooser::OpenForSave(
+                static_cast<ESaveFilter>(filter),
+                x11WindowId,
+                title,
+                std::string(),
+                blocking
+            );
+        }
+        else
+        {
+            portalResult = LLPortalFileChooser::OpenForLoad(
+                static_cast<ELoadFilter>(filter),
+                aType == eOpenMultiple,
+                x11WindowId,
+                title,
+                blocking
+            );
+        }
+
+        gViewerWindow->getWindow()->afterDialog();
+
+        if (portalResult._accepted && !portalResult._paths.empty())
+        {
+            for (const std::string& rawPath : portalResult._paths)
+            {
+                if (save)
+                {
+                    mFiles.push_back(LLPortalFileChooser::checkDefaultExtension(rawPath, filter));
+                }
+                else
+                {
+                    mFiles.push_back(rawPath);
+                }
+            }
+            if (aType == eOpenMultiple && getFileCount() > 1)
+            {
+                mLocked = true;
+            }
+            LLFrameTimer::updateFrameTime();
+            return true;
+        }
+
+        // If the portal daemon was present but user cancelled, mirror legacy behavior.
+        if (blocking)
+        {
+            LLFrameTimer::updateFrameTime();
+            return false;
+        }
+        return false;
+    }
+#endif // LL_XDG_PORTAL
+
+    // Fallback to existing FLTK path (unchanged)
     gViewerWindow->getWindow()->beforeDialog();
     reset();
     Fl_Native_File_Chooser::Type flType = Fl_Native_File_Chooser::BROWSE_FILE;
@@ -2016,7 +2103,7 @@ bool LLFilePicker::openFileDialog( int32_t filter, bool blocking, EType aType )
         {
             char const *pFile = flDlg.filename(i);
             if( pFile && strlen(pFile) > 0 )
-                mFiles.push_back( pFile  );
+                mFiles.emplace_back(pFile  );
         }
     }
     else if( res == -1 )

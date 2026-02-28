@@ -11516,7 +11516,7 @@ void LLVOAvatar::dumpArchetypeXML(const std::string& prefix, bool group_by_weara
 
 // <FS:CR> FIRE-8893  - Dump archetype xml to user defined location
     LLFilePickerReplyThread::startPicker(boost::bind(&LLVOAvatar::dumpArchetypeXMLCallback, this, _1, group_by_wearables),
-        LLFilePicker::FFSAVE_XML, outfilename);
+        FFSAVE_XML, outfilename);
 }
 
 void LLVOAvatar::dumpArchetypeXMLCallback(const std::vector<std::string>& filenames, bool group_by_wearables)

@@ -1967,7 +1967,7 @@ void LLPanelGroupMembersSubTab::onExportMembersToXML()
 
     LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID);
     LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelGroupMembersSubTab::onExportMembersToXMLCallback, this, _1),
-        LLFilePicker::FFSAVE_CSV, LLDir::getScrubbedFileName(gdatap->mName + "_members.csv"));
+        FFSAVE_CSV, LLDir::getScrubbedFileName(gdatap->mName + "_members.csv"));
 }
 
 void LLPanelGroupMembersSubTab::onExportMembersToXMLCallback(const std::vector<std::string>& filenames)

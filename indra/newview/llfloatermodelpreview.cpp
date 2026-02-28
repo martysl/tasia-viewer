@@ -98,7 +98,7 @@ private:
 };
 
 LLMeshFilePicker::LLMeshFilePicker(LLModelPreview* mp, S32 lod)
-: LLFilePickerThread(LLFilePicker::FFLOAD_MODEL)
+: LLFilePickerThread(FFLOAD_MODEL)
     {
         mMP = mp;
         mLOD = lod;
@@ -123,7 +123,7 @@ void LLMeshFilePicker::notify(const std::vector<std::string>& filenames)
 }
 
 // <FS:Beq> support for settings panel of floater
-const void updateUDPhysics(const std::vector<std::string>& filenames, LLFilePicker::ELoadFilter type)
+const void updateUDPhysics(const std::vector<std::string>& filenames, ELoadFilter type)
 {
     gSavedSettings.setString("FSPhysicsPresetUser1", filenames[0]);
 }
@@ -167,7 +167,7 @@ mAvatarTabIndex(0)
 //static
 void LLFloaterModelPreview::onSelectUDPhysics(LLUICtrl* ctrl, void* userdata)
 {
-    LLFilePickerReplyThread::startPicker(boost::bind(&updateUDPhysics, _1, _2), LLFilePicker::FFLOAD_COLLADA, false);
+    LLFilePickerReplyThread::startPicker(boost::bind(&updateUDPhysics, _1, _2), FFLOAD_COLLADA, false);
 }
 // </FS:Beq>
 

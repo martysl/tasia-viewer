@@ -899,6 +899,15 @@ source_group("Source Files\\GLTF" FILES ${viewer_GLTF_SOURCE_FILES})
 list(APPEND viewer_SOURCE_FILES ${viewer_GLTF_SOURCE_FILES})
 # </FS:Ansariel> Group GLTF files into their subfolders
 
+if (LINUX)
+   list(APPEND viewer_SOURCE_FILES
+           llfilepicker_portal.cpp
+   )
+   list(APPEND viewer_HEADER_FILES
+           llfilepicker_portal.h
+   )
+endif()
+
 if (OPENSIM)
     list(APPEND viewer_SOURCE_FILES
                 fsgridhandler.cpp
@@ -1133,6 +1142,7 @@ set(viewer_HEADER_FILES
     llfavoritesbar.h
     llfeaturemanager.h
     llfetchedgltfmaterial.h
+    llfilepicker_etype.h
     llfilepicker.h
     llfilteredwearablelist.h
     llfirstuse.h
@@ -2583,11 +2593,16 @@ endif()
 if (LINUX)
     # <FS:Zi> put these additional libraries in the viewer build target here as it didn't
     # work to put them in via their cmake/* files
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(DBUS REQUIRED dbus-1)
+    target_include_directories(${VIEWER_BINARY_NAME} PRIVATE ${DBUS_INCLUDE_DIRS})
+    target_link_directories(${VIEWER_BINARY_NAME} PRIVATE ${DBUS_LIBRARY_DIRS})
     target_link_libraries(${VIEWER_BINARY_NAME}
         "dl"
         # <FS:Zi> I wish I knew how to make this cleaner, this looks like a mess
         ll::vorbis
         ${GIO_LIBRARIES}
+        ${DBUS_LIBRARIES}
     )
 endif (LINUX)
 

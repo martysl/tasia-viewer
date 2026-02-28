@@ -84,7 +84,7 @@ extern bool gCubeSnapshot;
 // *TODO: Consider enabling mipmaps (they have been disabled for a long time). Likely has a significant performance impact for tiled/high texture repeat media. Mip generation in a shader may also be an option if necessary.
 constexpr bool USE_MIPMAPS = false;
 
-void init_threaded_picker_load_dialog(LLPluginClassMedia* plugin, LLFilePicker::ELoadFilter filter, bool get_multiple)
+void init_threaded_picker_load_dialog(LLPluginClassMedia* plugin, ELoadFilter filter, bool get_multiple)
 {
     (new LLMediaFilePicker(plugin, filter, get_multiple))->getFile(); // will delete itself
 }
@@ -3491,7 +3491,7 @@ void LLViewerMediaImpl::handleMediaEvent(LLPluginClassMedia* plugin, LLPluginCla
         {
             LL_DEBUGS("Media") << "Media event - file pick requested." <<  LL_ENDL;
 
-            init_threaded_picker_load_dialog(plugin, LLFilePicker::FFLOAD_ALL, plugin->getIsMultipleFilePick());
+            init_threaded_picker_load_dialog(plugin, FFLOAD_ALL, plugin->getIsMultipleFilePick());
         }
         break;
 

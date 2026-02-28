@@ -66,7 +66,7 @@ private:
 
 LLThumbnailImagePicker::LLThumbnailImagePicker(const LLUUID &item_id,
                                                LLFloaterSimpleSnapshot::completion_t callback)
-    : LLFilePickerThread(LLFilePicker::FFLOAD_IMAGE)
+    : LLFilePickerThread(FFLOAD_IMAGE)
     , mInventoryId(item_id)
     , mCallback(callback)
 {
@@ -75,7 +75,7 @@ LLThumbnailImagePicker::LLThumbnailImagePicker(const LLUUID &item_id,
 LLThumbnailImagePicker::LLThumbnailImagePicker(const LLUUID &item_id,
                                                const LLUUID &task_id,
                                                LLFloaterSimpleSnapshot::completion_t callback)
-    : LLFilePickerThread(LLFilePicker::FFLOAD_IMAGE)
+    : LLFilePickerThread(FFLOAD_IMAGE)
     , mInventoryId(item_id)
     , mTaskId(task_id)
     , mCallback(callback)

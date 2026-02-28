@@ -423,24 +423,24 @@ void LLPreviewTexture::saveAs(EFileformatType format, uuid_vec_t remaining_ids)
         return;
 
     loaded_callback_func callback;
-    LLFilePicker::ESaveFilter saveFilter;
+    ESaveFilter saveFilter;
 
     switch (format)
     {
         case LLPreviewTexture::FORMAT_PNG:
             callback = LLPreviewTexture::onFileLoadedForSavePNG;
-            saveFilter = LLFilePicker::FFSAVE_PNG;
+            saveFilter = FFSAVE_PNG;
             break;
         case LLPreviewTexture::FORMAT_TGA:
         default:
             callback = LLPreviewTexture::onFileLoadedForSaveTGA;
-            saveFilter = LLFilePicker::FFSAVE_TGA;
+            saveFilter = FFSAVE_TGA;
             break;
     }
 
     // <FS:Ansariel> Undo MAINT-2897 and use our own texture format selection
     //std::string filename = getItem() ? LLDir::getScrubbedFileName(getItem()->getName()) : LLStringUtil::null;
-    //LLFilePickerReplyThread::startPicker(boost::bind(&LLPreviewTexture::saveTextureToFile, this, _1), LLFilePicker::FFSAVE_TGAPNG, filename);
+    //LLFilePickerReplyThread::startPicker(boost::bind(&LLPreviewTexture::saveTextureToFile, this, _1), FFSAVE_TGAPNG, filename);
     std::string filename;
 
     if (getItem())

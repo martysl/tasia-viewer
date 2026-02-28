@@ -271,7 +271,7 @@ bool LLFloaterSpellCheckerImport::postBuild()
 
 void LLFloaterSpellCheckerImport::onBtnBrowse()
 {
-    LLFilePickerReplyThread::startPicker(boost::bind(&LLFloaterSpellCheckerImport::importSelectedDictionary, this, _1), LLFilePicker::FFLOAD_DICTIONARY, false);
+    LLFilePickerReplyThread::startPicker(boost::bind(&LLFloaterSpellCheckerImport::importSelectedDictionary, this, _1), FFLOAD_DICTIONARY, false);
 }
 
 void LLFloaterSpellCheckerImport::importSelectedDictionary(const std::vector<std::string>& filenames)

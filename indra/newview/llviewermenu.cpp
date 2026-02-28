@@ -10749,7 +10749,7 @@ class FSStreamListExportXML :public view_listener_t
     bool handleEvent(const LLSD& userdata)
     {
         LLFilePicker& file_picker = LLFilePicker::instance();
-        if(file_picker.getSaveFile(LLFilePicker::FFSAVE_XML, LLDir::getScrubbedFileName("stream_list.xml")))
+        if(file_picker.getSaveFile(FFSAVE_XML, LLDir::getScrubbedFileName("stream_list.xml")))
         {
             std::string filename = file_picker.getFirstFile();
             llofstream export_file(filename.c_str());
@@ -10771,7 +10771,7 @@ class FSStreamListImportXML :public view_listener_t
     bool handleEvent(const LLSD& userdata)
     {
         LLFilePicker& file_picker = LLFilePicker::instance();
-        if(file_picker.getOpenFile(LLFilePicker::FFLOAD_XML))
+        if(file_picker.getOpenFile(FFLOAD_XML))
         {
             std::string filename = file_picker.getFirstFile();
             llifstream stream_list(filename.c_str());
@@ -11299,7 +11299,7 @@ void handle_save_to_xml(void*)
     LLStringUtil::replaceChar(default_name, '"', '_');
 
     LLFilePicker& picker = LLFilePicker::instance();
-    if (picker.getSaveFile(LLFilePicker::FFSAVE_XML, default_name))
+    if (picker.getSaveFile(FFSAVE_XML, default_name))
     {
         std::string filename = picker.getFirstFile();
         LLUICtrlFactory::getInstance()->saveToXML(frontmost, filename);
@@ -11309,7 +11309,7 @@ void handle_save_to_xml(void*)
 void handle_load_from_xml(void*)
 {
     LLFilePicker& picker = LLFilePicker::instance();
-    if (picker.getOpenFile(LLFilePicker::FFLOAD_XML))
+    if (picker.getOpenFile(FFLOAD_XML))
     {
         std::string filename = picker.getFirstFile();
         LLFloater* floater = new LLFloater(LLSD());

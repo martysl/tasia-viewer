@@ -1241,7 +1241,7 @@ void FSFloaterObjectExport::updateUI()
 void FSFloaterObjectExport::onClickExport()
 {
     LLFilePickerReplyThread::startPicker(boost::bind(&FSFloaterObjectExport::onExportFileSelected, this, _1),
-        LLFilePicker::FFSAVE_EXPORT, LLDir::getScrubbedFileName(mObjectName + ".oxp"));
+        FFSAVE_EXPORT, LLDir::getScrubbedFileName(mObjectName + ".oxp"));
 }
 
 void FSFloaterObjectExport::onExportFileSelected(const std::vector<std::string>& filenames)

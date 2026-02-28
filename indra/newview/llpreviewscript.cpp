@@ -1796,7 +1796,7 @@ bool LLScriptEdCore::handleKeyHere(KEY key, MASK mask)
 
 void LLScriptEdCore::onBtnLoadFromFile( void* data )
 {
-    LLFilePickerReplyThread::startPicker(boost::bind(&LLScriptEdCore::loadScriptFromFile, _1, data), LLFilePicker::FFLOAD_SCRIPT, false);
+    LLFilePickerReplyThread::startPicker(boost::bind(&LLScriptEdCore::loadScriptFromFile, _1, data), FFLOAD_SCRIPT, false);
 }
 
 void LLScriptEdCore::loadScriptFromFile(const std::vector<std::string>& filenames, void* data)
@@ -1837,7 +1837,7 @@ void LLScriptEdCore::onBtnSaveToFile( void* userdata )
 
     if( self->mSaveCallback )
     {
-        LLFilePickerReplyThread::startPicker(boost::bind(&LLScriptEdCore::saveScriptToFile, _1, userdata), LLFilePicker::FFSAVE_SCRIPT, self->mScriptName);
+        LLFilePickerReplyThread::startPicker(boost::bind(&LLScriptEdCore::saveScriptToFile, _1, userdata), FFSAVE_SCRIPT, self->mScriptName);
     }
 }
 

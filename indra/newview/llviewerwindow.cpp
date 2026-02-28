@@ -5833,20 +5833,20 @@ void LLViewerWindow::saveImageNumbered(LLImageFormatted *image, bool force_picke
         std::string proposed_name(sSnapshotBaseName);
 
         // getSaveFile will append an appropriate extension to the proposed name, based on the ESaveFilter constant passed in.
-        LLFilePicker::ESaveFilter pick_type;
+        ESaveFilter pick_type;
 
         if (extension == ".j2c")
-            pick_type = LLFilePicker::FFSAVE_J2C;
+            pick_type = FFSAVE_J2C;
         else if (extension == ".bmp")
-            pick_type = LLFilePicker::FFSAVE_BMP;
+            pick_type = FFSAVE_BMP;
         else if (extension == ".jpg")
-            pick_type = LLFilePicker::FFSAVE_JPEG;
+            pick_type = FFSAVE_JPEG;
         else if (extension == ".png")
-            pick_type = LLFilePicker::FFSAVE_PNG;
+            pick_type = FFSAVE_PNG;
         else if (extension == ".tga")
-            pick_type = LLFilePicker::FFSAVE_TGA;
+            pick_type = FFSAVE_TGA;
         else
-            pick_type = LLFilePicker::FFSAVE_ALL;
+            pick_type = FFSAVE_ALL;
 
         LLFilePickerReplyThread::startPicker(boost::bind(&LLViewerWindow::onDirectorySelected, this, _1, formatted_image, success_cb, failure_cb), pick_type, proposed_name,
                                         boost::bind(&LLViewerWindow::onSelectionFailure, this, failure_cb));

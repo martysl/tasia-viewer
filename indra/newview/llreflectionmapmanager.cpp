@@ -107,7 +107,7 @@ void load_exr(const std::string& filename)
 void hdri_preview()
 {
     LLFilePickerReplyThread::startPicker(
-        [](const std::vector<std::string>& filenames, LLFilePicker::ELoadFilter load_filter, LLFilePicker::ESaveFilter save_filter)
+        [](const std::vector<std::string>& filenames, ELoadFilter load_filter, ESaveFilter save_filter)
         {
             if (LLAppViewer::instance()->quitRequested())
             {
@@ -118,7 +118,7 @@ void hdri_preview()
                 load_exr(filenames[0]);
             }
         },
-        LLFilePicker::FFLOAD_HDRI,
+        FFLOAD_HDRI,
         true);
 }
 

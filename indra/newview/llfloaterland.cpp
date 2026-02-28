@@ -3305,7 +3305,7 @@ void LLPanelLandAccess::onClickExportList(LLNameListCtrl* list, const std::strin
         LLNotificationsUtil::add("GenericAlert", args);
         return;
     }
-    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelLandAccess::exportListCallback, this, list, _1), LLFilePicker::FFSAVE_CSV, filename);
+    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelLandAccess::exportListCallback, this, list, _1), FFSAVE_CSV, filename);
 }
 
 void LLPanelLandAccess::onClickExportAccess()
@@ -3361,7 +3361,7 @@ void LLPanelLandAccess::onClickImportList(LLNameListCtrl* list)
         LLNotificationsUtil::add("GenericAlert", args);
         return;
     }
-    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelLandAccess::importListCallback, this, list, _1), LLFilePicker::FFLOAD_ALL, false);
+    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelLandAccess::importListCallback, this, list, _1), FFLOAD_ALL, false);
 }
 
 void LLPanelLandAccess::onClickImportAccess()

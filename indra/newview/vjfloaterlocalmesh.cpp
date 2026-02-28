@@ -62,7 +62,7 @@ private:
 };
 
 LLFloaterLocalMeshFilePicker::LLFloaterLocalMeshFilePicker(LLFloaterLocalMesh* parent_floater)
-    : LLFilePickerThread(LLFilePicker::FFLOAD_COLLADA)
+    : LLFilePickerThread(FFLOAD_COLLADA)
 {
     mParentFloater = parent_floater;
 }

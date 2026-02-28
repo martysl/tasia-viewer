@@ -2237,7 +2237,7 @@ bool LLPanelRegionTerrainInfo::callbackTextureHeights(const LLSD& notification, 
 //void LLPanelRegionTerrainInfo::onClickDownloadRaw(void* data)
 //{
 //  LLFilePicker& picker = LLFilePicker::instance();
-//  if (!picker.getSaveFile(LLFilePicker::FFSAVE_RAW, "terrain.raw"))
+//  if (!picker.getSaveFile(FFSAVE_RAW, "terrain.raw"))
 //  {
 //      LL_WARNS() << "No file" << LL_ENDL;
 //      return;
@@ -2256,7 +2256,7 @@ bool LLPanelRegionTerrainInfo::callbackTextureHeights(const LLSD& notification, 
 //void LLPanelRegionTerrainInfo::onClickUploadRaw(void* data)
 //{
 //  LLFilePicker& picker = LLFilePicker::instance();
-//  if (!picker.getOpenFile(LLFilePicker::FFLOAD_RAW))
+//  if (!picker.getOpenFile(FFLOAD_RAW))
 //  {
 //      LL_WARNS() << "No file" << LL_ENDL;
 //      return;
@@ -2277,7 +2277,7 @@ bool LLPanelRegionTerrainInfo::callbackTextureHeights(const LLSD& notification, 
 void LLPanelRegionTerrainInfo::onClickDownloadRaw(void* data)
 {
     LLPanelRegionTerrainInfo* self = (LLPanelRegionTerrainInfo*)data;
-    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelRegionTerrainInfo::onDownloadRawFilepickerCB, self, _1), LLFilePicker::FFSAVE_RAW, "terrain.raw");
+    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelRegionTerrainInfo::onDownloadRawFilepickerCB, self, _1), FFSAVE_RAW, "terrain.raw");
 }
 
 void LLPanelRegionTerrainInfo::onDownloadRawFilepickerCB(const std::vector<std::string>& filenames)
@@ -2296,7 +2296,7 @@ void LLPanelRegionTerrainInfo::onDownloadRawFilepickerCB(const std::vector<std::
 void LLPanelRegionTerrainInfo::onClickUploadRaw(void* data)
 {
     LLPanelRegionTerrainInfo* self = (LLPanelRegionTerrainInfo*)data;
-    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelRegionTerrainInfo::onUploadRawFilepickerCB, self, _1), LLFilePicker::FFLOAD_RAW, false);
+    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelRegionTerrainInfo::onUploadRawFilepickerCB, self, _1), FFLOAD_RAW, false);
 }
 
 void LLPanelRegionTerrainInfo::onUploadRawFilepickerCB(const std::vector<std::string>& filenames)
@@ -4647,7 +4647,7 @@ void LLPanelEstateAccess::onClickExportList(LLNameListCtrl* list, const std::str
         LLNotificationsUtil::add("GenericAlert", args);
         return;
     }
-    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelEstateAccess::exportListCallback, this, list, _1), LLFilePicker::FFSAVE_CSV, filename);
+    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelEstateAccess::exportListCallback, this, list, _1), FFSAVE_CSV, filename);
 }
 
 void LLPanelEstateAccess::onClickExportEstateManagerList()
@@ -4729,7 +4729,7 @@ void LLPanelEstateAccess::onClickImportList(LLNameListCtrl* list)
         LLNotificationsUtil::add("GenericAlert", args);
         return;
     }
-    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelEstateAccess::importListCallback, this, list, _1), LLFilePicker::FFLOAD_ALL, false);
+    LLFilePickerReplyThread::startPicker(boost::bind(&LLPanelEstateAccess::importListCallback, this, list, _1), FFLOAD_ALL, false);
 }
 
 void LLPanelEstateAccess::onClickImportEstateManagerList()
