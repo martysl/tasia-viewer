@@ -836,7 +836,7 @@ bool LLDXHardware::getInfo(bool vram_only, bool disable_wmi)
         else
         {
             get_wstring(device_containerp, L"szKeyDeviceID", deviceID, 512);
-            LL_WARNS() << "szDeviceID" << deviceID << LL_ENDL;
+            LL_WARNS() << "szDeviceID" << ll_convert_wide_to_string(deviceID) << LL_ENDL;
             // '+9' to avoid ENUM\\PCI\\ prefix
             // Returns string like Enum\\PCI\\VEN_10DE&DEV_1F06&SUBSYS...
             // and since GetVideoMemoryViaWMI searches by PNPDeviceID it is sufficient

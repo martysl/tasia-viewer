@@ -3346,7 +3346,7 @@ bool LLWindowWin32::pasteTextFromClipboard(LLWString &dst)
                 WCHAR *utf16str = (WCHAR*) GlobalLock(h_data);
                 if (utf16str)
                 {
-                    dst = utf16str_to_wstring(utf16str);
+                    dst = ll_convert_wide_to_wstring(utf16str);
                     LLWStringUtil::removeWindowsCR(dst);
                     GlobalUnlock(h_data);
                     success = true;
