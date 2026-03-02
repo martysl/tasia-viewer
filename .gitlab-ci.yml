@@ -10,6 +10,7 @@ build-job-linux:
     ARTIFACT_STRIP_PATH: "viewer/build-linux-x86_64/newview"
 
   script:
+    - trap 'rc=$?; if [ $rc -ne 0 ]; then echo "Build failed (exit $rc), waiting 30s for log flush..."; sleep 30; fi; exit $rc' EXIT
     - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR
     - rm -rf viewer
@@ -29,8 +30,6 @@ build-job-linux:
     - chmod +x ./viewer/ci/linux/upload-symbols.sh
     - ./viewer/ci/linux/build.sh
     - ./viewer/ci/linux/upload-symbols.sh
-  after_script:
-    - if [ "$CI_JOB_STATUS" = "failed" ]; then echo "Build failed, waiting 10 seconds..."; sleep 10; fi
   tags:
     - build
     - linux
@@ -55,9 +54,7 @@ build-job-windows:
     - "cd viewer"
     - "git reset --hard %CI_COMMIT_SHA%"
     - "cd .."
-    - '"C:\Program Files\Git\bin\bash.exe" -c "./viewer/ci/windows/run.sh \"%CI_COMMIT_SHA%\""'
-  after_script:
-    - 'if "%CI_JOB_STATUS%"=="failed" (echo Build failed, waiting 10 seconds... & timeout /t 10 /nobreak > nul)'
+    - '"C:\Program Files\Git\bin\bash.exe" -c "trap ''rc=$?; if [ $rc -ne 0 ]; then echo Build failed (exit $rc), waiting 30s for log flush...; sleep 30; fi; exit $rc'' EXIT; ./viewer/ci/windows/run.sh \"%CI_COMMIT_SHA%\""'
   tags:
     - build
     - windows
@@ -69,6 +66,7 @@ build-job-windows:
 build-job-mac:
   stage: build_mac
   script:
+    - trap 'rc=$?; if [ $rc -ne 0 ]; then echo "Build failed (exit $rc), waiting 30s for log flush..."; sleep 30; fi; exit $rc' EXIT
     - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR
     - rm -rf viewer
@@ -83,8 +81,6 @@ build-job-mac:
     - chmod +x ./viewer/ci/mac/upload-symbols.sh
     - ./viewer/ci/mac/build.sh
     - ./viewer/ci/mac/upload-symbols.sh
-  after_script:
-    - if [ "$CI_JOB_STATUS" = "failed" ]; then echo "Build failed, waiting 10 seconds..."; sleep 10; fi
   tags:
     - build
     - macos
