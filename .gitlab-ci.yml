@@ -1,7 +1,7 @@
 stages:
-  - build_linux
   - build_windows
   - build_mac
+  - build_linux
 
 build-job-linux:
   stage: build_linux
@@ -10,7 +10,6 @@ build-job-linux:
     ARTIFACT_STRIP_PATH: "viewer/build-linux-x86_64/newview"
 
   script:
-    - trap 'rc=$?; if [ $rc -ne 0 ]; then echo "Build failed (exit $rc), waiting 30s for log flush..."; sleep 30; fi; exit $rc' EXIT
     - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR
     - rm -rf viewer
@@ -28,7 +27,20 @@ build-job-linux:
     - pwd
     - chmod +x ./viewer/ci/linux/build.sh
     - chmod +x ./viewer/ci/linux/upload-symbols.sh
-    - ./viewer/ci/linux/build.sh
+    - |
+      set -o pipefail
+      ./viewer/ci/linux/build.sh 2>&1 | tee /tmp/build.log || {
+        rc=$?
+        echo ""
+        echo "========== BUILD FAILED (exit code $rc) =========="
+        echo "Last 200 lines of build output:"
+        echo "=================================================="
+        tail -200 /tmp/build.log
+        echo "=================================================="
+        echo "Waiting 30s for log flush..."
+        sleep 30
+        exit $rc
+      }
     - ./viewer/ci/linux/upload-symbols.sh
   tags:
     - build
@@ -54,7 +66,7 @@ build-job-windows:
     - "cd viewer"
     - "git reset --hard %CI_COMMIT_SHA%"
     - "cd .."
-    - '"C:\Program Files\Git\bin\bash.exe" -c "trap ''rc=$?; if [ $rc -ne 0 ]; then echo Build failed (exit $rc), waiting 30s for log flush...; sleep 30; fi; exit $rc'' EXIT; ./viewer/ci/windows/run.sh \"%CI_COMMIT_SHA%\""'
+    - '"C:\Program Files\Git\bin\bash.exe" -c "set -o pipefail; ./viewer/ci/windows/run.sh \"%CI_COMMIT_SHA%\" 2>&1 | tee /tmp/build.log || { rc=$?; echo; echo ========== BUILD FAILED with exit code $rc ==========; echo Last 200 lines of build output:; echo ==================================================; tail -200 /tmp/build.log; echo ==================================================; echo Waiting 30s for log flush...; sleep 30; exit $rc; }"'
   tags:
     - build
     - windows
@@ -66,7 +78,6 @@ build-job-windows:
 build-job-mac:
   stage: build_mac
   script:
-    - trap 'rc=$?; if [ $rc -ne 0 ]; then echo "Build failed (exit $rc), waiting 30s for log flush..."; sleep 30; fi; exit $rc' EXIT
     - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR
     - rm -rf viewer
@@ -79,7 +90,20 @@ build-job-mac:
     - cd ..
     - chmod +x ./viewer/ci/mac/build.sh
     - chmod +x ./viewer/ci/mac/upload-symbols.sh
-    - ./viewer/ci/mac/build.sh
+    - |
+      set -o pipefail
+      ./viewer/ci/mac/build.sh 2>&1 | tee /tmp/build.log || {
+        rc=$?
+        echo ""
+        echo "========== BUILD FAILED (exit code $rc) =========="
+        echo "Last 200 lines of build output:"
+        echo "=================================================="
+        tail -200 /tmp/build.log
+        echo "=================================================="
+        echo "Waiting 30s for log flush..."
+        sleep 30
+        exit $rc
+      }
     - ./viewer/ci/mac/upload-symbols.sh
   tags:
     - build
