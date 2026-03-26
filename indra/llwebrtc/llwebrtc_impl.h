@@ -150,6 +150,217 @@ class LLAudioDeviceObserver : public webrtc::AudioDeviceDataObserver
     float mMicrophoneEnergy;
 };
 
+
+// -----------------------------------------------------------------------------
+// LLWebRTCAudioDeviceModule
+// - Wraps a real ADM to provide microphone energy for tuning
+// -----------------------------------------------------------------------------
+class LLWebRTCAudioDeviceModule : public webrtc::AudioDeviceModule
+{
+public:
+    explicit LLWebRTCAudioDeviceModule(webrtc::scoped_refptr<webrtc::AudioDeviceModule> inner) : inner_(std::move(inner)), tuning_(false)
+    {
+        RTC_CHECK(inner_);
+    }
+
+    // ----- AudioDeviceModule interface: we mostly forward to |inner_| -----
+    int32_t ActiveAudioLayer(AudioLayer* audioLayer) const override { return inner_->ActiveAudioLayer(audioLayer); }
+
+    int32_t RegisterAudioCallback(webrtc::AudioTransport* engine_transport) override
+    {
+        // The engine registers its transport here. We put our audio transport between engine and ADM.
+        audio_transport_.SetEngineTransport(engine_transport);
+        // Register our proxy with the real ADM.
+        return inner_->RegisterAudioCallback(&audio_transport_);
+    }
+
+    int32_t Init() override { return inner_->Init(); }
+    int32_t Terminate() override { return inner_->Terminate(); }
+    bool    Initialized() const override { return inner_->Initialized(); }
+
+    // --- Device enumeration/selection (forward) ---
+    int16_t PlayoutDevices() override { return inner_->PlayoutDevices(); }
+    int16_t RecordingDevices() override { return inner_->RecordingDevices(); }
+    int32_t PlayoutDeviceName(uint16_t index, char name[webrtc::kAdmMaxDeviceNameSize], char guid[webrtc::kAdmMaxGuidSize]) override
+    {
+        return inner_->PlayoutDeviceName(index, name, guid);
+    }
+    int32_t RecordingDeviceName(uint16_t index, char name[webrtc::kAdmMaxDeviceNameSize], char guid[webrtc::kAdmMaxGuidSize]) override
+    {
+        return inner_->RecordingDeviceName(index, name, guid);
+    }
+    int32_t SetPlayoutDevice(uint16_t index) override { return inner_->SetPlayoutDevice(index); }
+    int32_t SetRecordingDevice(uint16_t index) override { return inner_->SetRecordingDevice(index); }
+
+    // Windows default/communications selectors, if your branch exposes them:
+    int32_t SetPlayoutDevice(WindowsDeviceType type) override { return inner_->SetPlayoutDevice(type); }
+    int32_t SetRecordingDevice(WindowsDeviceType type) override { return inner_->SetRecordingDevice(type); }
+
+    // --- Init/start/stop (forward) ---
+    int32_t InitPlayout() override { return inner_->InitPlayout(); }
+    bool    PlayoutIsInitialized() const override { return inner_->PlayoutIsInitialized(); }
+    int32_t StartPlayout() override {
+        if (tuning_) return 0;  // For tuning, don't allow playout
+        return inner_->StartPlayout();
+    }
+    int32_t StopPlayout() override { return inner_->StopPlayout(); }
+    bool    Playing() const override { return inner_->Playing(); }
+
+    int32_t InitRecording() override { return inner_->InitRecording(); }
+    bool    RecordingIsInitialized() const override { return inner_->RecordingIsInitialized(); }
+    int32_t StartRecording() override {
+        // ignore start recording as webrtc.lib will
+        // send one when streams first connect, resulting
+        // in an inadvertant 'recording' when mute is on.
+        // We take full control of StartRecording via
+        // ForceStartRecording below.
+        return 0;
+    }
+    int32_t StopRecording() override {
+        // ignore stop recording as webrtc.lib will send one when streams shut down,
+        // even if there are other streams in place.  Start/Stop recording are entirely
+        // controlled by the app
+        return 0;
+    }
+    int32_t ForceStartRecording() { return inner_->StartRecording(); }
+    int32_t ForceStopRecording() { return inner_->StopRecording(); }
+    bool    Recording() const override { return inner_->Recording(); }
+
+    // --- Stereo opts (forward if available on your branch) ---
+    int32_t SetStereoPlayout(bool enable) override { return inner_->SetStereoPlayout(enable); }
+    int32_t SetStereoRecording(bool enable) override { return inner_->SetStereoRecording(enable); }
+    int32_t PlayoutIsAvailable(bool* available) override { return inner_->PlayoutIsAvailable(available); }
+    int32_t RecordingIsAvailable(bool* available) override { return inner_->RecordingIsAvailable(available); }
+
+    // --- AGC/Volume/Mute/etc. (forward) ---
+    int32_t SetMicrophoneVolume(uint32_t volume) override { return inner_->SetMicrophoneVolume(volume); }
+    int32_t MicrophoneVolume(uint32_t* volume) const override { return inner_->MicrophoneVolume(volume); }
+
+    // --- Speaker/Microphone init (forward) ---
+    int32_t InitSpeaker() override { return inner_->InitSpeaker(); }
+    bool    SpeakerIsInitialized() const override { return inner_->SpeakerIsInitialized(); }
+    int32_t InitMicrophone() override { return inner_->InitMicrophone(); }
+    bool    MicrophoneIsInitialized() const override { return inner_->MicrophoneIsInitialized(); }
+
+    // --- Speaker Volume (forward) ---
+    int32_t SpeakerVolumeIsAvailable(bool* available) override { return inner_->SpeakerVolumeIsAvailable(available); }
+    int32_t SetSpeakerVolume(uint32_t volume) override { return inner_->SetSpeakerVolume(volume); }
+    int32_t SpeakerVolume(uint32_t* volume) const override { return inner_->SpeakerVolume(volume); }
+    int32_t MaxSpeakerVolume(uint32_t* maxVolume) const override { return inner_->MaxSpeakerVolume(maxVolume); }
+    int32_t MinSpeakerVolume(uint32_t* minVolume) const override { return inner_->MinSpeakerVolume(minVolume); }
+
+    // --- Microphone Volume (forward) ---
+    int32_t MicrophoneVolumeIsAvailable(bool* available) override { return inner_->MicrophoneVolumeIsAvailable(available); }
+    int32_t MaxMicrophoneVolume(uint32_t* maxVolume) const override { return inner_->MaxMicrophoneVolume(maxVolume); }
+    int32_t MinMicrophoneVolume(uint32_t* minVolume) const override { return inner_->MinMicrophoneVolume(minVolume); }
+
+    // --- Speaker Mute (forward) ---
+    int32_t SpeakerMuteIsAvailable(bool* available) override { return inner_->SpeakerMuteIsAvailable(available); }
+    int32_t SetSpeakerMute(bool enable) override { return inner_->SetSpeakerMute(enable); }
+    int32_t SpeakerMute(bool* enabled) const override { return inner_->SpeakerMute(enabled); }
+
+    // --- Microphone Mute (forward) ---
+    int32_t MicrophoneMuteIsAvailable(bool* available) override { return inner_->MicrophoneMuteIsAvailable(available); }
+    int32_t SetMicrophoneMute(bool enable) override { return inner_->SetMicrophoneMute(enable); }
+    int32_t MicrophoneMute(bool* enabled) const override { return inner_->MicrophoneMute(enabled); }
+
+    // --- Stereo Support (forward) ---
+    int32_t StereoPlayoutIsAvailable(bool* available) const override { return inner_->StereoPlayoutIsAvailable(available); }
+    int32_t StereoPlayout(bool* enabled) const override { return inner_->StereoPlayout(enabled); }
+    int32_t StereoRecordingIsAvailable(bool* available) const override { return inner_->StereoRecordingIsAvailable(available); }
+    int32_t StereoRecording(bool* enabled) const override { return inner_->StereoRecording(enabled); }
+
+    // --- Delay/Timing (forward) ---
+    int32_t PlayoutDelay(uint16_t* delayMS) const override { return inner_->PlayoutDelay(delayMS); }
+
+    // --- Built-in Audio Processing (forward) ---
+    bool    BuiltInAECIsAvailable() const override { return inner_->BuiltInAECIsAvailable(); }
+    bool    BuiltInAGCIsAvailable() const override { return inner_->BuiltInAGCIsAvailable(); }
+    bool    BuiltInNSIsAvailable() const override { return inner_->BuiltInNSIsAvailable(); }
+    int32_t EnableBuiltInAEC(bool enable) override { return inner_->EnableBuiltInAEC(enable); }
+    int32_t EnableBuiltInAGC(bool enable) override { return inner_->EnableBuiltInAGC(enable); }
+    int32_t EnableBuiltInNS(bool enable) override { return inner_->EnableBuiltInNS(enable); }
+
+    // --- Additional AudioDeviceModule methods (forward) ---
+    int32_t GetPlayoutUnderrunCount() const override { return inner_->GetPlayoutUnderrunCount(); }
+
+    // Used to generate RTC stats. If not implemented, RTCAudioPlayoutStats will
+    // not be present in the stats.
+    std::optional<Stats> GetStats() const override { return inner_->GetStats(); }
+
+// Only supported on iOS.
+#if defined(WEBRTC_IOS)
+    virtual int GetPlayoutAudioParameters(AudioParameters* params) const override { return inner_->GetPlayoutAudioParameters(params); }
+    virtual int GetRecordAudioParameters(AudioParameters* params) override { return inner_->GetRecordAudioParameters(params); }
+#endif // WEBRTC_IOS
+
+    virtual int32_t GetPlayoutDevice() const override { return inner_->GetPlayoutDevice(); }
+    virtual int32_t GetRecordingDevice() const override { return inner_->GetRecordingDevice(); }
+    virtual int32_t SetObserver(webrtc::AudioDeviceObserver* observer) override { return inner_->SetObserver(observer); }
+
+    // tuning microphone energy calculations
+    float GetMicrophoneEnergy() { return audio_transport_.GetMicrophoneEnergy(); }
+    void SetTuningMicGain(float gain) { audio_transport_.SetGain(gain); }
+    void  SetTuning(bool tuning, bool mute)
+    {
+        tuning_ = tuning;
+        if (tuning)
+        {
+            inner_->InitRecording();
+            inner_->StartRecording();
+            inner_->StopPlayout();
+        }
+        else
+        {
+            if (mute)
+            {
+                inner_->StopRecording();
+            }
+            else
+            {
+                inner_->InitRecording();
+                inner_->StartRecording();
+            }
+            inner_->InitPlayout();
+            inner_->StartPlayout();
+        }
+    }
+
+protected:
+    ~LLWebRTCAudioDeviceModule() override = default;
+
+private:
+    webrtc::scoped_refptr<webrtc::AudioDeviceModule> inner_;
+    LLWebRTCAudioTransport                        audio_transport_;
+
+    bool tuning_;
+};
+
+class LLCustomProcessorState
+{
+
+public:
+    float getMicrophoneEnergy() { return mMicrophoneEnergy.load(std::memory_order_relaxed); }
+    void setMicrophoneEnergy(float energy) { mMicrophoneEnergy.store(energy, std::memory_order_relaxed); }
+
+    void setGain(float gain)
+    {
+        mGain.store(gain, std::memory_order_relaxed);
+        mDirty.store(true, std::memory_order_relaxed);
+    }
+
+    float getGain() { return mGain.load(std::memory_order_relaxed); }
+
+    bool getDirty() { return mDirty.exchange(false, std::memory_order_relaxed); }
+
+ protected:
+    std::atomic<bool>  mDirty{ true };
+    std::atomic<float> mMicrophoneEnergy{ 0.0f };
+    std::atomic<float> mGain{ 0.0f };
+};
+
+using LLCustomProcessorStatePtr = std::shared_ptr<LLCustomProcessorState>;
+
 // Used to process/retrieve audio levels after
 // all of the processing (AGC, AEC, etc.) for display in-world to the user.
 class LLCustomProcessor : public webrtc::CustomProcessing
