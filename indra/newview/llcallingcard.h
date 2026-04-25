@@ -29,6 +29,7 @@
 
 #include <map>
 #include <set>
+#include <queue>
 #include <string>
 #include <vector>
 #include "lluserrelations.h"

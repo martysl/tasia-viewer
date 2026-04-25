@@ -30,8 +30,11 @@
 
 #include "llsd.h"
 #include "llviewercontrol.h"
+#include <memory>
 #include <string>
 #include <functional>
+
+class LLEventPump;
 
 /*
 * Primfeed authentication workflow class.

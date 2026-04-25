@@ -4,7 +4,10 @@
 
 #include <dbus/dbus.h>
 
+#include <condition_variable>
 #include <cstdint>
+#include <mutex>
+#include <optional>
 #include <string>
 #include <vector>
 

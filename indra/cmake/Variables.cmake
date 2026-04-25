@@ -231,7 +231,14 @@ set(ENABLE_SIGNING OFF)
 set(VERSION_BUILD "0" CACHE STRING "Revision number passed in from the outside")
 set(UNATTENDED OFF CACHE BOOL "Should be set to ON for building with VC Express editions.") # <FS:Ansariel> No Teamcity -> allow unattended
 
-set(USE_PRECOMPILED_HEADERS ON CACHE BOOL "Enable use of precompiled header directives where supported.")
+if (CMAKE_CXX_COMPILER_LAUNCHER MATCHES "distcc" OR CMAKE_C_COMPILER_LAUNCHER MATCHES "distcc")
+  set(_pch_default OFF)
+  message(STATUS "distcc detected as compiler launcher; disabling precompiled headers by default (incompatible).")
+else ()
+  set(_pch_default ON)
+endif ()
+set(USE_PRECOMPILED_HEADERS ${_pch_default} CACHE BOOL "Enable use of precompiled header directives where supported.")
+unset(_pch_default)
 # <FS:ND> When using Havok, we have to turn OpenSim support off
 if (HAVOK_TPV)
   if (OPENSIM)
