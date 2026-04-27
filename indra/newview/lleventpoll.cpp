@@ -323,9 +323,14 @@ namespace Details
                         // of wherever this coroutine happens to be executing
                         // Dont pass by ref, it will become invalidated
                         LLSD msg = *i;
-                        main_queue->post([this, msg]()
+                        // Capture a shared_ptr to keep the impl alive until the
+                        // lambda runs. Using raw `this` caused a heap-use-after-free
+                        // when a region handoff destroyed the LLEventPoll while an
+                        // already-queued message was still waiting in the main loop.
+                        auto self = shared_from_this();
+                        main_queue->post([self, msg]()
                             {
-                                handleMessage(msg);
+                                self->handleMessage(msg);
                             });
                     }
                     else
