@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import fnmatch
 import hashlib
 import json
 import shutil
@@ -20,6 +21,12 @@ PLATFORM_TO_CI = {
     "darwin":    ["mac"],
     "darwin64":  ["mac"],
     "common":    ["linux", "windows", "mac"],
+}
+
+KEEP_PATTERNS = {
+    "linux":   ("fmodstudio-*", "webrtc-*"),
+    "windows": ("fmodstudio-*",),
+    "mac":     ("fmodstudio-*",),
 }
 
 DOWNLOAD_UA = "Mozilla/5.0 (compatible; FirestormMirror/1.0)"
@@ -122,6 +129,24 @@ def ci_dirs_for(platform_key, repo_root):
     return [repo_root / "ci" / s / "artifacts" for s in PLATFORM_TO_CI.get(platform_key, [])]
 
 
+def clean_artifacts(repo_root, dry_run):
+    for ci_name, patterns in KEEP_PATTERNS.items():
+        d = repo_root / "ci" / ci_name / "artifacts"
+        if not d.is_dir():
+            continue
+        for entry in sorted(d.iterdir()):
+            if not entry.is_file():
+                continue
+            if any(fnmatch.fnmatch(entry.name, pat) for pat in patterns):
+                print(f"   keep   {entry}")
+                continue
+            if dry_run:
+                print(f"   would delete {entry}")
+            else:
+                entry.unlink()
+                print(f"   delete {entry}")
+
+
 def write_mirror_manifest(repo_root, jobs_by_ci):
     for ci_name, jobs in jobs_by_ci.items():
         out = repo_root / "ci" / ci_name / "mirror_manifest.json"
@@ -165,6 +190,10 @@ def main():
                    help="Re-download even if cached file matches the expected hash.")
     p.add_argument("--no-emit-manifest", action="store_true",
                    help="Skip generating ci/<plat>/mirror_manifest.json.")
+    p.add_argument("--no-clean", action="store_true",
+                   help="Do not prune ci/<plat>/artifacts before downloading. "
+                        "By default everything is removed except fmodstudio-* (all "
+                        "platforms) and webrtc-* (linux only).")
     p.add_argument("--dry-run", action="store_true",
                    help="Print actions without downloading or writing.")
     args = p.parse_args()
@@ -189,6 +218,10 @@ def main():
 
     print(f"{'DRY RUN: ' if args.dry_run else ''}"
           f"Mirroring {len(jobs)} archive(s) (host filter: '{args.host}')")
+
+    if not args.no_clean:
+        print(f"{'DRY RUN: ' if args.dry_run else ''}Cleaning artifact directories")
+        clean_artifacts(repo_root, args.dry_run)
 
     jobs_by_ci = {"linux": [], "windows": [], "mac": []}
     failures = []

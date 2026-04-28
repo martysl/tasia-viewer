@@ -1,6 +1,6 @@
 stages:
-  - build_linux
   - build_windows
+  - build_linux
   - build_mac
 
 build-job-linux:
