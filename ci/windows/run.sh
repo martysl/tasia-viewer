@@ -25,22 +25,18 @@ fi
 echo "Setting fmod to file:///${FMOD_ARCHIVE_PATH}"
 autobuild installables edit fmodstudio platform=windows64 hash=f5844bc284eb47cd3e0642175eba80f1 url="file:///${FMOD_ARCHIVE_PATH}"
 
-NDPHYSICSSTUB_ARCHIVE_PATH_POSIX="${SCRIPT_DIR}/artifacts/ndPhysicsStub-1.0-windows64-202121823.tar.bz2"
-NDPHYSICSSTUB_ARCHIVE_PATH="${WIN_SCRIPT_DIR}\\artifacts\\ndPhysicsStub-1.0-windows64-202121823.tar.bz2"
-
-if [ ! -f "$NDPHYSICSSTUB_ARCHIVE_PATH_POSIX" ]; then
-  echo "Error: ndPhysicsStub archive not found at $NDPHYSICSSTUB_ARCHIVE_PATH"
-  exit 1
-fi
-
-echo "Setting ndPhysicsStub to file:///${NDPHYSICSSTUB_ARCHIVE_PATH}"
-autobuild installables edit ndPhysicsStub platform=windows64 hash=02f70159e14c7b7213b22a0225508c46 url="file:///${NDPHYSICSSTUB_ARCHIVE_PATH}"
-
-MIRROR_INSTALLABLES="${SCRIPT_DIR}/mirror_installables.sh"
-if [ -f "$MIRROR_INSTALLABLES" ]; then
+MIRROR_MANIFEST="${SCRIPT_DIR}/mirror_manifest.json"
+if [ -f "$MIRROR_MANIFEST" ]; then
   ARTIFACTS_DIR_WIN=$(cygpath -m "${SCRIPT_DIR}/artifacts")
-  echo "Applying mirrored 3p installables from $MIRROR_INSTALLABLES (ARTIFACTS_DIR=$ARTIFACTS_DIR_WIN)"
-  ARTIFACTS_DIR="$ARTIFACTS_DIR_WIN" . "$MIRROR_INSTALLABLES"
+  CONFIG_FILE_WIN=$(cygpath -m "$(pwd)/autobuild.xml")
+  MANIFEST_WIN=$(cygpath -m "$MIRROR_MANIFEST")
+  SCRIPT_WIN=$(cygpath -m "$(pwd)/scripts/apply_mirror.py")
+  echo "Rewriting autobuild.xml urls from $MIRROR_MANIFEST (artifacts=$ARTIFACTS_DIR_WIN)"
+  python "$SCRIPT_WIN" \
+    --config-file "$CONFIG_FILE_WIN" \
+    --manifest "$MANIFEST_WIN" \
+    --artifacts-dir "$ARTIFACTS_DIR_WIN" \
+    --strict
 fi
 
 autobuild configure -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"

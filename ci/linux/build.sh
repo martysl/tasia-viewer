@@ -30,10 +30,14 @@ autobuild installables edit fmodstudio platform=linux64 hash=c2cb6978b5060fd178b
 echo "Setting webrtc to file://$WEBRTC_ARCHIVE_PATH"
 autobuild installables edit webrtc platform=linux64 hash=f94e4dbf13ad3e86e8036e4d24645ab4 url="file://$WEBRTC_ARCHIVE_PATH"
 
-MIRROR_INSTALLABLES="$VIEWER_PATH/ci/linux/mirror_installables.sh"
-if [ -f "$MIRROR_INSTALLABLES" ]; then
-  echo "Applying mirrored 3p installables from $MIRROR_INSTALLABLES"
-  ARTIFACTS_DIR="$VIEWER_PATH/ci/linux/artifacts" . "$MIRROR_INSTALLABLES"
+MIRROR_MANIFEST="$VIEWER_PATH/ci/linux/mirror_manifest.json"
+if [ -f "$MIRROR_MANIFEST" ]; then
+  echo "Rewriting autobuild.xml urls from $MIRROR_MANIFEST"
+  python3 "$VIEWER_PATH/scripts/apply_mirror.py" \
+    --config-file "$VIEWER_PATH/autobuild.xml" \
+    --manifest "$MIRROR_MANIFEST" \
+    --artifacts-dir "$VIEWER_PATH/ci/linux/artifacts" \
+    --strict
 fi
 
 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --crashreporting --package --ninja -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"

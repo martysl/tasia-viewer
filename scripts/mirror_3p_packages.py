@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import hashlib
+import json
 import shutil
 import sys
 import urllib.error
@@ -109,6 +110,7 @@ def collect_jobs(installables, host_filter):
                 "package": pkg_name,
                 "platform": plat_key,
                 "url": url,
+                "old_url": url,
                 "hash": archive.get("hash", "").lower(),
                 "hash_algorithm": algo,
                 "filename": Path(urlparse(url).path).name,
@@ -120,40 +122,35 @@ def ci_dirs_for(platform_key, repo_root):
     return [repo_root / "ci" / s / "artifacts" for s in PLATFORM_TO_CI.get(platform_key, [])]
 
 
-def write_installables_sh(repo_root, jobs_by_ci):
+def write_mirror_manifest(repo_root, jobs_by_ci):
     for ci_name, jobs in jobs_by_ci.items():
-        out = repo_root / "ci" / ci_name / "mirror_installables.sh"
-        lines = [
-            "#!/usr/bin/env bash",
-            "set -euo pipefail",
-            ': "${ARTIFACTS_DIR:?ARTIFACTS_DIR must be set before sourcing mirror_installables.sh}"',
-            'case "${ARTIFACTS_DIR}" in',
-            '  file://*) _ART_URL="${ARTIFACTS_DIR}" ;;',
-            '  /*)       _ART_URL="file://${ARTIFACTS_DIR}" ;;',
-            '  *)        _ART_URL="file:///${ARTIFACTS_DIR}" ;;',
-            "esac",
-            "",
-        ]
-        for job in sorted(jobs, key=lambda j: (j["package"], j["platform"])):
-            lines.append(
-                f'autobuild installables edit {job["package"]} '
-                f'platform={job["platform"]} '
-                f'hash={job["hash"]} '
-                f'hash_algorithm={job["hash_algorithm"]} '
-                f'url="${{_ART_URL}}/{job["filename"]}"'
-            )
-        lines.append("")
+        out = repo_root / "ci" / ci_name / "mirror_manifest.json"
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text("\n".join(lines))
-        out.chmod(0o755)
-        print(f"wrote {out} ({len(jobs)} entries)")
+        entries = [
+            {
+                "package": j["package"],
+                "platform": j["platform"],
+                "old_url": j["old_url"],
+                "filename": j["filename"],
+                "hash": j["hash"],
+                "hash_algorithm": j["hash_algorithm"],
+            }
+            for j in sorted(jobs, key=lambda x: (x["package"], x["platform"]))
+        ]
+        out.write_text(json.dumps(entries, indent=2) + "\n")
+        print(f"wrote {out} ({len(entries)} entries)")
+
+        legacy = out.with_name("mirror_installables.sh")
+        if legacy.exists():
+            legacy.unlink()
+            print(f"removed stale {legacy}")
 
 
 def main():
     p = argparse.ArgumentParser(
         description="Mirror autobuild.xml archives (default: 3p.firestormviewer.org) "
                     "into ci/<linux|windows|mac>/artifacts and regenerate "
-                    "ci/<plat>/mirror_installables.sh.")
+                    "ci/<plat>/mirror_manifest.json.")
     p.add_argument("--root", type=Path,
                    default=Path(__file__).resolve().parent.parent,
                    help="Repository root (defaults to parent of scripts/).")
@@ -166,8 +163,8 @@ def main():
                    help="Restrict to specific platform key(s); repeatable.")
     p.add_argument("--force", action="store_true",
                    help="Re-download even if cached file matches the expected hash.")
-    p.add_argument("--no-emit-sh", action="store_true",
-                   help="Skip generating ci/<plat>/mirror_installables.sh.")
+    p.add_argument("--no-emit-manifest", action="store_true",
+                   help="Skip generating ci/<plat>/mirror_manifest.json.")
     p.add_argument("--dry-run", action="store_true",
                    help="Print actions without downloading or writing.")
     args = p.parse_args()
@@ -262,8 +259,8 @@ def main():
                 shutil.copy2(primary, mirror)
                 print(f"   copied -> {mirror}")
 
-    if not args.no_emit_sh and not args.dry_run:
-        write_installables_sh(repo_root, jobs_by_ci)
+    if not args.no_emit_manifest and not args.dry_run:
+        write_mirror_manifest(repo_root, jobs_by_ci)
 
     if failures:
         print(f"\n{len(failures)} failure(s):")
