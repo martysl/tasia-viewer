@@ -319,7 +319,7 @@ void ll_nvapi_init(NvDRSSessionHandle hSession)
     NvAPI_UnicodeString profile_name;
     std::string app_name = LLTrans::getString("APP_NAME");
     std::wstring w_app_name = ll_convert_string_to_wide(app_name);
-    wsprintf(profile_name, L"%s", w_app_name.c_str());
+    wsprintf((LPWSTR)profile_name, L"%s", w_app_name.c_str());
     NvDRSProfileHandle hProfile = 0;
     // (3) Check if we already have an application profile for the viewer
     status = NvAPI_DRS_FindProfileByName(hSession, profile_name, &hProfile);
@@ -336,7 +336,7 @@ void ll_nvapi_init(NvDRSSessionHandle hSession)
         NVDRS_PROFILE profileInfo;
         profileInfo.version = NVDRS_PROFILE_VER;
         profileInfo.isPredefined = 0;
-        wsprintf(profileInfo.profileName, L"%s", w_app_name.c_str());
+        wsprintf((LPWSTR)profileInfo.profileName, L"%s", w_app_name.c_str());
 
         status = NvAPI_DRS_CreateProfile(hSession, &profileInfo, &hProfile);
         if (status != NVAPI_OK)
@@ -353,7 +353,7 @@ void ll_nvapi_init(NvDRSSessionHandle hSession)
 
     std::wstring w_exe_name = ll_convert_string_to_wide(exe_name);
     NvAPI_UnicodeString profile_app_name;
-    wsprintf(profile_app_name, L"%s", w_exe_name.c_str());
+    wsprintf((LPWSTR)profile_app_name, L"%s", w_exe_name.c_str());
 
     status = NvAPI_DRS_GetApplicationInfo(hSession, hProfile, profile_app_name, &profile_application);
     if (status != NVAPI_OK && status != NVAPI_EXECUTABLE_NOT_FOUND)
@@ -369,10 +369,10 @@ void ll_nvapi_init(NvDRSSessionHandle hSession)
         NVDRS_APPLICATION application;
         application.version = NVDRS_APPLICATION_VER;
         application.isPredefined = 0;
-        wsprintf(application.appName, L"%s", w_exe_name.c_str());
-        wsprintf(application.userFriendlyName, L"%s", w_exe_name.c_str());
-        wsprintf(application.launcher, L"%s", w_exe_name.c_str());
-        wsprintf(application.fileInFolder, L"%s", "");
+        wsprintf((LPWSTR)application.appName, L"%s", w_exe_name.c_str());
+        wsprintf((LPWSTR)application.userFriendlyName, L"%s", w_exe_name.c_str());
+        wsprintf((LPWSTR)application.launcher, L"%s", w_exe_name.c_str());
+        wsprintf((LPWSTR)application.fileInFolder, L"%s", L"");
 
         status = NvAPI_DRS_CreateApplication(hSession, hProfile, &application);
         if (status != NVAPI_OK)

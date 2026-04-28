@@ -407,7 +407,7 @@ std::string build_extensions_string(ELoadFilter filter)
         return SOUND_EXTENSIONS;
     case FFLOAD_ANIM:
         return ANIM_EXTENSIONS;
-    case LLFilePicker::FFLOAD_SLOBJECT:
+    case FFLOAD_SLOBJECT:
         return SLOBJECT_EXTENSIONS;
     case FFLOAD_MODEL:
         return MODEL_EXTENSIONS;
