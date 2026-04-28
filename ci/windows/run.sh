@@ -25,6 +25,17 @@ fi
 echo "Setting fmod to file:///${FMOD_ARCHIVE_PATH}"
 autobuild installables edit fmodstudio platform=windows64 hash=f5844bc284eb47cd3e0642175eba80f1 url="file:///${FMOD_ARCHIVE_PATH}"
 
+NDPHYSICSSTUB_ARCHIVE_PATH_POSIX="${SCRIPT_DIR}/artifacts/ndPhysicsStub-1.0-windows64-202121823.tar.bz2"
+NDPHYSICSSTUB_ARCHIVE_PATH="${WIN_SCRIPT_DIR}\\artifacts\\ndPhysicsStub-1.0-windows64-202121823.tar.bz2"
+
+if [ ! -f "$NDPHYSICSSTUB_ARCHIVE_PATH_POSIX" ]; then
+  echo "Error: ndPhysicsStub archive not found at $NDPHYSICSSTUB_ARCHIVE_PATH"
+  exit 1
+fi
+
+echo "Setting ndPhysicsStub to file:///${NDPHYSICSSTUB_ARCHIVE_PATH}"
+autobuild installables edit ndPhysicsStub platform=windows64 hash=02f70159e14c7b7213b22a0225508c46 url="file:///${NDPHYSICSSTUB_ARCHIVE_PATH}"
+
 autobuild configure -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"
 XZ_DEFAULTS=-T0 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"
 
