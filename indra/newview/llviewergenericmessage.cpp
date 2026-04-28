@@ -86,6 +86,16 @@ void process_generic_message(LLMessageSystem* msg, void**)
     LLDispatcher::sparam_t strings;
     LLDispatcher::unpackMessage(msg, request, invoice, strings);
 
+    if (request == "quicready")
+    {
+        LLCircuitData* cdp = msg->mCircuitInfo.findCircuit(msg->getSender());
+        if (cdp && cdp->isQuic() && cdp->hasQuicPendingReplyCallback())
+        {
+            cdp->fireQuicPendingReplyCallback(LL_ERR_NOERR);
+        }
+        return;
+    }
+
     if(!gGenericDispatcher.dispatch(request, invoice, strings))
     {
         LL_WARNS() << "GenericMessage " << request << " failed to dispatch"

@@ -733,10 +733,6 @@ bool LLMessageSystem::checkMessages(LockMessageChecker&, S64 frame_count )
                     mReliablePacketsIn++;
                 }
 
-                if (cdp && cdp->isQuic() && cdp->hasQuicPendingReplyCallback())
-                {
-                    cdp->fireQuicPendingReplyCallback(LL_ERR_NOERR);
-                }
             }
             else
             {
@@ -1582,33 +1578,46 @@ void LLMessageSystem::enableCircuit(const LLHost &host, bool trusted)
     cdp->setTrusted(trusted);
 }
 
-bool LLMessageSystem::enableQuicCircuit(const LLHost &host, const std::string &quic_host, U16 quic_port, bool trusted)
+bool LLMessageSystem::enableQuicCircuit(const LLHost &host, const std::string &quic_host, U16 quic_port, bool trusted,
+                                        std::string *error_out)
 {
+    auto set_err = [&](const std::string &m)
+    {
+        if (error_out) *error_out = m;
+    };
+
     if (quic_host.empty() || quic_port == 0)
     {
-        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): missing quic_host or quic_port" << LL_ENDL;
+        std::string m = "Simulator did not advertise a QUIC endpoint";
+        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): " << m << LL_ENDL;
+        set_err(m);
         return false;
     }
 
     LLQuicGlobal& qg = LLQuicGlobal::instance();
     if (!qg.isInitialized() && !qg.initialize())
     {
-        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): LLQuicGlobal failed to initialize" << LL_ENDL;
+        std::string m = "QUIC subsystem failed to initialize on this client";
+        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): " << m << LL_ENDL;
+        set_err(m);
         return false;
     }
 
     auto config = qg.getClientConfiguration();
     if (!config)
     {
-        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): no QUIC client configuration" << LL_ENDL;
+        std::string m = "QUIC client configuration is unavailable on this client";
+        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): " << m << LL_ENDL;
+        set_err(m);
         return false;
     }
 
     auto conn = std::make_shared<LLQuicConnection>(config);
     if (!conn->connect(quic_host, quic_port))
     {
-        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): connect to "
-                              << quic_host << ":" << quic_port << " failed" << LL_ENDL;
+        std::string m = conn->describeFailure();
+        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): " << m << LL_ENDL;
+        set_err(m);
         return false;
     }
 

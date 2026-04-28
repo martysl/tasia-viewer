@@ -3579,9 +3579,25 @@ void use_circuit_callback(void**, S32 result)
         gUseCircuitCallbackCalled = true;
         if (result)
         {
-            // Make sure user knows something bad happened. JC
             LL_WARNS("AppInit") << "Backing up to login screen!" << LL_ENDL;
-            if (gRememberPassword)
+
+            std::string quic_reason;
+            if (gMessageSystem)
+            {
+                LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(gFirstSim);
+                if (cdp && cdp->isQuic())
+                {
+                    quic_reason = cdp->describeQuicFailure();
+                }
+            }
+
+            if (!quic_reason.empty())
+            {
+                LLSD args;
+                args["REASON"] = quic_reason;
+                LLNotificationsUtil::add("LoginFailedQuic", args, LLSD(), login_alert_status);
+            }
+            else if (gRememberPassword)
             {
                 LLNotificationsUtil::add("LoginPacketNeverReceived", LLSD(), LLSD(), login_alert_status);
             }
@@ -4725,11 +4741,13 @@ bool process_login_success_response(U32 &first_sim_size_x, U32 &first_sim_size_y
 
             if (sim_quic_port > 0 && !sim_quic_host.empty())
             {
-                if (!gMessageSystem->enableQuicCircuit(gFirstSim, sim_quic_host, sim_quic_port, true))
+                std::string quic_err;
+                if (!gMessageSystem->enableQuicCircuit(gFirstSim, sim_quic_host, sim_quic_port, true, &quic_err))
                 {
                     LL_WARNS("AppInit") << "Login response advertised QUIC ("
                                         << sim_quic_host << ":" << sim_quic_port
-                                        << ") but enableQuicCircuit failed; per spec, NOT falling back to LLUDP."
+                                        << ") but enableQuicCircuit failed: " << quic_err
+                                        << "; per spec, NOT falling back to LLUDP."
                                         << LL_ENDL;
                 }
             }

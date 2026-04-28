@@ -662,7 +662,8 @@ public:
     U32 getOurCircuitCode();
 
     void    enableCircuit(const LLHost &host, bool trusted);
-    bool    enableQuicCircuit(const LLHost &host, const std::string &quic_host, U16 quic_port, bool trusted);
+    bool    enableQuicCircuit(const LLHost &host, const std::string &quic_host, U16 quic_port, bool trusted,
+                              std::string *error_out = nullptr);
     void    disableCircuit(const LLHost &host);
 
     // Use this to establish trust on startup and in response to

@@ -75,6 +75,9 @@ public:
     uint64_t getLastTransportStatus() const  { return mLastTransportStatus.load(std::memory_order_acquire); }
     uint64_t getLastAppErrorCode() const     { return mLastAppErrorCode.load(std::memory_order_acquire); }
     bool     wasClosedByPeer() const         { return mClosedByPeer.load(std::memory_order_acquire); }
+    const std::string& getHost() const       { return mHost; }
+
+    std::string describeFailure() const;
 
     // Public solely so the C-ABI trampoline in the .cpp can dispatch into us.
     // Not intended for external callers.
@@ -99,6 +102,7 @@ private:
     std::atomic<uint64_t>                                             mLastTransportStatus   { 0 };
     std::atomic<uint64_t>                                             mLastAppErrorCode      { 0 };
     std::atomic<bool>                                                 mClosedByPeer          { false };
+    std::atomic<bool>                                                 mReachedConnected      { false };
     std::string                                                       mHost;
     std::mutex                                                        mRxMutex;
     std::deque<std::vector<uint8_t>>                                  mRxQueue;

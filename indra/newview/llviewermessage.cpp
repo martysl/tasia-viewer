@@ -3540,9 +3540,32 @@ namespace
 {
     void on_quic_circuit_failed_vm(const LLHost& host, void* /*user_data*/)
     {
+        std::string reason;
+        if (gMessageSystem)
+        {
+            LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(host);
+            if (cdp && cdp->isQuic())
+            {
+                reason = cdp->describeQuicFailure();
+            }
+        }
+        if (reason.empty())
+        {
+            reason = "QUIC connection to the simulator was lost";
+        }
+
         LL_WARNS("Messaging") << "QUIC circuit to " << host
-                              << " failed; per spec there is no LLUDP fallback."
+                              << " failed: " << reason
+                              << " (per spec there is no LLUDP fallback)"
                               << LL_ENDL;
+
+        if (gAgent.getTeleportState() != LLAgent::TELEPORT_NONE)
+        {
+            LLSD args;
+            args["REASON"] = reason;
+            LLNotificationsUtil::add("CouldNotTeleportReason", args);
+            gAgent.setTeleportState(LLAgent::TELEPORT_NONE);
+        }
     }
 }
 
@@ -3668,11 +3691,18 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 
     if (quic_port > 0 && !quic_host.empty())
     {
-        if (!gMessageSystem->enableQuicCircuit(sim_host, quic_host, quic_port, true))
+        std::string quic_err;
+        if (!gMessageSystem->enableQuicCircuit(sim_host, quic_host, quic_port, true, &quic_err))
         {
             LL_WARNS("Messaging") << "TeleportFinish: QUIC enable failed for " << sim_host
                                   << " (host=" << quic_host << " port=" << quic_port
-                                  << "); per spec NOT falling back to LLUDP." << LL_ENDL;
+                                  << "): " << quic_err
+                                  << "; per spec NOT falling back to LLUDP." << LL_ENDL;
+            LLSD args;
+            args["REASON"] = quic_err.empty()
+                ? std::string("Could not establish QUIC connection to the destination simulator")
+                : quic_err;
+            LLNotificationsUtil::add("CouldNotTeleportReason", args);
             gAgent.setTeleportState(LLAgent::TELEPORT_NONE);
             return;
         }
@@ -4091,10 +4121,17 @@ void process_crossed_region(LLMessageSystem* msg, void**)
                               << LL_ENDL;
         if (quic_port > 0 && !quic_host.empty())
         {
-            if (!msg->enableQuicCircuit(sim_host, quic_host, quic_port, true))
+            std::string quic_err;
+            if (!msg->enableQuicCircuit(sim_host, quic_host, quic_port, true, &quic_err))
             {
                 LL_WARNS("Messaging") << "CrossedRegion: QUIC enable failed for " << sim_host
+                                      << ": " << quic_err
                                       << "; per spec NOT falling back to LLUDP." << LL_ENDL;
+                LLSD args;
+                args["REASON"] = quic_err.empty()
+                    ? std::string("Could not establish QUIC connection to the destination simulator")
+                    : quic_err;
+                LLNotificationsUtil::add("CouldNotTeleportReason", args);
                 return;
             }
             msg->setCircuitTimeoutCallback(sim_host, on_quic_circuit_failed_vm, NULL);

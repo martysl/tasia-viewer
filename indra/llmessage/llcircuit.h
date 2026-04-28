@@ -139,6 +139,12 @@ public:
     const std::shared_ptr<LLQuicConnection>&   getQuicConnection() const { return mQuicConnection; }
     bool                                       isQuic() const noexcept   { return static_cast<bool>(mQuicConnection); }
 
+    void            setQuicPendingReplyCallback(void (*callback_func)(void **, S32), void **callback_data);
+    bool            hasQuicPendingReplyCallback() const { return mQuicPendingReplyCallback != nullptr; }
+    void            fireQuicPendingReplyCallback(S32 result);
+
+    std::string     describeQuicFailure() const;
+
     class less
     {
     public:
@@ -190,12 +196,6 @@ protected:
 
 
     void            setTimeoutCallback(void (*callback_func)(const LLHost &host, void *user_data), void *user_data);
-
-    void            setQuicPendingReplyCallback(void (*callback_func)(void **, S32), void **callback_data);
-    bool            hasQuicPendingReplyCallback() const { return mQuicPendingReplyCallback != nullptr; }
-    void            fireQuicPendingReplyCallback(S32 result);
-
-
 
     void            setAlive(bool b_alive);
     void            setAllowTimeout(bool allow);

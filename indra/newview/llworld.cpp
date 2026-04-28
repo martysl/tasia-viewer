@@ -1616,8 +1616,22 @@ namespace
 {
     void on_quic_circuit_failed(const LLHost& host, void* /*user_data*/)
     {
+        std::string reason;
+        if (gMessageSystem)
+        {
+            LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(host);
+            if (cdp && cdp->isQuic())
+            {
+                reason = cdp->describeQuicFailure();
+            }
+        }
+        if (reason.empty())
+        {
+            reason = "QUIC connection lost";
+        }
         LL_WARNS("Messaging") << "QUIC circuit to " << host
-                              << " failed; per spec there is no LLUDP fallback."
+                              << " failed: " << reason
+                              << " (per spec there is no LLUDP fallback)"
                               << LL_ENDL;
     }
 }
@@ -1673,11 +1687,13 @@ void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 
     if (quic_port > 0 && !quic_host.empty())
     {
-        if (!msg->enableQuicCircuit(sim, quic_host, quic_port, true))
+        std::string quic_err;
+        if (!msg->enableQuicCircuit(sim, quic_host, quic_port, true, &quic_err))
         {
             LL_WARNS("Messaging") << "EnableSimulator: QUIC enable failed for " << sim
                                   << " (host=" << quic_host << " port=" << quic_port
-                                  << "); per spec NOT falling back to LLUDP." << LL_ENDL;
+                                  << "): " << quic_err
+                                  << "; per spec NOT falling back to LLUDP." << LL_ENDL;
             return;
         }
         msg->setCircuitTimeoutCallback(sim, on_quic_circuit_failed, NULL);

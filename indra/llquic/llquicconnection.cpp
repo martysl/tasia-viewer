@@ -28,6 +28,7 @@
 
 #include <cstring>
 #include <new>
+#include <sstream>
 
 namespace
 {
@@ -291,6 +292,7 @@ void LLQuicConnection::onConnectionEvent(QUIC_CONNECTION_EVENT* event)
     {
         case QUIC_CONNECTION_EVENT_CONNECTED:
             mState.store(State::CONNECTED, std::memory_order_release);
+            mReachedConnected.store(true, std::memory_order_release);
             LL_INFOS("Quic") << "QUIC connected to " << mHost << LL_ENDL;
             break;
 
@@ -414,4 +416,212 @@ void LLQuicConnection::onConnectionEvent(QUIC_CONNECTION_EVENT* event)
         default:
             break;
     }
+}
+
+namespace
+{
+
+const char* tls_alert_name(uint8_t alert)
+{
+    switch (alert)
+    {
+        case 0:   return "close_notify";
+        case 10:  return "unexpected_message";
+        case 20:  return "bad_record_mac";
+        case 22:  return "record_overflow";
+        case 40:  return "handshake_failure";
+        case 41:  return "no_certificate";
+        case 42:  return "bad_certificate";
+        case 43:  return "unsupported_certificate";
+        case 44:  return "certificate_revoked";
+        case 45:  return "certificate_expired";
+        case 46:  return "certificate_unknown";
+        case 47:  return "illegal_parameter";
+        case 48:  return "unknown_ca";
+        case 49:  return "access_denied";
+        case 50:  return "decode_error";
+        case 51:  return "decrypt_error";
+        case 70:  return "protocol_version";
+        case 71:  return "insufficient_security";
+        case 80:  return "internal_error";
+        case 86:  return "inappropriate_fallback";
+        case 90:  return "user_canceled";
+        case 109: return "missing_extension";
+        case 110: return "unsupported_extension";
+        case 112: return "unrecognized_name";
+        case 113: return "bad_certificate_status_response";
+        case 115: return "unknown_psk_identity";
+        case 116: return "certificate_required";
+        case 120: return "no_application_protocol";
+        default:  return nullptr;
+    }
+}
+
+bool extract_tls_alert_from_status(uint64_t status, uint8_t* out_alert)
+{
+    const uint8_t low = static_cast<uint8_t>(status & 0xFFu);
+    if (static_cast<uint64_t>(static_cast<QUIC_STATUS>(QUIC_STATUS_TLS_ALERT(low))) == status)
+    {
+        if (out_alert) *out_alert = low;
+        return true;
+    }
+    return false;
+}
+
+std::string format_tls_alert(uint8_t alert)
+{
+    std::ostringstream o;
+    if (const char* name = tls_alert_name(alert))
+    {
+        o << "TLS alert '" << name << "'";
+    }
+    else
+    {
+        o << "TLS alert " << static_cast<unsigned>(alert);
+    }
+    return o.str();
+}
+
+std::string format_quic_status(uint64_t status)
+{
+    if (status == 0) return std::string();
+
+    uint8_t alert = 0;
+    if (extract_tls_alert_from_status(status, &alert))
+    {
+        return format_tls_alert(alert);
+    }
+
+    const QUIC_STATUS s = static_cast<QUIC_STATUS>(status);
+    if (s == QUIC_STATUS_HANDSHAKE_FAILURE)    return "Handshake failure";
+    if (s == QUIC_STATUS_CONNECTION_TIMEOUT)   return "Connection timeout";
+    if (s == QUIC_STATUS_CONNECTION_IDLE)      return "Connection idle timeout";
+    if (s == QUIC_STATUS_CONNECTION_REFUSED)   return "Connection refused";
+    if (s == QUIC_STATUS_UNREACHABLE)          return "Host unreachable";
+    if (s == QUIC_STATUS_VER_NEG_ERROR)        return "QUIC version negotiation failed";
+    if (s == QUIC_STATUS_PROTOCOL_ERROR)       return "QUIC protocol error";
+    if (s == QUIC_STATUS_INTERNAL_ERROR)       return "QUIC internal error";
+    if (s == QUIC_STATUS_USER_CANCELED)        return "Cancelled by peer";
+    if (s == QUIC_STATUS_ALPN_NEG_FAILURE)     return "ALPN negotiation failed";
+    if (s == QUIC_STATUS_INVALID_PARAMETER)    return "Invalid parameter";
+    if (s == QUIC_STATUS_INVALID_STATE)        return "Invalid QUIC state";
+    if (s == QUIC_STATUS_NOT_SUPPORTED)        return "Not supported";
+    if (s == QUIC_STATUS_NOT_FOUND)            return "Not found";
+    if (s == QUIC_STATUS_OUT_OF_MEMORY)        return "Out of memory";
+    if (s == QUIC_STATUS_ABORTED)              return "Aborted";
+    if (s == QUIC_STATUS_ADDRESS_IN_USE)       return "Address already in use";
+    if (s == QUIC_STATUS_INVALID_ADDRESS)      return "Invalid address";
+    if (s == QUIC_STATUS_BUFFER_TOO_SMALL)     return "Buffer too small";
+    if (s == QUIC_STATUS_STREAM_LIMIT_REACHED) return "Stream limit reached";
+    if (s == QUIC_STATUS_ALPN_IN_USE)          return "ALPN in use";
+    if (s == QUIC_STATUS_TLS_ERROR)            return "TLS error";
+    if (s == QUIC_STATUS_CERT_EXPIRED)         return "Server certificate expired";
+    if (s == QUIC_STATUS_CERT_UNTRUSTED_ROOT)  return "Server certificate has untrusted root";
+    if (s == QUIC_STATUS_CERT_NO_CERT)         return "Server presented no certificate";
+
+    std::ostringstream o;
+    o << "QUIC status 0x" << std::hex << status << std::dec;
+    return o.str();
+}
+
+std::string format_app_error(uint64_t app_err)
+{
+    if (app_err == 0) return std::string();
+
+    if (app_err >= 0x100u && app_err < 0x200u)
+    {
+        return format_tls_alert(static_cast<uint8_t>(app_err & 0xFFu));
+    }
+
+    std::ostringstream o;
+    o << "application error 0x" << std::hex << app_err << std::dec;
+    return o.str();
+}
+
+} // namespace
+
+std::string LLQuicConnection::describeFailure() const
+{
+    const State    s         = getState();
+    const uint64_t tx_st     = getLastTransportStatus();
+    const uint64_t app_err   = getLastAppErrorCode();
+    const bool     by_peer   = wasClosedByPeer();
+    const bool     was_conn  = mReachedConnected.load(std::memory_order_acquire);
+
+    std::ostringstream o;
+    const std::string& host = mHost.empty() ? std::string("simulator") : mHost;
+
+    const std::string tx_text  = format_quic_status(tx_st);
+    const std::string app_text = format_app_error(app_err);
+
+    auto append_reasons = [&]()
+    {
+        if (!tx_text.empty() || !app_text.empty())
+        {
+            o << ": ";
+            if (!tx_text.empty())
+            {
+                o << tx_text;
+            }
+            if (!app_text.empty())
+            {
+                if (!tx_text.empty()) o << "; ";
+                o << app_text;
+            }
+        }
+    };
+
+    switch (s)
+    {
+        case State::DISCONNECTED:
+            o << "QUIC client could not start a connection to " << host
+              << " (local configuration error)";
+            break;
+
+        case State::CONNECTING:
+            o << "QUIC handshake with " << host << " did not complete";
+            append_reasons();
+            break;
+
+        case State::CONNECTED:
+            o << "QUIC connection to " << host
+              << " was established but the simulator did not confirm the session";
+            break;
+
+        case State::FAILED:
+            if (by_peer)
+            {
+                o << "Simulator " << host << " refused or aborted the QUIC connection";
+            }
+            else if (was_conn)
+            {
+                o << "QUIC connection to " << host
+                  << " established but the simulator did not confirm the session";
+            }
+            else
+            {
+                o << "Could not establish QUIC connection to " << host;
+            }
+            append_reasons();
+            break;
+
+        case State::CLOSED:
+            if (by_peer)
+            {
+                o << "Simulator " << host << " closed the QUIC connection";
+            }
+            else if (was_conn && static_cast<QUIC_STATUS>(tx_st) == QUIC_STATUS_CONNECTION_IDLE)
+            {
+                o << "QUIC connection to " << host
+                  << " timed out waiting for the simulator to confirm the session";
+            }
+            else
+            {
+                o << "QUIC connection to " << host << " was lost";
+            }
+            append_reasons();
+            break;
+    }
+
+    return o.str();
 }

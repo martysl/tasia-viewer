@@ -778,6 +778,17 @@ void LLCircuitData::fireQuicPendingReplyCallback(S32 result)
     cb(ud, result);
 }
 
+std::string LLCircuitData::describeQuicFailure() const
+{
+    if (mQuicConnection)
+    {
+        return mQuicConnection->describeFailure();
+    }
+    std::ostringstream o;
+    o << "QUIC circuit to " << mHost << " is unavailable";
+    return o.str();
+}
+
 void LLCircuitData::setTimeoutCallback(void (*callback_func)(const LLHost &host, void *user_data), void *user_data)
 {
     mTimeoutCallback = callback_func;
