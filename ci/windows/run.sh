@@ -36,6 +36,13 @@ fi
 echo "Setting ndPhysicsStub to file:///${NDPHYSICSSTUB_ARCHIVE_PATH}"
 autobuild installables edit ndPhysicsStub platform=windows64 hash=02f70159e14c7b7213b22a0225508c46 url="file:///${NDPHYSICSSTUB_ARCHIVE_PATH}"
 
+MIRROR_INSTALLABLES="${SCRIPT_DIR}/mirror_installables.sh"
+if [ -f "$MIRROR_INSTALLABLES" ]; then
+  ARTIFACTS_DIR_WIN=$(cygpath -m "${SCRIPT_DIR}/artifacts")
+  echo "Applying mirrored 3p installables from $MIRROR_INSTALLABLES (ARTIFACTS_DIR=$ARTIFACTS_DIR_WIN)"
+  ARTIFACTS_DIR="$ARTIFACTS_DIR_WIN" . "$MIRROR_INSTALLABLES"
+fi
+
 autobuild configure -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"
 XZ_DEFAULTS=-T0 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"
 

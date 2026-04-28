@@ -20,4 +20,11 @@ fi
 
 echo "Installing fmodstudio: file://${FMOD_ARCHIVE_PATH}"
 autobuild installables edit fmodstudio platform=darwin64 hash=2fa4a9dbb2365ef8c4b6acd735ef08e7 url="file://${FMOD_ARCHIVE_PATH}"
+
+MIRROR_INSTALLABLES="$CI_PROJECT_DIR/viewer/ci/mac/mirror_installables.sh"
+if [ -f "$MIRROR_INSTALLABLES" ]; then
+  echo "Applying mirrored 3p installables from $MIRROR_INSTALLABLES"
+  ARTIFACTS_DIR="$CI_PROJECT_DIR/viewer/ci/mac/artifacts" . "$MIRROR_INSTALLABLES"
+fi
+
 XZ_DEFAULTS=-T0 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"
