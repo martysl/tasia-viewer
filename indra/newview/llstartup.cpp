@@ -399,12 +399,25 @@ void pump_idle_startup_network(void)
     // while there are message to process:
     //     process one then call display_startup()
     S32 num_messages = 0;
+    bool needs_drain = false;
     {
+        U64 t0 = totalTime();
+        constexpr U64 MAX_STARTUP_FRAME_TIME = 2000; // usec
+        constexpr U64 MAX_STARTUP_FRAME_MESSAGES = 100;
         LockMessageChecker lmc(gMessageSystem);
         while (lmc.checkAllMessages(gFrameCount, gServicePump))
         {
             display_startup();
-            ++num_messages;
+            if (++num_messages >= MAX_STARTUP_FRAME_MESSAGES
+                || (totalTime() - t0) > MAX_STARTUP_FRAME_TIME)
+            {
+                needs_drain = true;
+                break;
+            }
+        }
+        if (needs_drain || gMessageSystem->mPacketRing.getNumBufferedPackets() > 0)
+        {
+             gMessageSystem->drainUdpSocket();
         }
         lmc.processAcks();
     }
