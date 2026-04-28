@@ -76,6 +76,27 @@ set(CMAKE_C_FLAGS   "${_ll_boost_saved_c_flags}")
 unset(_ll_boost_saved_cxx_flags)
 unset(_ll_boost_saved_c_flags)
 
+# Mark every Boost target's INTERFACE include dirs as SYSTEM so warnings
+# originating inside Boost headers (array-bounds / stringop-overflow / dangling-
+# reference false positives on GCC 11+, MSVC C47xx warnings, etc.) do not trip
+# the viewer's -Werror / /WX. This mirrors how the old autobuild Boost package
+# was consumed (via -isystem) before we switched to FetchContent.
+function(_ll_mark_boost_system_includes _dir)
+    get_property(_targets DIRECTORY "${_dir}" PROPERTY BUILDSYSTEM_TARGETS)
+    foreach(_t IN LISTS _targets)
+        get_target_property(_inc ${_t} INTERFACE_INCLUDE_DIRECTORIES)
+        if (_inc)
+            set_target_properties(${_t} PROPERTIES
+                    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${_inc}")
+        endif()
+    endforeach()
+    get_property(_subs DIRECTORY "${_dir}" PROPERTY SUBDIRECTORIES)
+    foreach(_s IN LISTS _subs)
+        _ll_mark_boost_system_includes("${_s}")
+    endforeach()
+endfunction()
+_ll_mark_boost_system_includes("${boost_SOURCE_DIR}")
+
 target_link_libraries( ll::boost INTERFACE
         Boost::context
         Boost::fiber
