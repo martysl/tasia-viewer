@@ -950,7 +950,7 @@ bool LLAppViewer::init()
 
     LL_INFOS("InitInfo") << "LLCore::Http initialized." << LL_ENDL ;
 
-    LLQuicGlobal::instance().initialize();
+    LLQuicGlobal::instance().initialize(gDirUtilp->getCAFile());
 
     LLMachineID::init();
 

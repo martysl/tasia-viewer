@@ -22,6 +22,7 @@
 #include "stdtypes.h"
 
 #include <memory>
+#include <string>
 
 class LLQuicConfiguration;
 
@@ -30,7 +31,7 @@ class LLQuicGlobal
 public:
     static LLQuicGlobal& instance();
 
-    bool initialize();
+    bool initialize(const std::string& ca_bundle_path = std::string());
     void shutdown();
 
     bool isInitialized() const { return static_cast<bool>(mClientConfig); }
@@ -45,4 +46,5 @@ private:
     LLQuicGlobal& operator=(const LLQuicGlobal&) = delete;
 
     std::shared_ptr<LLQuicConfiguration> mClientConfig;
+    std::string                          mCaBundlePath;
 };

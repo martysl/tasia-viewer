@@ -46,12 +46,14 @@ LLQuicGlobal& LLQuicGlobal::instance()
 LLQuicGlobal::LLQuicGlobal()  = default;
 LLQuicGlobal::~LLQuicGlobal() = default;
 
-bool LLQuicGlobal::initialize()
+bool LLQuicGlobal::initialize(const std::string& ca_bundle_path)
 {
     if (mClientConfig)
     {
         return true;
     }
+
+    mCaBundlePath = ca_bundle_path;
 
     auto api = LLQuicApi::create();
     if (!api)
@@ -89,6 +91,18 @@ bool LLQuicGlobal::initialize()
     credentials.Flags = QUIC_CREDENTIAL_FLAG_CLIENT;
 #if !LL_WINDOWS
     credentials.Flags |= QUIC_CREDENTIAL_FLAG_USE_TLS_BUILTIN_CERTIFICATE_VALIDATION;
+    if (!mCaBundlePath.empty())
+    {
+        credentials.CaCertificateFile = mCaBundlePath.c_str();
+        credentials.Flags |= QUIC_CREDENTIAL_FLAG_SET_CA_CERTIFICATE_FILE;
+        LL_INFOS("Quic") << "MsQuic using CA bundle: " << mCaBundlePath << LL_ENDL;
+    }
+    else
+    {
+        LL_WARNS("Quic") << "MsQuic CA bundle path not provided; "
+                            "relying on QUICTLS built-in trust paths "
+                            "(may fail on packaged builds)." << LL_ENDL;
+    }
 #endif
 
     auto config = LLQuicConfiguration::create(
@@ -112,6 +126,7 @@ void LLQuicGlobal::shutdown()
     if (mClientConfig)
     {
         mClientConfig.reset();
+        mCaBundlePath.clear();
         LL_INFOS("Quic") << "MsQuic shut down" << LL_ENDL;
     }
 }
