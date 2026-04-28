@@ -45,6 +45,7 @@
 #if !defined(USE_CIRCUIT_LIST)
 #include <algorithm>
 #endif
+#include <iomanip>
 #include <sstream>
 #include <iterator>
 #include <stack>
@@ -78,6 +79,7 @@ LLCircuitData::LLCircuitData(const LLHost &host, TPACKETID in_id,
     mTimeoutUserData(NULL),
     mQuicPendingReplyCallback(NULL),
     mQuicPendingReplyUserData(NULL),
+    mQuicReady(false),
     mTrusted(false),
     mbAllowTimeout(true),
     mbAlive(true),
@@ -647,7 +649,16 @@ bool LLCircuit::drainNextQuicPacket(U8* dest, S32 dest_capacity, S32& out_size, 
         if (cd && cd->isQuic() && cd->getQuicConnection())
         {
             const auto& conn = cd->getQuicConnection();
-            if (conn->receiveDatagram(buf) || conn->receivePacket(buf))
+            const char* transport = nullptr;
+            if (conn->receiveDatagram(buf))
+            {
+                transport = "datagram";
+            }
+            else if (conn->receivePacket(buf))
+            {
+                transport = "stream";
+            }
+            if (transport)
             {
                 if (static_cast<S32>(buf.size()) > dest_capacity)
                 {
@@ -661,6 +672,32 @@ bool LLCircuit::drainNextQuicPacket(U8* dest, S32 dest_capacity, S32& out_size, 
                 out_size = static_cast<S32>(buf.size());
                 out_host = cursor->first;
                 mNextQuicDrainKey = cursor->first;
+
+                static std::map<LLHost, U64> sQuicRxCounts;
+                U64& n = sQuicRxCounts[cursor->first];
+                ++n;
+                const bool log_now =
+                    (n <= 5) ||
+                    (n == 10) || (n == 25) || (n == 100) ||
+                    (n == 500) || (n % 2000 == 0);
+                if (log_now)
+                {
+                    std::ostringstream prefix;
+                    prefix << std::hex << std::setfill('0');
+                    const S32 max_show = llmin<S32>(out_size, 8);
+                    for (S32 i = 0; i < max_show; ++i)
+                    {
+                        prefix << std::setw(2) << static_cast<unsigned>(dest[i]);
+                        if (i + 1 < max_show) prefix << ' ';
+                    }
+                    LL_INFOS("Quic","Messaging")
+                        << "QUIC rx #" << std::dec << n
+                        << " from " << cursor->first
+                        << " via " << transport
+                        << " size=" << out_size
+                        << " head=[" << prefix.str() << "]"
+                        << LL_ENDL;
+                }
                 return true;
             }
         }
@@ -787,6 +824,42 @@ std::string LLCircuitData::describeQuicFailure() const
     std::ostringstream o;
     o << "QUIC circuit to " << mHost << " is unavailable";
     return o.str();
+}
+
+void LLCircuitData::queueQuicPendingSend(const U8* data, S32 size, bool reliable)
+{
+    if (size < 0)
+    {
+        return;
+    }
+    QuicPendingSend entry;
+    entry.reliable = reliable;
+    if (size > 0 && data)
+    {
+        entry.data.assign(data, data + size);
+    }
+    mQuicPendingSends.push_back(std::move(entry));
+}
+
+size_t LLCircuitData::markQuicReadyAndFlush()
+{
+    mQuicReady = true;
+    if (!mQuicConnection)
+    {
+        mQuicPendingSends.clear();
+        return 0;
+    }
+    size_t flushed = 0;
+    while (!mQuicPendingSends.empty())
+    {
+        QuicPendingSend entry = std::move(mQuicPendingSends.front());
+        mQuicPendingSends.pop_front();
+        mQuicConnection->sendPacket(entry.data.data(),
+                                    static_cast<S32>(entry.data.size()),
+                                    entry.reliable);
+        ++flushed;
+    }
+    return flushed;
 }
 
 void LLCircuitData::setTimeoutCallback(void (*callback_func)(const LLHost &host, void *user_data), void *user_data)

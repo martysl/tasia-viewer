@@ -28,6 +28,7 @@
 #ifndef LL_LLCIRCUIT_H
 #define LL_LLCIRCUIT_H
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <vector>
@@ -142,6 +143,12 @@ public:
     void            setQuicPendingReplyCallback(void (*callback_func)(void **, S32), void **callback_data);
     bool            hasQuicPendingReplyCallback() const { return mQuicPendingReplyCallback != nullptr; }
     void            fireQuicPendingReplyCallback(S32 result);
+
+    bool            isQuicReady() const noexcept { return mQuicReady; }
+    void            setQuicNotReady() noexcept { mQuicReady = false; }
+    void            queueQuicPendingSend(const U8* data, S32 size, bool reliable);
+    size_t          getQuicPendingSendCount() const noexcept { return mQuicPendingSends.size(); }
+    size_t          markQuicReadyAndFlush();
 
     std::string     describeQuicFailure() const;
 
@@ -299,6 +306,15 @@ protected:
     // </FS:ND>
 
     std::shared_ptr<LLQuicConnection> mQuicConnection;
+
+    bool mQuicReady;
+
+    struct QuicPendingSend
+    {
+        std::vector<U8> data;
+        bool            reliable;
+    };
+    std::deque<QuicPendingSend> mQuicPendingSends;
 };
 
 

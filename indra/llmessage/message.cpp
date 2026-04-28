@@ -1317,7 +1317,23 @@ S32 LLMessageSystem::sendMessage(const LLHost &host)
     const bool route_quic = cdp->isQuic() && cdp->getQuicConnection();
     if (route_quic)
     {
-        success = cdp->getQuicConnection()->sendPacket(buf_ptr, static_cast<S32>(buffer_length), mSendReliable);
+        const char* msg_name = mMessageBuilder->getMessageName();
+        const bool is_use_circuit_code =
+            (msg_name == _PREHASH_UseCircuitCode);
+        if (!cdp->isQuicReady() && !is_use_circuit_code)
+        {
+            cdp->queueQuicPendingSend(buf_ptr, static_cast<S32>(buffer_length), mSendReliable);
+            LL_INFOS("Quic","Messaging") << "Queued " << (msg_name ? msg_name : "(unnamed)")
+                                         << " to " << host
+                                         << " pending quicready (queue_depth="
+                                         << cdp->getQuicPendingSendCount() << ")"
+                                         << LL_ENDL;
+            success = true;
+        }
+        else
+        {
+            success = cdp->getQuicConnection()->sendPacket(buf_ptr, static_cast<S32>(buffer_length), mSendReliable);
+        }
     }
     else
     {
@@ -1612,6 +1628,26 @@ bool LLMessageSystem::enableQuicCircuit(const LLHost &host, const std::string &q
         return false;
     }
 
+    LLCircuitData *cdp = mCircuitInfo.findCircuit(host);
+
+    if (cdp && cdp->isQuic())
+    {
+        const auto& existing = cdp->getQuicConnection();
+        if (existing
+            && existing->getHost() == quic_host
+            && (existing->getState() == LLQuicConnection::State::CONNECTING
+             || existing->getState() == LLQuicConnection::State::CONNECTED))
+        {
+            cdp->setAlive(true);
+            cdp->setTrusted(trusted);
+            LL_INFOS("Messaging") << "enableQuicCircuit: " << host
+                                  << " reusing existing QUIC connection to "
+                                  << quic_host << ":" << quic_port
+                                  << (trusted ? " (trusted)" : " (untrusted)") << LL_ENDL;
+            return true;
+        }
+    }
+
     auto conn = std::make_shared<LLQuicConnection>(config);
     if (!conn->connect(quic_host, quic_port))
     {
@@ -1621,7 +1657,6 @@ bool LLMessageSystem::enableQuicCircuit(const LLHost &host, const std::string &q
         return false;
     }
 
-    LLCircuitData *cdp = mCircuitInfo.findCircuit(host);
     if (!cdp)
     {
         cdp = mCircuitInfo.addCircuitData(host, 0);
@@ -1632,6 +1667,7 @@ bool LLMessageSystem::enableQuicCircuit(const LLHost &host, const std::string &q
     }
     cdp->setTrusted(trusted);
     cdp->setQuicConnection(std::move(conn));
+    cdp->setQuicNotReady();
 
     LL_INFOS("Messaging") << "enableQuicCircuit: " << host
                           << " via QUIC " << quic_host << ":" << quic_port
