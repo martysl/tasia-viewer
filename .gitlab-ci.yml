@@ -28,19 +28,21 @@ build-job-linux:
     - chmod +x ./viewer/ci/linux/build.sh
     - chmod +x ./viewer/ci/linux/upload-symbols.sh
     - |
-      set -o pipefail
-      ./viewer/ci/linux/build.sh 2>&1 | tee /tmp/build.log || {
-        rc=$?
-        echo ""
-        echo "========== BUILD FAILED (exit code $rc) =========="
-        echo "Last 200 lines of build output:"
-        echo "=================================================="
-        tail -200 /tmp/build.log
-        echo "=================================================="
-        echo "Waiting 30s for log flush..."
-        sleep 30
-        exit $rc
-      }
+      bash -c '
+        set -o pipefail
+        ./viewer/ci/linux/build.sh 2>&1 | tee /tmp/build.log || {
+          rc=$?
+          echo ""
+          echo "========== BUILD FAILED (exit code $rc) =========="
+          echo "Last 200 lines of build output:"
+          echo "=================================================="
+          tail -200 /tmp/build.log
+          echo "=================================================="
+          echo "Waiting 30s for log flush..."
+          sleep 30
+          exit $rc
+        }
+      '
     - ./viewer/ci/linux/upload-symbols.sh
   tags:
     - build
