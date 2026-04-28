@@ -1,0 +1,50 @@
+[
+  {
+    "package": "dictionaries",
+    "platform": "common",
+    "old_url": "https://3p.firestormviewer.org/dictionaries-2.46203-common-46203.tar.bz2",
+    "filename": "dictionaries-2.46203-common-46203.tar.bz2",
+    "hash": "2d59bb6f4bd38a18d9250ff010a13b59",
+    "hash_algorithm": "md5"
+  },
+  {
+    "package": "discord-rpc",
+    "platform": "windows64",
+    "old_url": "https://3p.firestormviewer.org/discord_rpc-3.4.0-windows64-192581529.tar.bz2",
+    "filename": "discord_rpc-3.4.0-windows64-192581529.tar.bz2",
+    "hash": "f63f07d4c87fbbb698b9039583f08b76",
+    "hash_algorithm": "md5"
+  },
+  {
+    "package": "glod",
+    "platform": "windows64",
+    "old_url": "https://3p.firestormviewer.org/glod-1.0pre3.vs2017-1906061512-windows64-vs2017-1906061512.tar.bz2",
+    "filename": "glod-1.0pre3.vs2017-1906061512-windows64-vs2017-1906061512.tar.bz2",
+    "hash": "e906cf08bfbfbd9d4fc78557e021e7d0",
+    "hash_algorithm": "md5"
+  },
+  {
+    "package": "gntp-growl",
+    "platform": "windows64",
+    "old_url": "https://3p.firestormviewer.org/gntp_growl-1.0-windows64-vs2017-1906061512.tar.bz2",
+    "filename": "gntp_growl-1.0-windows64-vs2017-1906061512.tar.bz2",
+    "hash": "a333b335104b3d0df14b9be005ef1571",
+    "hash_algorithm": "md5"
+  },
+  {
+    "package": "ndPhysicsStub",
+    "platform": "windows64",
+    "old_url": "https://3p.firestormviewer.org/ndPhysicsStub-1.0-windows64-202121823.tar.bz2",
+    "filename": "ndPhysicsStub-1.0-windows64-202121823.tar.bz2",
+    "hash": "02f70159e14c7b7213b22a0225508c46",
+    "hash_algorithm": "md5"
+  },
+  {
+    "package": "viewer-fonts",
+    "platform": "common",
+    "old_url": "https://3p.firestormviewer.org/viewer_fonts-1.0.0.242151216-common-242151216.tar.bz2",
+    "filename": "viewer_fonts-1.0.0.242151216-common-242151216.tar.bz2",
+    "hash": "52bfa9057a5d34cd841e93624c03a0cdcdf7b12a",
+    "hash_algorithm": "sha1"
+  }
+]
