@@ -41,6 +41,7 @@
 #include "lllslconstants.h"
 #include "llmaterialtable.h"
 #include "llregionhandle.h"
+#include "llhttpnode.h"
 #include "llsd.h"
 #include "llsdserialize.h"
 #include "llteleportflags.h"
@@ -3528,6 +3529,23 @@ bool LLPostTeleportNotifiers::tick()
 
 
 
+void complete_teleport_finish_post_circuit(const LLHost& sim_host,
+                                           U64 region_handle,
+                                           U32 region_size_x,
+                                           U32 region_size_y,
+                                           const std::string& seedCap,
+                                           U32 teleport_flags);
+
+namespace
+{
+    void on_quic_circuit_failed_vm(const LLHost& host, void* /*user_data*/)
+    {
+        LL_WARNS("Messaging") << "QUIC circuit to " << host
+                              << " failed; per spec there is no LLUDP fallback."
+                              << LL_ENDL;
+    }
+}
+
 // Teleport notification from the simulator
 // We're going to pretend to be a new agent
 void process_teleport_finish(LLMessageSystem* msg, void**)
@@ -3633,8 +3651,50 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 
     LLHost sim_host(sim_ip, sim_port);
 
-    // Viewer trusts the simulator.
-    gMessageSystem->enableCircuit(sim_host, true);
+    std::string quic_host;
+    U16         quic_port = 0;
+    if (const LLSD* body = msg->getCurrentLLSDMessageBody())
+    {
+        const LLSD& info = (*body)["Info"][0];
+        if (info.has("SimQuicHost")) quic_host = info["SimQuicHost"].asString();
+        if (info.has("SimQuicPort")) quic_port = static_cast<U16>(info["SimQuicPort"].asInteger());
+    }
+
+    LL_INFOS("Messaging") << "TeleportFinish: sim=" << sim_host
+                          << " SimQuicHost='" << quic_host
+                          << "' SimQuicPort=" << quic_port
+                          << " -> " << (quic_port > 0 && !quic_host.empty() ? "QUIC" : "LLUDP")
+                          << LL_ENDL;
+
+    if (quic_port > 0 && !quic_host.empty())
+    {
+        if (!gMessageSystem->enableQuicCircuit(sim_host, quic_host, quic_port, true))
+        {
+            LL_WARNS("Messaging") << "TeleportFinish: QUIC enable failed for " << sim_host
+                                  << " (host=" << quic_host << " port=" << quic_port
+                                  << "); per spec NOT falling back to LLUDP." << LL_ENDL;
+            gAgent.setTeleportState(LLAgent::TELEPORT_NONE);
+            return;
+        }
+        gMessageSystem->setCircuitTimeoutCallback(sim_host, on_quic_circuit_failed_vm, NULL);
+    }
+    else
+    {
+        // Viewer trusts the simulator.
+        gMessageSystem->enableCircuit(sim_host, true);
+    }
+
+    complete_teleport_finish_post_circuit(sim_host, region_handle, region_size_x, region_size_y,
+                                          seedCap, teleport_flags);
+}
+
+void complete_teleport_finish_post_circuit(const LLHost& sim_host,
+                                           U64 region_handle,
+                                           U32 region_size_x,
+                                           U32 region_size_y,
+                                           const std::string& seedCap,
+                                           U32 teleport_flags)
+{
 // <FS:CR> Aurora Sim
     //LLViewerRegion* regionp =  LLWorld::getInstance()->addRegion(region_handle, sim_host);
     LLViewerRegion* regionp =  LLWorld::getInstance()->addRegion(region_handle, sim_host, region_size_x, region_size_y);
@@ -3647,31 +3707,13 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
         LLWorldMap::getInstance()->cancelTracking();
     }
 
-/*
-    // send camera update to new region
-    gAgentCamera.updateCamera();
-
-    // likewise make sure the camera is behind the avatar
-    gAgentCamera.resetView(true);
-    LLVector3 shift_vector = regionp->getPosRegionFromGlobal(gAgent.getRegion()->getOriginGlobal());
-    gAgent.setRegion(regionp);
-    gObjectList.shiftObjects(shift_vector);
-
-    if (isAgentAvatarValid())
-    {
-        gAgentAvatarp->clearChatText();
-        gAgentCamera.slamLookAt(look_at);
-    }
-    gAgent.setPositionAgent(pos);
-    gAssetStorage->setUpstream(sim);
-    gCacheName->setUpstream(sim);
-*/
-
     // Make sure we're standing
     gAgent.standUp();
 
+    LLMessageSystem* msg = gMessageSystem;
+
     // now, use the circuit info to tell simulator about us!
-    LL_INFOS("Teleport","Messaging") << "process_teleport_finish() sending UseCircuitCode to enable sim_host "
+    LL_INFOS("Teleport","Messaging") << "complete_teleport_finish_post_circuit() sending UseCircuitCode to enable sim_host "
             << sim_host << " with code " << msg->mOurCircuitCode << LL_ENDL;
     msg->newMessageFast(_PREHASH_UseCircuitCode);
     msg->nextBlockFast(_PREHASH_CircuitCode);
@@ -3689,12 +3731,6 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
             << seedCap << LL_ENDL;
     regionp->setSeedCapability(seedCap);
 
-    // Don't send camera updates to the new region until we're
-    // actually there...
-
-    // <FS:Ansariel> Copied from process_teleport_local: Keep us flying if we
-    //               were flying before the teleport or we always want to fly
-    //               after a TP.
     if (teleport_flags & TELEPORT_FLAGS_IS_FLYING || gSavedSettings.getBOOL("FSFlyAfterTeleport"))
     {
         gAgent.setFlying(true);
@@ -3703,22 +3739,14 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
     {
         gAgent.setFlying(false);
     }
-    // </FS:Ansariel>
 
-    // <FS:Ansariel> Stop typing after teleport (possible fix for FIRE-7273)
     gAgent.stopTyping();
 
     // Now do teleport effect for where you're going.
-    // VEFFECT: TeleportEnd
-    effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_POINT, true);
+    LLHUDEffectSpiral* effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_POINT, true);
     effectp->setPositionGlobal(gAgent.getPositionGlobal());
-
     effectp->setColor(LLColor4U(gAgent.getEffectColor()));
     LLHUDManager::getInstance()->sendEffects();
-
-//  gTeleportDisplay = true;
-//  gTeleportDisplayTimer.reset();
-//  gViewerWindow->setShowProgress(true);
 }
 
 // stuff we have to do every time we get an AvatarInitComplete from a sim
@@ -4044,6 +4072,39 @@ void process_crossed_region(LLMessageSystem* msg, void**)
     }
 #endif
 // </FS:CR> Aurora Sim
+
+    std::string quic_host;
+    U16         quic_port = 0;
+    if (const LLSD* body = msg->getCurrentLLSDMessageBody())
+    {
+        const LLSD& rdata = (*body)["RegionData"][0];
+        if (rdata.has("SimQuicHost")) quic_host = rdata["SimQuicHost"].asString();
+        if (rdata.has("SimQuicPort")) quic_port = static_cast<U16>(rdata["SimQuicPort"].asInteger());
+    }
+
+    if (!msg->mCircuitInfo.findCircuit(sim_host))
+    {
+        LL_INFOS("Messaging") << "CrossedRegion: enabling new circuit sim=" << sim_host
+                              << " SimQuicHost='" << quic_host
+                              << "' SimQuicPort=" << quic_port
+                              << " -> " << (quic_port > 0 && !quic_host.empty() ? "QUIC" : "LLUDP")
+                              << LL_ENDL;
+        if (quic_port > 0 && !quic_host.empty())
+        {
+            if (!msg->enableQuicCircuit(sim_host, quic_host, quic_port, true))
+            {
+                LL_WARNS("Messaging") << "CrossedRegion: QUIC enable failed for " << sim_host
+                                      << "; per spec NOT falling back to LLUDP." << LL_ENDL;
+                return;
+            }
+            msg->setCircuitTimeoutCallback(sim_host, on_quic_circuit_failed_vm, NULL);
+        }
+        else
+        {
+            msg->enableCircuit(sim_host, true);
+        }
+    }
+
     send_complete_agent_movement(sim_host);
 
 // <FS:CR> Aurora Sim

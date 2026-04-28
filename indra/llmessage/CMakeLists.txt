@@ -193,6 +193,7 @@ target_link_libraries(
         llfilesystem
         llmath
         llcorehttp
+        llquic
         llxml #<FS:Ansariel> For accessing settings
 )
 target_include_directories( llmessage  INTERFACE   ${CMAKE_CURRENT_SOURCE_DIR})

@@ -52,6 +52,7 @@
 #include "llcircuit.h"
 
 #include "message.h"
+#include "llquicconnection.h"
 #include "llrand.h"
 #include "llstl.h"
 #include "lltransfermanager.h"
@@ -75,6 +76,8 @@ LLCircuitData::LLCircuitData(const LLHost &host, TPACKETID in_id,
     mHighestPacketID(in_id),
     mTimeoutCallback(NULL),
     mTimeoutUserData(NULL),
+    mQuicPendingReplyCallback(NULL),
+    mQuicPendingReplyUserData(NULL),
     mTrusted(false),
     mbAllowTimeout(true),
     mbAlive(true),
@@ -278,6 +281,11 @@ void LLCircuitData::ackReliablePacket(TPACKETID packet_num)
 
 S32 LLCircuitData::resendUnackedPackets(const F64Seconds now)
 {
+    if (isQuic())
+    {
+        return 0;
+    }
+
     LLReliablePacket *packetp;
 
 
@@ -611,6 +619,108 @@ bool LLCircuitData::isDuplicateResend(TPACKETID packetnum)
 }
 
 
+void LLCircuitData::setQuicConnection(std::shared_ptr<LLQuicConnection> conn)
+{
+    mQuicConnection = std::move(conn);
+}
+
+bool LLCircuit::drainNextQuicPacket(U8* dest, S32 dest_capacity, S32& out_size, LLHost& out_host)
+{
+    out_size = 0;
+    if (mCircuitData.empty() || !dest || dest_capacity <= 0)
+    {
+        return false;
+    }
+
+    auto start = mCircuitData.upper_bound(mNextQuicDrainKey);
+    auto cursor = start;
+    std::vector<uint8_t> buf;
+
+    for (size_t scanned = 0; scanned < mCircuitData.size(); ++scanned)
+    {
+        if (cursor == mCircuitData.end())
+        {
+            cursor = mCircuitData.begin();
+        }
+
+        LLCircuitData* cd = cursor->second;
+        if (cd && cd->isQuic() && cd->getQuicConnection())
+        {
+            const auto& conn = cd->getQuicConnection();
+            if (conn->receiveDatagram(buf) || conn->receivePacket(buf))
+            {
+                if (static_cast<S32>(buf.size()) > dest_capacity)
+                {
+                    LL_WARNS("Messaging") << "QUIC packet " << buf.size()
+                                          << " exceeds receive buffer " << dest_capacity
+                                          << "; dropping" << LL_ENDL;
+                    mNextQuicDrainKey = cursor->first;
+                    return false;
+                }
+                std::memcpy(dest, buf.data(), buf.size());
+                out_size = static_cast<S32>(buf.size());
+                out_host = cursor->first;
+                mNextQuicDrainKey = cursor->first;
+                return true;
+            }
+        }
+
+        ++cursor;
+    }
+
+    return false;
+}
+
+void LLCircuit::sweepDeadQuicCircuits(LLMessageSystem* msgsys)
+{
+    if (!msgsys || mCircuitData.empty())
+    {
+        return;
+    }
+
+    std::vector<LLHost> to_disable;
+    for (auto& kv : mCircuitData)
+    {
+        LLCircuitData* cd = kv.second;
+        if (!cd || !cd->isQuic())
+        {
+            continue;
+        }
+        const auto& conn = cd->getQuicConnection();
+        if (!conn)
+        {
+            continue;
+        }
+        const auto state = conn->getState();
+        if (state == LLQuicConnection::State::FAILED ||
+            state == LLQuicConnection::State::CLOSED)
+        {
+            const uint64_t app_err = conn->getLastAppErrorCode();
+            const uint64_t tx_st   = conn->getLastTransportStatus();
+            const bool by_peer     = conn->wasClosedByPeer();
+            LL_WARNS("Messaging") << "QUIC circuit " << kv.first
+                                  << " dead (state=" << static_cast<int>(state)
+                                  << " transport=0x" << std::hex << tx_st << std::dec
+                                  << " app=" << app_err
+                                  << " peer=" << (by_peer ? "yes" : "no")
+                                  << "); disabling. NO LLUDP fallback per spec."
+                                  << LL_ENDL;
+
+            if (cd->mTimeoutCallback)
+            {
+                cd->mTimeoutCallback(kv.first, cd->mTimeoutUserData);
+            }
+            cd->fireQuicPendingReplyCallback(LL_ERR_TCP_TIMEOUT);
+            to_disable.push_back(kv.first);
+        }
+    }
+
+    for (const LLHost& h : to_disable)
+    {
+        msgsys->disableCircuit(h);
+    }
+}
+
 void LLCircuit::dumpResends()
 {
     circuit_data_map::iterator end = mCircuitData.end();
@@ -647,6 +757,25 @@ bool LLCircuit::isCircuitAlive(const LLHost& host) const
     }
 
     return false;
+}
+
+void LLCircuitData::setQuicPendingReplyCallback(void (*callback_func)(void **, S32), void **callback_data)
+{
+    mQuicPendingReplyCallback = callback_func;
+    mQuicPendingReplyUserData = callback_data;
+}
+
+void LLCircuitData::fireQuicPendingReplyCallback(S32 result)
+{
+    if (!mQuicPendingReplyCallback)
+    {
+        return;
+    }
+    auto cb = mQuicPendingReplyCallback;
+    auto ud = mQuicPendingReplyUserData;
+    mQuicPendingReplyCallback = NULL;
+    mQuicPendingReplyUserData = NULL;
+    cb(ud, result);
 }
 
 void LLCircuitData::setTimeoutCallback(void (*callback_func)(const LLHost &host, void *user_data), void *user_data)
@@ -811,6 +940,12 @@ void LLCircuit::updateWatchDogTimers(LLMessageSystem *msgsys)
 
         LLCircuit::ping_set_t::iterator psit = mPingSet.begin();
         LLCircuitData *cdp = *psit;
+
+        if (cdp->isQuic())
+        {
+            mPingSet.erase(psit);
+            continue;
+        }
 
         if (!cdp->mbAlive)
         {
@@ -1091,6 +1226,11 @@ bool LLCircuitData::checkCircuitTimeout()
 // correctly place the packet in the correct list to be acked later.
 bool LLCircuitData::collectRAck(TPACKETID packet_num)
 {
+    if (isQuic())
+    {
+        return true;
+    }
+
     if (mAcks.empty())
     {
         // First extra ack, we need to add ourselves to the list of circuits that need to send acks

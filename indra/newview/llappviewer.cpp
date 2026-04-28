@@ -31,6 +31,7 @@
 // Viewer includes
 #include "llversioninfo.h"
 #include "llfeaturemanager.h"
+#include "llquicglobal.h"
 #include "lluictrlfactory.h"
 #include "lltexteditor.h"
 #include "llenvironment.h"
@@ -949,6 +950,8 @@ bool LLAppViewer::init()
 
     LL_INFOS("InitInfo") << "LLCore::Http initialized." << LL_ENDL ;
 
+    LLQuicGlobal::instance().initialize();
+
     LLMachineID::init();
 
     if (gSavedSettings.getBOOL("QAModeMetrics"))
@@ -1799,7 +1802,25 @@ bool LLAppViewer::doFrame()
 
             // Render scene.
             // *TODO: Should we run display() even during gHeadlessClient?  DK 2011-02-18
-            if (!LLApp::isExiting() && !gHeadlessClient && gViewerWindow)
+            static LLCachedControl<S32> s_background_yield_time(gSavedSettings, "BackgroundYieldTime", 40);
+            bool can_display = !LLApp::isExiting() && !gHeadlessClient && gViewerWindow;
+            if (can_display
+                && ((gViewerWindow && !gViewerWindow->getWindow()->getVisible())
+                    || !gFocusMgr.getAppHasFocus()))
+            {
+                static F64 s_last_background_display_time = 0.0;
+                const F64 now_s = LLTimer::getTotalSeconds();
+                const F64 min_interval_s = llmax(0, (S32)s_background_yield_time) / 1000.0;
+                if (now_s - s_last_background_display_time < min_interval_s)
+                {
+                    can_display = false;
+                }
+                else
+                {
+                    s_last_background_display_time = now_s;
+                }
+            }
+            if (can_display)
             {
                 LL_PROFILE_ZONE_NAMED_CATEGORY_APP("df Display");
                 pingMainloopTimeout("Main:Display");
@@ -1865,7 +1886,8 @@ bool LLAppViewer::doFrame()
                 static LLCachedControl<S32> s_background_yield_time(gSavedSettings, "BackgroundYieldTime", 40);
                 // <FS:Ansariel> FIRE-32722: Make sure to idle if actually minimized
                 //S32 milliseconds_to_sleep = llclamp((S32)s_background_yield_time, 0, 1000);
-                S32 milliseconds_to_sleep = llclamp((S32)s_background_yield_time, (gViewerWindow && gViewerWindow->getWindow()->getMinimized()) ? 1 : 0, 1000);
+                static const S32 BACKGROUND_NETWORK_POLL_MS = 25;
+                S32 milliseconds_to_sleep = llclamp((S32)s_background_yield_time, (gViewerWindow && gViewerWindow->getWindow()->getMinimized()) ? 1 : 0, BACKGROUND_NETWORK_POLL_MS);
                 // </FS:Ansariel>
                 // don't sleep when BackgroundYieldTime set to 0, since this will still yield to other threads
                 // of equal priority on Windows
@@ -2479,6 +2501,8 @@ bool LLAppViewer::cleanup()
 
     LL_INFOS() << "Shutting down message system" << LL_ENDL;
     end_messaging_system();
+
+    LLQuicGlobal::instance().shutdown();
 
     // Non-LLCurl libcurl library
     mAppCoreHttp.cleanup();

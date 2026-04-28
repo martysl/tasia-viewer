@@ -62,6 +62,8 @@
 #include "lltrustedmessageservice.h"
 #include "llmessagetemplate.h"
 #include "llmessagetemplateparser.h"
+#include "llquicconnection.h"
+#include "llquicglobal.h"
 #include "llsd.h"
 #include "llsdmessagebuilder.h"
 #include "llsdmessagereader.h"
@@ -495,6 +497,8 @@ bool LLMessageSystem::checkMessages(LockMessageChecker&, S64 frame_count )
 
     LLTransferTargetVFile::updateQueue();
 
+    mCircuitInfo.sweepDeadQuicCircuits(this);
+
     if (!mNumMessageCounts)
     {
         // This is the first message being handled after a resetReceiveCounts,
@@ -517,13 +521,25 @@ bool LLMessageSystem::checkMessages(LockMessageChecker&, S64 frame_count )
 
         U8* buffer = mTrueReceiveBuffer;
 
-        mTrueReceiveSize = mPacketRing.receivePacket(mSocket, (char *)mTrueReceiveBuffer);
-        // If you want to dump all received packets into SecondLife.log, uncomment this
-        //dumpPacketToLog();
+        LLHost quic_sender;
+        S32    quic_size = 0;
+        if (mCircuitInfo.drainNextQuicPacket(mTrueReceiveBuffer, MAX_BUFFER_SIZE, quic_size, quic_sender))
+        {
+            mTrueReceiveSize = quic_size;
+            mLastSender = quic_sender;
+            mLastReceivingIF = LLHost();
+        }
+        else
+        {
+            mTrueReceiveSize = mPacketRing.receivePacket(mSocket, (char *)mTrueReceiveBuffer);
+            // If you want to dump all received packets into SecondLife.log, uncomment this
+            //dumpPacketToLog();
+
+            mLastSender = mPacketRing.getLastSender();
+            mLastReceivingIF = mPacketRing.getLastReceivingInterface();
+        }
 
         receive_size = mTrueReceiveSize;
-        mLastSender = mPacketRing.getLastSender();
-        mLastReceivingIF = mPacketRing.getLastReceivingInterface();
 
         if (receive_size < (S32) LL_MINIMUM_VALID_PACKET_SIZE)
         {
@@ -715,6 +731,11 @@ bool LLMessageSystem::checkMessages(LockMessageChecker&, S64 frame_count )
                     // Put it onto the list of packets to be acked
                     cdp->collectRAck(mCurrentRecvPacketID);
                     mReliablePacketsIn++;
+                }
+
+                if (cdp && cdp->isQuic() && cdp->hasQuicPendingReplyCallback())
+                {
+                    cdp->fireQuicPendingReplyCallback(LL_ERR_NOERR);
                 }
             }
             else
@@ -1220,14 +1241,22 @@ S32 LLMessageSystem::sendMessage(const LLHost &host)
     {
         buf_ptr[0] |= LL_RELIABLE_FLAG;
 
-        if (!cdp->getUnackedPacketCount())
+        if (!cdp->isQuic())
         {
-            // We are adding the first packed onto the unacked packet list(s)
-            // Add this circuit to the list of circuits with unacked packets
-            mCircuitInfo.mUnackedCircuitMap[cdp->mHost] = cdp;
-        }
+            if (!cdp->getUnackedPacketCount())
+            {
+                // We are adding the first packed onto the unacked packet list(s)
+                // Add this circuit to the list of circuits with unacked packets
+                mCircuitInfo.mUnackedCircuitMap[cdp->mHost] = cdp;
+            }
 
-        cdp->addReliablePacket(mSocket,buf_ptr,buffer_length, &mReliablePacketParams);
+            cdp->addReliablePacket(mSocket,buf_ptr,buffer_length, &mReliablePacketParams);
+        }
+        else if (mReliablePacketParams.mCallback && !cdp->hasQuicPendingReplyCallback())
+        {
+            cdp->setQuicPendingReplyCallback(mReliablePacketParams.mCallback,
+                                             mReliablePacketParams.mCallbackData);
+        }
         mReliablePacketsOut++;
     }
 
@@ -1289,7 +1318,15 @@ S32 LLMessageSystem::sendMessage(const LLHost &host)
     }
 
     bool success;
-    success = mPacketRing.sendPacket(mSocket, (char *)buf_ptr, buffer_length, host);
+    const bool route_quic = cdp->isQuic() && cdp->getQuicConnection();
+    if (route_quic)
+    {
+        success = cdp->getQuicConnection()->sendPacket(buf_ptr, static_cast<S32>(buffer_length), mSendReliable);
+    }
+    else
+    {
+        success = mPacketRing.sendPacket(mSocket, (char *)buf_ptr, buffer_length, host);
+    }
 
     if (!success)
     {
@@ -1545,6 +1582,54 @@ void LLMessageSystem::enableCircuit(const LLHost &host, bool trusted)
     cdp->setTrusted(trusted);
 }
 
+bool LLMessageSystem::enableQuicCircuit(const LLHost &host, const std::string &quic_host, U16 quic_port, bool trusted)
+{
+    if (quic_host.empty() || quic_port == 0)
+    {
+        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): missing quic_host or quic_port" << LL_ENDL;
+        return false;
+    }
+
+    LLQuicGlobal& qg = LLQuicGlobal::instance();
+    if (!qg.isInitialized() && !qg.initialize())
+    {
+        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): LLQuicGlobal failed to initialize" << LL_ENDL;
+        return false;
+    }
+
+    auto config = qg.getClientConfiguration();
+    if (!config)
+    {
+        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): no QUIC client configuration" << LL_ENDL;
+        return false;
+    }
+
+    auto conn = std::make_shared<LLQuicConnection>(config);
+    if (!conn->connect(quic_host, quic_port))
+    {
+        LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): connect to "
+                              << quic_host << ":" << quic_port << " failed" << LL_ENDL;
+        return false;
+    }
+
+    LLCircuitData *cdp = mCircuitInfo.findCircuit(host);
+    if (!cdp)
+    {
+        cdp = mCircuitInfo.addCircuitData(host, 0);
+    }
+    else
+    {
+        cdp->setAlive(true);
+    }
+    cdp->setTrusted(trusted);
+    cdp->setQuicConnection(std::move(conn));
+
+    LL_INFOS("Messaging") << "enableQuicCircuit: " << host
+                          << " via QUIC " << quic_host << ":" << quic_port
+                          << (trusted ? " (trusted)" : " (untrusted)") << LL_ENDL;
+    return true;
+}
+
 void LLMessageSystem::disableCircuit(const LLHost &host)
 {
     LL_INFOS("Messaging") << "LLMessageSystem::disableCircuit for " << host << LL_ENDL;
@@ -1579,7 +1664,6 @@ void LLMessageSystem::disableCircuit(const LLHost &host)
             LL_INFOS("Messaging") << "Host " << LLHost(old_ip, old_port) << " circuit " << code << " removed from lookup table" << LL_ENDL;
             gMessageSystem->mIPPortToCircuitCode.erase(ip_port);
         }
-        mCircuitInfo.removeCircuitData(host);
     }
     else
     {
@@ -1589,6 +1673,12 @@ void LLMessageSystem::disableCircuit(const LLHost &host)
         LL_WARNS("Messaging") << "Couldn't find circuit code for " << host << LL_ENDL;
     }
 
+    // Always tear down the per-host circuit data. mCircuitInfo is keyed by host
+    // (not by circuit code), so removing one host's entry never affects any
+    // other host that may share the 0 circuit code (neighbour sims etc.).
+    // Without this, dead QUIC circuits without a registered code would loop
+    // forever in sweepDeadQuicCircuits.
+    mCircuitInfo.removeCircuitData(host);
 }
 
 
@@ -1758,7 +1848,7 @@ void    process_complete_ping_check(LLMessageSystem *msgsystem, void** /*user_da
     cdp = msgsystem->mCircuitInfo.findCircuit(msgsystem->getSender());
 
     // stop the appropriate timer
-    if (cdp)
+    if (cdp && !cdp->isQuic())
     {
         cdp->pingTimerStop(ping_id);
     }
@@ -1771,6 +1861,10 @@ void    process_start_ping_check(LLMessageSystem *msgsystem, void** /*user_data*
 
     LLCircuitData *cdp;
     cdp = msgsystem->mCircuitInfo.findCircuit(msgsystem->getSender());
+    if (cdp && cdp->isQuic())
+    {
+        return;
+    }
     if (cdp)
     {
         // Grab the packet id of the oldest unacked packet
@@ -2215,7 +2309,7 @@ void    process_packet_ack(LLMessageSystem *msgsystem, void** /*user_data*/)
 
     LLHost host = msgsystem->getSender();
     LLCircuitData *cdp = msgsystem->mCircuitInfo.findCircuit(host);
-    if (cdp)
+    if (cdp && !cdp->isQuic())
     {
 
         S32 ack_count = msgsystem->getNumberOfBlocksFast(_PREHASH_Packets);
@@ -3984,6 +4078,15 @@ S32 LLMessageSystem::getSize(const char *blockname, S32 blocknum,
 S32 LLMessageSystem::getReceiveSize() const
 {
     return mMessageReader->getMessageSize();
+}
+
+const LLSD* LLMessageSystem::getCurrentLLSDMessageBody() const
+{
+    if (mMessageReader != mLLSDMessageReader)
+    {
+        return nullptr;
+    }
+    return &mLLSDMessageReader->getMessage();
 }
 
 //static

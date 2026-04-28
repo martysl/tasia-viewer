@@ -52,6 +52,7 @@ include(Growl)
 include(ColladaDom)
 include(jemalloc)
 include(Discord)
+include(MsQuic)
 
 # <FS:ND> if using ndPhysicsstub this variable will be unset, we don't need to build any stub code viewer side in that case
 if (LLPHYSICSEXTENSIONS_SRC_DIR)
@@ -2546,6 +2547,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
         llimage
         llinventory
         llmessage
+        llquic
         llplugin
         llprimitive
         llrender

@@ -1612,6 +1612,16 @@ void LLWorld::disconnectRegions()
     }
 }
 
+namespace
+{
+    void on_quic_circuit_failed(const LLHost& host, void* /*user_data*/)
+    {
+        LL_WARNS("Messaging") << "QUIC circuit to " << host
+                              << " failed; per spec there is no LLUDP fallback."
+                              << LL_ENDL;
+    }
+}
+
 void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 {
     LL_PROFILE_ZONE_SCOPED_CATEGORY_NETWORK;
@@ -1646,8 +1656,37 @@ void process_enable_simulator(LLMessageSystem *msg, void **user_data)
     }
 #endif
 // </FS:CR> Aurora Sim
-    // Viewer trusts the simulator.
-    msg->enableCircuit(sim, true);
+    std::string quic_host;
+    U16         quic_port = 0;
+    if (const LLSD* body = msg->getCurrentLLSDMessageBody())
+    {
+        const LLSD& sim_info = (*body)["SimulatorInfo"][0];
+        if (sim_info.has("QuicHost")) quic_host = sim_info["QuicHost"].asString();
+        if (sim_info.has("QuicPort")) quic_port = static_cast<U16>(sim_info["QuicPort"].asInteger());
+    }
+
+    LL_INFOS("Messaging") << "EnableSimulator: sim=" << sim
+                          << " QuicHost='" << quic_host
+                          << "' QuicPort=" << quic_port
+                          << " -> " << (quic_port > 0 && !quic_host.empty() ? "QUIC" : "LLUDP")
+                          << LL_ENDL;
+
+    if (quic_port > 0 && !quic_host.empty())
+    {
+        if (!msg->enableQuicCircuit(sim, quic_host, quic_port, true))
+        {
+            LL_WARNS("Messaging") << "EnableSimulator: QUIC enable failed for " << sim
+                                  << " (host=" << quic_host << " port=" << quic_port
+                                  << "); per spec NOT falling back to LLUDP." << LL_ENDL;
+            return;
+        }
+        msg->setCircuitTimeoutCallback(sim, on_quic_circuit_failed, NULL);
+    }
+    else
+    {
+        // Viewer trusts the simulator.
+        msg->enableCircuit(sim, true);
+    }
 // <FS:CR> Aurora Sim
     //LLWorld::getInstance()->addRegion(handle, sim);
     LLWorld::getInstance()->addRegion(handle, sim, region_size_x, region_size_y);

@@ -29,6 +29,7 @@
 #define LL_LLCIRCUIT_H
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "llerror.h"
@@ -68,6 +69,7 @@ const F32 LL_COLLECT_ACK_TIME_MAX = 2.f;
 class LLMessageSystem;
 class LLEncodedDatagramService;
 class LLSD;
+class LLQuicConnection;
 
 //
 // Classes
@@ -133,6 +135,10 @@ public:
 
     LLThrottleGroup &getThrottleGroup()     {   return mThrottles; }
 
+    void                                       setQuicConnection(std::shared_ptr<LLQuicConnection> conn);
+    const std::shared_ptr<LLQuicConnection>&   getQuicConnection() const { return mQuicConnection; }
+    bool                                       isQuic() const noexcept   { return static_cast<bool>(mQuicConnection); }
+
     class less
     {
     public:
@@ -185,6 +191,10 @@ protected:
 
     void            setTimeoutCallback(void (*callback_func)(const LLHost &host, void *user_data), void *user_data);
 
+    void            setQuicPendingReplyCallback(void (*callback_func)(void **, S32), void **callback_data);
+    bool            hasQuicPendingReplyCallback() const { return mQuicPendingReplyCallback != nullptr; }
+    void            fireQuicPendingReplyCallback(S32 result);
+
 
 
     void            setAlive(bool b_alive);
@@ -211,6 +221,9 @@ protected:
     // Used primarily to try and reconnect to servers if they crash/die.
     void    (*mTimeoutCallback)(const LLHost &host, void *user_data);
     void    *mTimeoutUserData;
+
+    void    (*mQuicPendingReplyCallback)(void **, S32);
+    void    **mQuicPendingReplyUserData;
 
     bool    mTrusted;                   // Is this circuit trusted?
     bool    mbAllowTimeout;             // Machines can "pause" circuits, forcing them not to be dropped
@@ -284,6 +297,8 @@ protected:
     F64 mLastPacketLog;
     U32 mLogMessagesSkipped;
     // </FS:ND>
+
+    std::shared_ptr<LLQuicConnection> mQuicConnection;
 };
 
 
@@ -316,6 +331,9 @@ public:
 
     void            dumpResends();
 
+    bool drainNextQuicPacket(U8* dest, S32 dest_capacity, S32& out_size, LLHost& out_host);
+    void sweepDeadQuicCircuits(LLMessageSystem* msgsys);
+
     typedef std::map<LLHost, LLCircuitData*> circuit_data_map;
 
     /**
@@ -347,6 +365,8 @@ protected:
     // optimize the many, many times we call findCircuit. This may be
     // set in otherwise const methods, so it is declared mutable.
     mutable LLCircuitData* mLastCircuit;
+
+    LLHost mNextQuicDrainKey;
 
 private:
     const F32Seconds mHeartbeatInterval;

@@ -4714,7 +4714,29 @@ bool process_login_success_response(U32 &first_sim_size_x, U32 &first_sim_size_y
         gFirstSim.set(sim_ip_str, sim_port);
         if (gFirstSim.isOk())
         {
-            gMessageSystem->enableCircuit(gFirstSim, true);
+            std::string sim_quic_host = response["sim_quic_host"].asString();
+            U16         sim_quic_port = static_cast<U16>(response["sim_quic_port"].asInteger());
+
+            LL_INFOS("AppInit") << "Login response: sim=" << gFirstSim
+                                << " sim_quic_host='" << sim_quic_host
+                                << "' sim_quic_port=" << sim_quic_port
+                                << " -> " << (sim_quic_port > 0 && !sim_quic_host.empty() ? "QUIC" : "LLUDP")
+                                << LL_ENDL;
+
+            if (sim_quic_port > 0 && !sim_quic_host.empty())
+            {
+                if (!gMessageSystem->enableQuicCircuit(gFirstSim, sim_quic_host, sim_quic_port, true))
+                {
+                    LL_WARNS("AppInit") << "Login response advertised QUIC ("
+                                        << sim_quic_host << ":" << sim_quic_port
+                                        << ") but enableQuicCircuit failed; per spec, NOT falling back to LLUDP."
+                                        << LL_ENDL;
+                }
+            }
+            else
+            {
+                gMessageSystem->enableCircuit(gFirstSim, true);
+            }
         }
     }
     std::string region_x_str = response["region_x"];

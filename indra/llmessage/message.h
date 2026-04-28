@@ -662,6 +662,7 @@ public:
     U32 getOurCircuitCode();
 
     void    enableCircuit(const LLHost &host, bool trusted);
+    bool    enableQuicCircuit(const LLHost &host, const std::string &quic_host, U16 quic_port, bool trusted);
     void    disableCircuit(const LLHost &host);
 
     // Use this to establish trust on startup and in response to
@@ -752,6 +753,8 @@ public:
     S32     getReceiveSize() const;
     S32     getReceiveCompressedSize() const { return mIncomingCompressedSize; }
     S32     getReceiveBytes() const;
+
+    const LLSD* getCurrentLLSDMessageBody() const;
 
     S32     getUnackedListSize() const          { return mUnackedListSize; }
     F32     getBufferLoadRate() const           { return mPacketRing.getBufferLoadRate(); }
