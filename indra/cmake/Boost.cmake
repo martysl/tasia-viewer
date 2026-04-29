@@ -44,32 +44,11 @@ endif()
 
 FetchContent_Declare(
         Boost
-        URL      https://github.com/boostorg/boost/releases/download/boost-1.86.0/boost-1.86.0-cmake.tar.xz
-        URL_HASH SHA256=2c5ec5edcdff47ff55e27ed9560b0a0b94b07bd07ed9928b476150e16b0efc57
+        URL      https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.xz
+        URL_HASH SHA256=7da75f171837577a52bbf217e17f8ea576c7c246e4594d617bfde7fafd408be5
         DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(Boost)
-
-# Boost 1.86 bug: libs/context/include/boost/context/{fiber,continuation}_fcontext.hpp
-# unconditionally define __NR_map_shadow_stack = 451 whenever __CET__ && __unix__
-# are set. Modern glibc / kernel headers (GCC 15, linux-headers >= 6.6) already
-# provide this macro with value 453, so the boost define triggers a redefinition
-# warning that becomes fatal under the viewer's -Werror. Fixed upstream in
-# Boost 1.87. Patch both headers idempotently to add an #ifndef guard.
-foreach(_ctx_hdr fiber_fcontext.hpp continuation_fcontext.hpp)
-    set(_hdr "${boost_SOURCE_DIR}/libs/context/include/boost/context/${_ctx_hdr}")
-    if (EXISTS "${_hdr}")
-        file(READ "${_hdr}" _content)
-        string(REPLACE
-                "#  define __NR_map_shadow_stack 451"
-                "#  ifndef __NR_map_shadow_stack\n#    define __NR_map_shadow_stack 451\n#  endif"
-                _patched "${_content}")
-        if (NOT "${_patched}" STREQUAL "${_content}")
-            file(WRITE "${_hdr}" "${_patched}")
-            message(STATUS "Patched Boost ${_ctx_hdr} for __NR_map_shadow_stack redefinition")
-        endif()
-    endif()
-endforeach()
 
 set(CMAKE_CXX_FLAGS "${_ll_boost_saved_cxx_flags}")
 set(CMAKE_C_FLAGS   "${_ll_boost_saved_c_flags}")
