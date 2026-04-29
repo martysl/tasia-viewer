@@ -88,8 +88,16 @@ target_link_libraries( ll::boost INTERFACE
         Boost::context
         Boost::fiber
         Boost::filesystem
+        Boost::graph
+        Boost::hof
+        Boost::iostreams
+        Boost::json
         Boost::program_options
+        Boost::ptr_container
+        Boost::random
         Boost::regex
+        Boost::signals2
+        Boost::stacktrace
         Boost::system
         Boost::thread
         Boost::url
