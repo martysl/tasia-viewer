@@ -167,23 +167,21 @@ public:
 
     bool tick(const LLSD&)
     {
-        typedef boost::asio::streambuf::const_buffers_type const_buffer_sequence;
         // If there's anything to send, try to send it.
         std::size_t total(mStreambuf.size()), consumed(0);
         if (total)
         {
-            const_buffer_sequence bufs = mStreambuf.data();
+            auto bufs = mStreambuf.data();
             // In general, our streambuf might contain a number of different
             // physical buffers; iterate over those.
             bool keepwriting = true;
-            for (const_buffer_sequence::const_iterator bufi(bufs.begin()), bufend(bufs.end());
+            for (auto bufi  = boost::asio::buffer_sequence_begin(bufs),
+                      bufend = boost::asio::buffer_sequence_end(bufs);
                  bufi != bufend && keepwriting; ++bufi)
             {
-                // http://www.boost.org/doc/libs/1_49_0_beta1/doc/html/boost_asio/reference/buffer.html#boost_asio.reference.buffer.accessing_buffer_contents
-                // Although apr_file_write() accepts const void*, we
-                // manipulate const char* so we can increment the pointer.
-                const char* remainptr = boost::asio::buffer_cast<const char*>(*bufi);
-                std::size_t remainlen = boost::asio::buffer_size(*bufi);
+                boost::asio::const_buffer buf(*bufi);
+                const char* remainptr = static_cast<const char*>(buf.data());
+                std::size_t remainlen = buf.size();
                 while (remainlen)
                 {
                     // Tackle the current buffer in discrete chunks. On
@@ -363,7 +361,6 @@ public:
         if (mEOF)
             return false;
 
-        typedef boost::asio::streambuf::mutable_buffers_type mutable_buffer_sequence;
         // Try, every time, to read into our streambuf. In fact, we have no
         // idea how much data the child might be trying to send: keep trying
         // until we're convinced we've temporarily exhausted the pipe.
@@ -373,18 +370,19 @@ public:
         do
         {
             // attempt to read an arbitrary size
-            mutable_buffer_sequence bufs = mStreambuf.prepare(4096);
+            auto bufs = mStreambuf.prepare(4096);
             // In general, the mutable_buffer_sequence returned by prepare() might
             // contain a number of different physical buffers; iterate over those.
             std::size_t tocommit(0);
-            for (mutable_buffer_sequence::const_iterator bufi(bufs.begin()), bufend(bufs.end());
+            for (auto bufi  = boost::asio::buffer_sequence_begin(bufs),
+                      bufend = boost::asio::buffer_sequence_end(bufs);
                  bufi != bufend; ++bufi)
             {
-                // http://www.boost.org/doc/libs/1_49_0_beta1/doc/html/boost_asio/reference/buffer.html#boost_asio.reference.buffer.accessing_buffer_contents
-                std::size_t toread(boost::asio::buffer_size(*bufi));
+                boost::asio::mutable_buffer buf(*bufi);
+                std::size_t toread(buf.size());
                 apr_size_t gotten(toread);
                 apr_status_t err = apr_file_read(mPipe,
-                                                 boost::asio::buffer_cast<void*>(*bufi),
+                                                 buf.data(),
                                                  &gotten);
                 // EAGAIN is exactly what we want from a nonblocking pipe.
                 // Rather than waiting for data, it should return immediately.
