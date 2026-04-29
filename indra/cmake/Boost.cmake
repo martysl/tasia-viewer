@@ -19,8 +19,16 @@ set(BOOST_INCLUDE_LIBRARIES
         context
         fiber
         filesystem
+        graph
+        hof
+        iostreams
+        json
         program_options
+        ptr_container
+        random
         regex
+        signals2
+        stacktrace
         system
         thread
         url
