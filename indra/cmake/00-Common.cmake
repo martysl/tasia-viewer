@@ -16,6 +16,26 @@ include_guard()
 
 include(Variables)
 
+# Apply viewer-only "warnings as errors" flags (currently /WX on MSVC) to every
+# target defined in the directory that included 00-Common, without leaking
+# them into third-party FetchContent subbuilds (e.g. Boost) which do not
+# include this file. Invoked via cmake_language(DEFER) below so that all
+# targets in the directory are already created when it runs.
+function(_ll_apply_strict_warnings_to_dir_targets)
+    get_directory_property(_ll_dir_targets BUILDSYSTEM_TARGETS)
+    foreach(_ll_t IN LISTS _ll_dir_targets)
+        get_target_property(_ll_type ${_ll_t} TYPE)
+        if (_ll_type STREQUAL "INTERFACE_LIBRARY" OR
+            _ll_type STREQUAL "UTILITY" OR
+            _ll_type STREQUAL "GLOBAL_TARGET")
+            continue()
+        endif()
+        if (WINDOWS)
+            target_compile_options(${_ll_t} PRIVATE /WX)
+        endif()
+    endforeach()
+endfunction()
+
 # We go to some trouble to set LL_BUILD to the set of relevant compiler flags.
 # <FS:Ansariel> Use the previous version for Windows or the compile command line will be screwed up royally
 if (WINDOWS)
@@ -125,9 +145,11 @@ if (WINDOWS)
   endif (USE_AVX_OPTIMIZATION)
   # </FS:Ansariel> AVX/AVX2 support
 
-  # Are we using the crummy Visual Studio KDU build workaround?
+  # /WX (treat warnings as errors) is applied per-target rather than via
+  # add_compile_options() at directory scope so that third-party code pulled
+  # in by FetchContent (e.g. Boost) does not inherit it.
   if (NOT VS_DISABLE_FATAL_WARNINGS)
-    add_compile_options(/WX)
+    cmake_language(DEFER CALL _ll_apply_strict_warnings_to_dir_targets)
   endif (NOT VS_DISABLE_FATAL_WARNINGS)
 
   #ND: When using something like buildcache (https://github.com/mbitsnbites/buildcache)

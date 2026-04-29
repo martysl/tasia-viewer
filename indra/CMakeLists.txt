@@ -7,10 +7,13 @@
 ## 3.13/12 is needed for add_link_options/add_compile_definitions
 ## 3.14 added FILE CREATE_LINK
 ## 3.16 is needed for target_precompile_headers
+## 3.19 is needed for cmake_language(DEFER) (used by 00-Common to apply
+##   warning-as-error flags to viewer-owned targets only, keeping third-party
+##   FetchContent subbuilds such as Boost out of /WX).
 ## Nicky: Ideally we want at least 3.21 for good preset support
 ##   We're not there yet, but once done, there is a kludge in Linking.cmake
 #    "if(${CMAKE_VERSION} VERSION_LESS "3.20.0")" that can also be removed
-cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19.0 FATAL_ERROR)
 
 set(ROOT_PROJECT_NAME "Firestorm" CACHE STRING
     "The root project/makefile/solution name. Defaults to Firestorm.")
