@@ -16,6 +16,8 @@ endif()
 include(FetchContent)
 
 set(BOOST_INCLUDE_LIBRARIES
+        asio
+        assign
         context
         fiber
         filesystem
@@ -85,6 +87,8 @@ endfunction()
 _ll_mark_boost_system_includes("${boost_SOURCE_DIR}")
 
 target_link_libraries( ll::boost INTERFACE
+        Boost::asio
+        Boost::assign
         Boost::context
         Boost::fiber
         Boost::filesystem
