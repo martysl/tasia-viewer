@@ -54,6 +54,18 @@ jobs:
           path: .autobuild-installables
           key: ${{ runner.os }}-64-ReleaseFS_open-${{ hashFiles('autobuild.xml') }}
 
+      - name: Load autobuild environment
+        shell: bash
+        run: |
+          # autobuild's source_environment reads AUTOBUILD_VARIABLES_FILE and
+          # exports all the LL_BUILD_* vars that cmake needs (including the
+          # -iwithsysroot check on macOS).
+          autobuild source_environment > .source_env
+          . .source_env
+          # Persist the key vars for subsequent steps
+          echo "LL_BUILD=$LL_BUILD" >> "$GITHUB_ENV"
+          echo "LL_BUILD_RELEASE=$LL_BUILD_RELEASE" >> "$GITHUB_ENV"
+
       - name: Set VSVER for Windows
         if: runner.os == 'Windows'
         run: echo "AUTOBUILD_VSVER=170" >> $GITHUB_ENV
