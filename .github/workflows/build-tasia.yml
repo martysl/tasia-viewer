@@ -11,6 +11,7 @@ env:
   AUTOBUILD_INSTALLABLE_CACHE: ${{ github.workspace }}/.autobuild-installables
   AUTOBUILD_VARIABLES_FILE: ${{ github.workspace }}/.build-variables/variables
   AUTOBUILD_VCS_INFO: "true"
+  LL_SKIP_REQUIRE_SYSROOT: 1
   XZ_DEFAULTS: -T0
 
 jobs:
