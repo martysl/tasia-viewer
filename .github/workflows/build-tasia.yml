@@ -77,7 +77,8 @@ jobs:
           sudo apt-get install -y -qq \
             mesa-common-dev libgl1-mesa-dev libxinerama-dev \
             libxrandr-dev libpulse-dev libglu1-mesa-dev \
-            libfreetype6-dev libfontconfig1 ninja-build
+            libfreetype6-dev libfontconfig1 ninja-build \
+            libdbus-1-dev
           sudo apt-get clean
 
       - name: Install macOS build prerequisites
