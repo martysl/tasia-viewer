@@ -279,7 +279,7 @@ Benutzer mit kostenlosen Konten können sich während dieses Zeitraums nicht bei
 	<string name="LoginFailedComputerProhibited">
 		Der Zugriff auf Second Life ist von diesem Computer aus nicht möglich.
 Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an
-support@secondlife.com.
+009daw+viewersupport@gmail.com.
 	</string>
 	<string name="PacificTime">
 		Pazifik-Zeit
@@ -294,13 +294,13 @@ Bitte wenden Sie sich unter http://secondlife.com/support an den Second Life-Sup
 	</string>
 	<string name="LoginFailedTransformError">
 		Nicht übereinstimmende Daten bei der Anmeldung festgestellt.
-Wenden Sie sich an support@secondlife.com.
+Wenden Sie sich an 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAccountMaintenance">
 		An Ihrem Konto werden gerade kleinere Wartungsarbeiten durchgeführt.
 Ihr Konto ist erst ab
 [TIME] wieder verfügbar.
-Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an support@secondlife.com.
+Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedPendingLogoutFault">
 		Abmeldeanforderung führte zu einem Simulatorfehler.
@@ -319,19 +319,19 @@ Bitte warten Sie eine Minute, bevor Sie sich erneut einloggen.
 		Mit Ihrem Konto ist der Zugriff auf Second Life
 nur zwischen [START] und [END] Pacific Time möglich.
 Schauen Sie während dieses Zeitraums vorbei.
-Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an support@secondlife.com.
+Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		Falsche Parameter.
-Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an support@secondlife.com.
+Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		Vorname muss alphanumerisch sein.
-Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an support@secondlife.com.
+Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		Nachname muss alphanumerisch sein.
-Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an support@secondlife.com.
+Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		Die Region wird gerade offline geschaltet.
@@ -367,7 +367,7 @@ Warten Sie kurz und versuchen Sie dann noch einmal, sich anzumelden.
 	</string>
 	<string name="LoginFailedAuthenticationMFARequired">
 		Um die Anmeldung fortzusetzen, geben Sie bitte ein neues Token aus Ihrer Multifaktor-Authentifizierungs-App ein.
-Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an support@secondlife.com.
+Wenn Sie der Ansicht sind, dass Sie diese Meldung fälschlicherweise erhalten haben, wenden Sie sich an 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="AgentLostConnection">
 		In dieser Region kann es zu Problemen kommen.  Bitte überprüfen Sie Ihre Internetverbindung.
@@ -861,7 +861,7 @@ sind erlaubt.
 	</string>
 	<string name="AssetUploadRequestInvalid">
 Fehler in der Upload-Anforderung. Bitte besuchen Sie
-https://www.firestormviewer.org/support für Hilfe zum Lösen des Problems.
+mailto:009daw+viewersupport@gmail.com für Hilfe zum Lösen des Problems.
 	</string>
 	<string name="SettingValidationError">
 		Validierung für das Importieren der Einstellungen [NAME] fehlgeschlagen

@@ -175,20 +175,20 @@ Check www.secondlife.com/status for updates.</string>
 People with free accounts will not be able to access Second Life during this time, to make room for those who have paid for Second Life.</string>
 	<string name="LoginFailedComputerProhibited">Second Life cannot be accessed from this computer.
 If you feel this is an error, please contact
-support@secondlife.com.</string>
+009daw+viewersupport@gmail.com.</string>
   <!--'Pacific time' placeholder for [TIME] in case time from server can't be decoded-->
   <string name="PacificTime">Pacific Time</string>
 	<string name="LoginFailedAcountSuspended">Your account is not accessible until
 [TIME].
-If you feel this is an error, please contact support@secondlife.com.</string>
+If you feel this is an error, please contact 009daw+viewersupport@gmail.com.</string>
 	<string name="LoginFailedAccountDisabled">We are unable to complete your request at this time.
 Please contact Second Life support for assistance at http://support.secondlife.com.</string>
 	<string name="LoginFailedTransformError">Data inconsistency found during login.
-Please contact support@secondlife.com.</string>
+Please contact 009daw+viewersupport@gmail.com.</string>
 	<string name="LoginFailedAccountMaintenance">Your account is undergoing minor maintenance.
 Your account is not accessible until
 [TIME].
-If you feel this is an error, please contact support@secondlife.com.</string>
+If you feel this is an error, please contact 009daw+viewersupport@gmail.com.</string>
 	<string name="LoginFailedPendingLogoutFault">Request for logout responded with a fault from simulator.</string>
 	<string name="LoginFailedPendingLogout">The system is logging you out right now.
 Please wait a minute before you try logging in again.</string>
@@ -197,13 +197,13 @@ Please wait a minute before you try logging in again.</string>
 	<string name="LoginFailedRestrictedHours">Your account can only access Second Life
 between [START] and [END] Pacific Time.
 Please come back during those hours.
-If you feel this is an error, please contact support@secondlife.com.</string>
+If you feel this is an error, please contact 009daw+viewersupport@gmail.com.</string>
 	<string name="LoginFailedIncorrectParameters">Incorrect parameters.
-If you feel this is an error, please contact support@secondlife.com.</string>
+If you feel this is an error, please contact 009daw+viewersupport@gmail.com.</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">First name parameter must be alphanumeric.
-If you feel this is an error, please contact support@secondlife.com.</string>
+If you feel this is an error, please contact 009daw+viewersupport@gmail.com.</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">Last name parameter must be alphanumeric.
-If you feel this is an error, please contact support@secondlife.com.</string>
+If you feel this is an error, please contact 009daw+viewersupport@gmail.com.</string>
 	<string name="LogoutFailedRegionGoingOffline">Region is going offline.
 Please try logging in again in a minute.</string>
 	<string name="LogoutFailedAgentNotInRegion">Agent not in region.
@@ -221,7 +221,7 @@ Please try logging in again in a minute.</string>
 	<string name="LoginFailedLoggingOutSession">The system has begun logging out your last session.
 Please try logging in again in a minute.</string>
         <string name="LoginFailedAuthenticationMFARequired">To continue logging in, enter a new token from your multifactor authentication app.
-If you feel this is an error, please contact support@secondlife.com</string>
+If you feel this is an error, please contact 009daw+viewersupport@gmail.com</string>
 
 	<!-- Disconnection -->
 	<string name="AgentLostConnection">This region may be experiencing trouble.  Please check your connection to the Internet.</string>
@@ -443,7 +443,7 @@ are allowed.
 	<string name="AssetUploadServerUnavaliable">Service not available or upload timeout was reached.</string>
 	<string name="AssetUploadRequestInvalid">
 Error in upload request.  Please visit 
-https://www.firestormviewer.org/support for help fixing this problem.
+mailto:009daw+viewersupport@gmail.com for help fixing this problem.
 </string>
 
 	<!-- Settings errors -->

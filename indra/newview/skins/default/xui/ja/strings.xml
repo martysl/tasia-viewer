@@ -288,19 +288,19 @@ https://secondlife.com/viewer-access-faq
 		あなたのアカウントにアクセスできるのは、
 太平洋時間の[START]～[END]の間に限られます。
 有効な時間帯に再度お試しください。
-エラーと思われる場合は、support@secondlife.comにお問い合わせください。
+エラーと思われる場合は、009daw+viewersupport@gmail.comにお問い合わせください。
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		パラメーターが正しくありません。
-エラーと思われる場合は、support@secondlife.comにお問い合わせください。
+エラーと思われる場合は、009daw+viewersupport@gmail.comにお問い合わせください。
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		ファーストネームのパラメーターは英数字です。
-エラーと思われる場合は、support@secondlife.comにお問い合わせください。
+エラーと思われる場合は、009daw+viewersupport@gmail.comにお問い合わせください。
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		ラストネームのパラメーターは英数字です。
-エラーと思われる場合は、support@secondlife.comにお問い合わせください。
+エラーと思われる場合は、009daw+viewersupport@gmail.comにお問い合わせください。
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		リージョンは、現在オフラインです。
@@ -336,7 +336,7 @@ https://secondlife.com/viewer-access-faq
 	</string>
 	<string name="LoginFailedAuthenticationMFARequired">
 		ログインするには二段階認証アプリから新しいトークンを入力する必要があります。
-それでもこのエラーが発生する場合は、support@secondlife.comにお問い合わせください。
+それでもこのエラーが発生する場合は、009daw+viewersupport@gmail.comにお問い合わせください。
 	</string>
 	<!-- Disconnection -->
 	<string name="AgentLostConnection">

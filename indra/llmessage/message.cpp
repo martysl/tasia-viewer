@@ -1319,7 +1319,7 @@ S32 LLMessageSystem::sendMessage(const LLHost &host)
     {
         const char* msg_name = mMessageBuilder->getMessageName();
         const bool is_use_circuit_code =
-            (msg_name == _PREHASH_UseCircuitCode);
+            (msg_name && strcmp(msg_name, _PREHASH_UseCircuitCode) == 0);
         if (!cdp->isQuicReady() && !is_use_circuit_code)
         {
             cdp->queueQuicPendingSend(buf_ptr, static_cast<S32>(buffer_length), mSendReliable);
@@ -4226,4 +4226,3 @@ void LLMessageSystem::sendUntrustedSimulatorMessageCoro(std::string url, std::st
 
 LLHTTPRegistration<LLHTTPNodeAdapter<LLTrustedMessageService> >
     gHTTPRegistrationTrustedMessageWildcard("/trusted-message/<message-name>");
-

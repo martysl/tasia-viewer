@@ -248,7 +248,7 @@ Le persone con account gratuiti non potranno accedere a Second Life durante ques
 	<string name="LoginFailedComputerProhibited">
 		Non si può accedere a Second Life da questo computer.
 Se si ritiene che si tratti di un errore, contattare
-support@secondlife.com.
+009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAcountSuspended">
 		Il tuo account non è accessibile fino alle
@@ -260,13 +260,13 @@ Contattare l&apos;assistenza Second Life alla pagina http://secondlife.com/suppo
 	</string>
 	<string name="LoginFailedTransformError">
 		Dati incompatibili rilevati durante l&apos;accesso.
-Contattare support@secondlife.com.
+Contattare 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAccountMaintenance">
 		Il tuo account è in fase di piccola manutenzione.
 Il tuo account non è accessibile fino alle
 [TIME] fuso orario del Pacifico.
-Se si ritiene che si tratti di un errore, contattare support@secondlife.com.
+Se si ritiene che si tratti di un errore, contattare 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedPendingLogoutFault">
 		Errore del simulatore in seguito alla richiesta di logout.
@@ -285,19 +285,19 @@ Attendere qualche minuto e riprovare l&apos;accesso.
 		Il tuo account può accedere a Second Life solo
 tra le [START] e le [END] fuso orario del Pacifico.
 Torna durante quell&apos;orario.
-Se si ritiene che si tratti di un errore, contattare support@secondlife.com.
+Se si ritiene che si tratti di un errore, contattare 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		Parametri errati.
-Se si ritiene che si tratti di un errore, contattare support@secondlife.com.
+Se si ritiene che si tratti di un errore, contattare 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		Il parametro Nome deve includere solo caratteri alfanumerici.
-Se si ritiene che si tratti di un errore, contattare support@secondlife.com.
+Se si ritiene che si tratti di un errore, contattare 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		Il parametro Cognome deve includere solo caratteri alfanumerici.
-Se si ritiene che si tratti di un errore, contattare support@secondlife.com.
+Se si ritiene che si tratti di un errore, contattare 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		La regione sta passando allo stato non in linea.
@@ -333,7 +333,7 @@ Provare ad accedere nuovamente tra un minuto.
 	</string>
 	<string name="LoginFailedAuthenticationMFARequired">
 		Per accedere, inserisci un nuovo token dalla tua app di autenticazione multi-fattore.
-Se ritieni che si tratti di un errore, contatta support@secondlife.com
+Se ritieni che si tratti di un errore, contatta 009daw+viewersupport@gmail.com
 	</string>
 	<string name="AgentLostConnection">
 		Questa regione sta avendo problemi. Verificare la connessione a Internet.
@@ -819,7 +819,7 @@ Se ritieni che si tratti di un errore, contatta support@secondlife.com
 	</string>
 	<string name="AssetUploadRequestInvalid">
 		Errore nella richiesta di invio. Visitare
-https://www.firestormviewer.org/support per avere aiuto nella soluzione.
+mailto:009daw+viewersupport@gmail.com per avere aiuto nella soluzione.
 	</string>
 	<string name="texture">
 		texture

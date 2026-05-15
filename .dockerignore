@@ -1,0 +1,12 @@
+.git/
+.gitattributes
+.gitignore
+.git-blame-ignore-revs
+.github/
+.gitlab-ci.yml
+.pre-commit-config.yaml
+*.tar.*
+*.dmg
+*.exe
+*.zip
+build-*/

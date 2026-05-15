@@ -157,7 +157,7 @@ Check www.secondlife.com/status for opdateringer.
 	</string>
 	<string name="LoginFailedComputerProhibited">
 		Second Life kan ikke tilgås fra dennecomputer.
-Hvis du mener dette er en fejl, kontakt venligst support@secondlife.com.
+Hvis du mener dette er en fejl, kontakt venligst 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAcountSuspended">
 		Din konto vil ikke være tilgængelig før 
@@ -170,13 +170,13 @@ Hvis du ikke kan ændre dit password ring venligst +1 (866) 476-9763.
 	</string>
 	<string name="LoginFailedTransformError">
 		Data inkonsistens registret ved login.
-Kontakt venligst support@secondlife.com.
+Kontakt venligst 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAccountMaintenance">
 		Der foretages vedligehold på din konto lige nu.
 Din konto vil ikke være tilgængelig før 
 [TIME] Pacific Time.
-Hvis du mener dette er en fejl, kontakt venligst support@secondlife.com.
+Hvis du mener dette er en fejl, kontakt venligst 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedPendingLogoutFault">
 		Forespøgsel på logout blev besvaret med en fejl fra simulatoren.
@@ -197,19 +197,19 @@ Din konto vil ikke være tilgængelig før
 mellem [START] [END] Pacific Time.
 Kom venligst tilbage i dette tidsrum.
 
-Hvis du mener dette er en fejl, kontakt venligst support@secondlife.com.
+Hvis du mener dette er en fejl, kontakt venligst 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		Ugyldig parametre.
-Hvis du mener dette er en fejl, kontakt venligst support@secondlife.com.
+Hvis du mener dette er en fejl, kontakt venligst 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		Fornavn parameter skal være alfanumerisk
-Hvis du mener dette er en fejl, kontakt venligst support@secondlife.com.
+Hvis du mener dette er en fejl, kontakt venligst 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		Efternavn parameter skal være alfanumerisk
-Hvis du mener dette er en fejl, kontakt venligst support@secondlife.com.
+Hvis du mener dette er en fejl, kontakt venligst 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		Regionen er lukket ned.

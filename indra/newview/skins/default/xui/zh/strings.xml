@@ -304,7 +304,7 @@ http://secondlife.com/viewer-access-faq
 	<string name="LoginFailedComputerProhibited">
 		當前電腦無法登入第二人生。
 如果你覺得這是我們的錯誤，請聯絡
-support@secondlife.com.
+009daw+viewersupport@gmail.com.
 	</string>
 	<!--'Pacific time' placeholder for [TIME] in case time from server can't be decoded-->
 	<string name="PacificTime">
@@ -313,7 +313,7 @@ support@secondlife.com.
 	<string name="LoginFailedAcountSuspended">
 		你的帳號需在太平洋時間 [TIME] 
 之後方可登陸。
-如果你覺得這是我們的錯誤，請聯絡 support@secondlife.com.
+如果你覺得這是我們的錯誤，請聯絡 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAccountDisabled">
 		我們無法完成你的當前請求。
@@ -321,13 +321,13 @@ support@secondlife.com.
 	</string>
 	<string name="LoginFailedTransformError">
 		登入時發現資料不一致。
-請聯絡 support@secondlife.com.
+請聯絡 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAccountMaintenance">
 		你的帳號目前正在臨時維護中。
 你的帳號需在太平洋時間 [TIME] 
 之後方可登陸。
-如果你覺得這是我們的錯誤，請聯絡 support@secondlife.com.
+如果你覺得這是我們的錯誤，請聯絡 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedPendingLogoutFault">
 		登出登陸時類比主機發生錯誤。
@@ -346,19 +346,19 @@ support@secondlife.com.
 		你的帳戶只能在太平洋時間 [START] 和 [END] 之間登入第二人生。
 請在這段時間內嘗試登陸。
 如果你覺得這是我們的錯誤，
-請聯絡 support@secondlife.com.
+請聯絡 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		參數錯誤。
-如果你覺得這是我們的錯誤，請聯絡 support@secondlife.com.
+如果你覺得這是我們的錯誤，請聯絡 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		名字必須是英文或者數字。
-如果你覺得這是我們的錯誤，請聯絡 support@secondlife.com.
+如果你覺得這是我們的錯誤，請聯絡 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		姓必須是英文或者數字
-如果你覺得這是我們的錯誤，請聯絡 support@secondlife.com.
+如果你覺得這是我們的錯誤，請聯絡 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		當前區域已離線。
@@ -394,7 +394,7 @@ support@secondlife.com.
 	</string>
 	<string name="LoginFailedAuthenticationMFARequired">
 		如需繼續登陸，請在雙重身份驗證程式中輸入一個新的權杖。
-如果你覺得這是我們的錯誤，請聯絡 support@secondlife.com
+如果你覺得這是我們的錯誤，請聯絡 009daw+viewersupport@gmail.com
 	</string>
 	<!-- Disconnection -->
 	<string name="AgentLostConnection">
@@ -914,7 +914,7 @@ support@secondlife.com.
 	</string>
 	<string name="AssetUploadRequestInvalid">
 
-上傳請求錯誤。請存取：https://www.firestormviewer.org/support 尋求幫助。
+上傳請求錯誤。請存取：mailto:009daw+viewersupport@gmail.com 尋求幫助。
 	</string>
 	<!-- Settings errors -->
 	<string name="SettingValidationError">

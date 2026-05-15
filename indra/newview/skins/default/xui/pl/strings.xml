@@ -262,7 +262,7 @@ Osoby posiadające darmowe konta nie mogą się teraz zalogować, aby ludzie pos
 	<string name="LoginFailedComputerProhibited">
 		Second Life odmawia dostępu temu komputerowi.
 Jeśli myślisz, że to błąd skontaktuj się z
-support@secondlife.com
+009daw+viewersupport@gmail.com
 	</string>
 	<string name="PacificTime">
 		czas pacyficzny
@@ -270,7 +270,7 @@ support@secondlife.com
 	<string name="LoginFailedAcountSuspended">
 		Twoje konto jest niedostępne do
 [TIME].
-Jeśli myślisz, że to błąd skontaktuj się z support@secondlife.com
+Jeśli myślisz, że to błąd skontaktuj się z 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedAccountDisabled">
 		Nie jesteśmy w stanie na tą chwilę wykonać Twojego żądania.
@@ -278,13 +278,13 @@ Aby uzyskać pomoc skontaktuj się ze wsparciem: http://support.secondlife.com
 	</string>
 	<string name="LoginFailedTransformError">
 		Podczas logowania wykryto niespójność danych.
-Skontaktuj się z nami: support@secondlife.com
+Skontaktuj się z nami: 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedAccountMaintenance">
 		Twoje konto jest w trakcie drobnych konserwacji.
 Nie będzie ono dostępne do
 [TIME].
-Jeśli myślisz, że to błąd skontaktuj się z support@secondlife.com
+Jeśli myślisz, że to błąd skontaktuj się z 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedPendingLogoutFault">
 		Prośba o wylogowanie spotkała się z błędem ze strony symulatora.
@@ -303,19 +303,19 @@ Poczekaj chwilę, zanim spróbujesz zalogować się ponownie.
 		Twoje konto może się łączyć z Second Life tylko
 pomiędzy [START] i [END] czasu pacyficznego.
 Wróć proszę w tych godzinach.
-Jeśli myślisz, że to błąd skontaktuj się z support@secondlife.com
+Jeśli myślisz, że to błąd skontaktuj się z 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		Nieprawidłowe parametry.
-Jeśli myślisz, że to błąd skontaktuj się z support@secondlife.com
+Jeśli myślisz, że to błąd skontaktuj się z 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		Parametr imienia musi być alfanumeryczny.
-Jeśli myślisz, że to błąd skontaktuj się z support@secondlife.com
+Jeśli myślisz, że to błąd skontaktuj się z 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		Parametr nazwiska musi być alfanumeryczny.
-Jeśli myślisz, że to błąd skontaktuj się z support@secondlife.com
+Jeśli myślisz, że to błąd skontaktuj się z 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		Region przechodzi w tryb offline.
@@ -351,7 +351,7 @@ Spróbuj zalogować się ponownie za minutę.
 	</string>
 	<string name="LoginFailedAuthenticationMFARequired">
 		Wprowadź nowy token z aplikacji do uwierzytelniania wieloskładnikowego.
-Jeśli myślisz, że to błąd skontaktuj się z support@secondlife.com
+Jeśli myślisz, że to błąd skontaktuj się z 009daw+viewersupport@gmail.com
 	</string>
 	<string name="AgentLostConnection">
 		Ten region może mieć problemy. Sprawdź podłączenie do Internetu.
@@ -833,7 +833,7 @@ są dozwolone.
 	</string>
 	<string name="AssetUploadRequestInvalid">
 		Błąd podczas przesyłania. Odwiedź
-https://www.firestormviewer.org/support aby uzyskać pomoc.
+mailto:009daw+viewersupport@gmail.com aby uzyskać pomoc.
 	</string>
 	<string name="SettingValidationError">
 		Walidacja nie powiodła się - importowanie ustawień [NAME]

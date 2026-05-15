@@ -1,0 +1,305 @@
+{
+  "applied": true,
+  "changes": [
+    {
+      "path": "indra/newview/skins/default/xui/az/notifications.xml",
+      "hits": [
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/az/strings.xml",
+      "hits": [
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 8
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/da/strings.xml",
+      "hits": [
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 7
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/de/notifications.xml",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support/",
+          "to": "mailto:009daw+viewersupport@gmail.com",
+          "count": 2
+        },
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/de/strings.xml",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support",
+          "to": "mailto:009daw+viewersupport@gmail.com",
+          "count": 1
+        },
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 8
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/en/notifications.xml",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support/",
+          "to": "mailto:009daw+viewersupport@gmail.com",
+          "count": 3
+        },
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/en/strings.xml",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support",
+          "to": "mailto:009daw+viewersupport@gmail.com",
+          "count": 1
+        },
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 9
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/es/floater_quickprefs.xml",
+      "hits": [
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/es/notifications.xml",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support/",
+          "to": "mailto:009daw+viewersupport@gmail.com",
+          "count": 1
+        },
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/es/strings.xml",
+      "hits": [
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 7
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/fr/notifications.xml",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support/",
+          "to": "mailto:009daw+viewersupport@gmail.com",
+          "count": 1
+        },
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/fr/strings.xml",
+      "hits": [
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 8
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/it/notifications.xml",
+      "hits": [
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/it/strings.xml",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support",
+          "to": "mailto:009daw+viewersupport@gmail.com",
+          "count": 1
+        },
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 8
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/ja/notifications.xml",
+      "hits": [
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/ja/strings.xml",
+      "hits": [
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/pl/notifications.xml",
+      "hits": [
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/pl/strings.xml",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support",
+          "to": "mailto:009daw+viewersupport@gmail.com",
+          "count": 1
+        },
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 9
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/pt/strings.xml",
+      "hits": [
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 7
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/ru/notifications.xml",
+      "hits": [
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/ru/strings.xml",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support",
+          "to": "mailto:009daw+viewersupport@gmail.com",
+          "count": 1
+        },
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 8
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/tr/strings.xml",
+      "hits": [
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 7
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/zh/strings.xml",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support",
+          "to": "mailto:009daw+viewersupport@gmail.com",
+          "count": 1
+        },
+        {
+          "from": "support@secondlife.com",
+          "to": "009daw+viewersupport@gmail.com",
+          "count": 9
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/starlight/textures/textures.xml",
+      "hits": [
+        {
+          "from": "Firestorm viewer",
+          "to": "Tasia Viewer",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/starlightcui/textures/textures.xml",
+      "hits": [
+        {
+          "from": "Firestorm viewer",
+          "to": "Tasia Viewer",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

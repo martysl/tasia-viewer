@@ -205,6 +205,12 @@ void setupBreakpad()
 
     boost::json::value BugSplat_DB = build_data.at("BugSplat DB");
     gBugsplatDB = boost::json::value_to<std::string>(BugSplat_DB);
+    if (gBugsplatDB.rfind("tasia_", 0) != 0 &&
+        gBugsplatDB.rfind("https://i.let-us.cyou/hg/crashraport.php", 0) != 0)
+    {
+        LL_WARNS("BUGSPLAT") << "Refusing to initialize non-Tasia crash endpoint: " << gBugsplatDB << LL_ENDL;
+        return;
+    }
 
     LL_INFOS("BUGSPLAT") << "Initializing with crash logger: " << gCrashLogger << " database: " << gBugsplatDB << " version: " << gVersion << LL_ENDL;
 

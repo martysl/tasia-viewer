@@ -266,7 +266,7 @@ Les personnes disposant de comptes gratuits ne pourront pas accéder à Second L
 	<string name="LoginFailedComputerProhibited">
 		Impossible d&apos;accéder à Second Life depuis cet ordinateur.
 Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez
-l&apos;Assistance à l&apos;adresse suivante : support@secondlife.com.
+l&apos;Assistance à l&apos;adresse suivante : 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAcountSuspended">
 		Votre compte est inaccessible jusqu&apos;à
@@ -278,13 +278,13 @@ Pour obtenir de l&apos;aide, veuillez contacter l&apos;Assistance Second Life à
 	</string>
 	<string name="LoginFailedTransformError">
 		Incohérence des données lors de la connexion.
-Veuillez contacter support@secondlife.com.
+Veuillez contacter 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAccountMaintenance">
 		Des opérations de maintenance mineures sont actuellement effectuées sur votre compte.
 Votre compte est inaccessible jusqu&apos;à
 [TIME], heure du Pacifique.
-Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez l&apos;Assistance à l&apos;adresse suivante : support@secondlife.com
+Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez l&apos;Assistance à l&apos;adresse suivante : 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedPendingLogoutFault">
 		Le simulateur a renvoyé une erreur en réponse à la demande de déconnexion.
@@ -303,19 +303,19 @@ Veuillez réessayer de vous connecter dans une minute.
 		Votre compte permet uniquement d&apos;accéder à Second Life
 entre [START] et [END], heure du Pacifique.
 Veuillez réessayer au cours de la période indiquée.
-Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez l&apos;Assistance à l&apos;adresse suivante : support@secondlife.com
+Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez l&apos;Assistance à l&apos;adresse suivante : 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		Paramètres incorrects.
-Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez l&apos;Assistance à l&apos;adresse suivante : support@secondlife.com
+Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez l&apos;Assistance à l&apos;adresse suivante : 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		Le paramètre Prénom doit être alphanumérique.
-Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez l&apos;Assistance à l&apos;adresse suivante : support@secondlife.com
+Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez l&apos;Assistance à l&apos;adresse suivante : 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		Le paramètre Nom doit être alphanumérique.
-Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez l&apos;Assistance à l&apos;adresse suivante : support@secondlife.com
+Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, contactez l&apos;Assistance à l&apos;adresse suivante : 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		La région est en train d&apos;être mise hors ligne.
@@ -351,7 +351,7 @@ Veuillez réessayer de vous connecter dans une minute.
 	</string>
 	<string name="LoginFailedAuthenticationMFARequired">
 		Entrez un nouveau jeton à partir de votre application d'authentification pour pouvoir vous connecter
-Si vous pensez qu'il s'agit d'une erreur, veuillez contacter support@secondlife.com.
+Si vous pensez qu'il s'agit d'une erreur, veuillez contacter 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="AgentLostConnection">
 		Il y a peut-être des problèmes techniques dans cette région.  Veuillez vérifier votre connexion Internet.

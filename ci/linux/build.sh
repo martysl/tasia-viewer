@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+BUGSPLAT_DATABASE="${TASIA_CRASH_REPORT_URL:-${TASIA_BUGSPLAT_DATABASE:-${BUGSPLAT_DATABASE:-}}}"
+BUGSPLAT_ARGS=(--crashreporting -DUSE_BUGSPLAT=OFF -DBUGSPLAT_DB=)
+if [ -n "$BUGSPLAT_DATABASE" ]; then
+  BUGSPLAT_ARGS=(--crashreporting -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE")
+fi
+
 git clone https://github.com/FirestormViewer/fs-build-variables.git
 export AUTOBUILD_VARIABLES_FILE="$(pwd)/fs-build-variables/variables"
 export XZ_DEFAULTS="-T0"
@@ -40,4 +46,4 @@ if [ -f "$MIRROR_MANIFEST" ]; then
     --strict
 fi
 
-autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --crashreporting --package --ninja -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"
+autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --package --ninja "${BUGSPLAT_ARGS[@]}"

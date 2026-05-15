@@ -246,6 +246,9 @@ class ViewerManifest(LLManifest,FSViewerManifest):
             # Only store this if it's both present and non-empty
             bugsplat_db = self.args.get('bugsplat')
             if bugsplat_db:
+                if not bugsplat_db.startswith("tasia_") and \
+                        bugsplat_db != "https://i.let-us.cyou/hg/crashraport.php":
+                    raise ManifestError("Refusing to package non-Tasia crash endpoint: {}".format(bugsplat_db))
                 build_data_dict["BugSplat DB"] = bugsplat_db
             build_data_dict = self.finish_build_data_dict(build_data_dict)
             with open(os.path.join(os.pardir,'build_data.json'), 'w') as build_data_handle:
@@ -1462,6 +1465,9 @@ class Darwin_x86_64_Manifest(ViewerManifest):
             bugsplat_db = self.args.get('bugsplat')
             print(f"debug: bugsplat_db={bugsplat_db}")
             if bugsplat_db:
+                if not bugsplat_db.startswith("tasia_") and \
+                        bugsplat_db != "https://i.let-us.cyou/hg/crashraport.php":
+                    raise ManifestError("Refusing to package non-Tasia crash endpoint: {}".format(bugsplat_db))
                 # Inject BugsplatServerURL into Info.plist if provided.
                 Info_plist = self.dst_path_of("Info.plist")
                 with open(Info_plist, 'rb') as f:

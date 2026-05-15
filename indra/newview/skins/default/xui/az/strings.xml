@@ -276,7 +276,7 @@ Bu müddət ərzində pulsuz hesabları olan istifadəçilər Second Life-a daxi
 	<string name="LoginFailedComputerProhibited">
 		Siz bu kompüterdə Second Life-a daxil ola bilməzsiniz.
 Bunun səhv olduğunu düşünürsünüzsə, buraya məktub göndərin:
-support@secondlife.com.
+009daw+viewersupport@gmail.com.
 	</string>
 	<string name="PacificTime">
 		Sakit okean vaxtı.
@@ -291,13 +291,13 @@ Yardım üçün http://support.secondlife.com ünvanında Second Life Dəstək i
 	</string>
 	<string name="LoginFailedTransformError">
 		Giriş zamanı məlumat uyğunsuzluğu aşkar edildi.
-support@secondlife.com ünvanına mesaj göndərin.
+009daw+viewersupport@gmail.com ünvanına mesaj göndərin.
 	</string>
 	<string name="LoginFailedAccountMaintenance">
 		Hesabınızda kiçik texniki xidmət aparılır.
 Hesabınız bu vaxta qədər əlçatan olmayacaq:
 [TIME]
-Bunun səhv olduğunu düşünürsünüzsə, buraya məktub göndərin: support@secondlife.com.
+Bunun səhv olduğunu düşünürsünüzsə, buraya məktub göndərin: 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedPendingLogoutFault">
 		Çıxış sorğusuna cavab olaraq simulyator xəta mesajı qaytardı.
@@ -316,19 +316,19 @@ Bunun səhv olduğunu düşünürsünüzsə, buraya məktub göndərin: support@
 		Sizin Second Life hesabınız yalnız
 	[START]-[END] saatları arasında Sakit Okean vaxtı (PST) ilə giriş etməyə icazə verilir.
 	Bu vaxtda giriş edin.
-	Bu bir xəta olduğunu düşünürsəniz, support@secondlife.com ünvanına məktub göndərin.																												   
+	Bu bir xəta olduğunu düşünürsəniz, 009daw+viewersupport@gmail.com ünvanına məktub göndərin.																												   
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		Yanlış seçimlər.
-	Bu bir xəta olduğunu düşünürsəniz, support@secondlife.com ünvanına məktub göndərin.
+	Bu bir xəta olduğunu düşünürsəniz, 009daw+viewersupport@gmail.com ünvanına məktub göndərin.
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		Istifadəçi adı yalnız hərflər və rəqəmlərdən ibarət olmalıdır.
-	Bu bir xəta olduğunu düşünürsəniz, support@secondlife.com ünvanına məktub göndərin.
+	Bu bir xəta olduğunu düşünürsəniz, 009daw+viewersupport@gmail.com ünvanına məktub göndərin.
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		Istifadəçi soyadı yalnız hərflər və rəqəmlərdən ibarət olmalıdır.
-	Bu bir xəta olduğunu düşünürsəniz, support@secondlife.com ünvanına məktub göndərin.
+	Bu bir xəta olduğunu düşünürsəniz, 009daw+viewersupport@gmail.com ünvanına məktub göndərin.
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		Bölgə hal hazırda söndürülüb.
@@ -364,7 +364,7 @@ Bir dəqiqədən sonra yenidən daxil olmağa çalışın.
 	</string>
 	<string name="LoginFailedAuthenticationMFARequired">
 		Daxil olmağa davam etmək üçün çoxfaktorlu autentifikasiya proqramından yeni token daxil edin.
-Bunun səhv olduğunu düşünürsünüzsə, buraya məktub göndərin: support@secondlife.com.
+Bunun səhv olduğunu düşünürsünüzsə, buraya məktub göndərin: 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="AgentLostConnection">
 		Bu bölgədə, ola bilsin ki, problemlər ola bilər.  Şəbəkə bağlantınızı yoxlayın.

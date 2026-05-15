@@ -1,6 +1,12 @@
 #!/usr/bin/env zsh
 set -euo pipefail
 
+BUGSPLAT_DATABASE="${TASIA_CRASH_REPORT_URL:-${TASIA_BUGSPLAT_DATABASE:-${BUGSPLAT_DATABASE:-}}}"
+BUGSPLAT_ARGS=(--crashreporting -DUSE_BUGSPLAT=OFF -DBUGSPLAT_DB=)
+if [ -n "$BUGSPLAT_DATABASE" ]; then
+  BUGSPLAT_ARGS=(--crashreporting -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE")
+fi
+
 python3 -m venv "$(pwd)/venv"
 source "$(pwd)/venv/bin/activate"
 
@@ -31,4 +37,4 @@ if [ -f "$MIRROR_MANIFEST" ]; then
     --strict
 fi
 
-XZ_DEFAULTS=-T0 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"
+XZ_DEFAULTS=-T0 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --package "${BUGSPLAT_ARGS[@]}"

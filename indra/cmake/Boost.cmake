@@ -52,12 +52,16 @@ else()
   string(REGEX REPLACE "(^| )-Werror( |$)" " " CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")
 endif()
 
-FetchContent_Declare(
+set(_ll_boost_fetchcontent_args
         Boost
         URL      https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.xz
         URL_HASH SHA256=7da75f171837577a52bbf217e17f8ea576c7c246e4594d617bfde7fafd408be5
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
+  list(APPEND _ll_boost_fetchcontent_args DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+endif()
+FetchContent_Declare(${_ll_boost_fetchcontent_args})
+unset(_ll_boost_fetchcontent_args)
 FetchContent_MakeAvailable(Boost)
 
 set(CMAKE_CXX_FLAGS "${_ll_boost_saved_cxx_flags}")
@@ -115,4 +119,3 @@ if (LINUX)
     set(BOOST_SYSTEM_LIBRARY ${BOOST_SYSTEM_LIBRARY} rt)
     set(BOOST_THREAD_LIBRARY ${BOOST_THREAD_LIBRARY} rt)
 endif (LINUX)
-

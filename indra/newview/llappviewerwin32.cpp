@@ -945,6 +945,12 @@ bool LLAppViewerWin32::init()
                 else
                 {
                     boost::json::value BugSplat_DB = build_data.at("BugSplat DB");
+                    std::string bugsplat_db = boost::json::value_to<std::string>(BugSplat_DB);
+                    if (bugsplat_db.rfind("tasia_", 0) != 0)
+                    {
+                        LL_WARNS("BUGSPLAT") << "Refusing to initialize non-Tasia BugSplat database: " << bugsplat_db << LL_ENDL;
+                        return success;
+                    }
 
                     // Got BugSplat_DB, onward!
                     std::wstring version_string(WSTRINGIZE(LL_VIEWER_VERSION_MAJOR << '.' <<
@@ -971,7 +977,7 @@ bool LLAppViewerWin32::init()
 
                     // have to convert normal wide strings to strings of __wchar_t
                     sBugSplatSender = new MiniDmpSender(
-                        WCSTR(boost::json::value_to<std::string>(BugSplat_DB)),
+                        WCSTR(bugsplat_db),
                         WCSTR(LL_TO_WSTRING(LL_VIEWER_CHANNEL)),
                         WCSTR(version_string),
                         nullptr,              // szAppIdentifier -- set later

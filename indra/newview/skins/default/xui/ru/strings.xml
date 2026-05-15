@@ -288,7 +288,7 @@ http://secondlife.com/viewer-access-faq
 	<string name="LoginFailedComputerProhibited">
 		Доступ в Second Life с данного компьютера запрещен!
 Если вы считаете, что это ошибка, отправьте сообщение по адресу
-support@secondlife.com.
+009daw+viewersupport@gmail.com.
 	</string>
 	<string name="PacificTime">
 		Тихоокеанское время
@@ -303,13 +303,13 @@ support@secondlife.com.
 	</string>
 	<string name="LoginFailedTransformError">
 		При входе обнаружена несогласованность данных.
-Пожалуйста, сообщите об этом support@secondlife.com.
+Пожалуйста, сообщите об этом 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAccountMaintenance">
 		Выполняется техническое обслуживание вашего аккаунта.
 Ваш аккаунт не будет доступен до
 [TIME]
-Если вы считаете, что это ошибка, отправьте сообщение по адресу support@secondlife.com.
+Если вы считаете, что это ошибка, отправьте сообщение по адресу 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedPendingLogoutFault">
 		В ответ на запрос выхода, симулятор вернул сообщение о сбое.
@@ -328,19 +328,19 @@ support@secondlife.com.
 		Ваш аккаунт имеет доступ в Second Life только
 с [START] до [END] по тихоокеанскому времени (PST).
 Заходите в это время.
-Если вы считаете, что это ошибка, отправьте сообщение по адресу support@secondlife.com.
+Если вы считаете, что это ошибка, отправьте сообщение по адресу 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		Неправильные параметры.
-Если вы считаете, что это ошибка, отправьте сообщение по адресу support@secondlife.com.
+Если вы считаете, что это ошибка, отправьте сообщение по адресу 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		Имя пользователя должно содержать только буквы и цифры.
-Если вы считаете, что это ошибка, отправьте сообщение по адресу support@secondlife.com.
+Если вы считаете, что это ошибка, отправьте сообщение по адресу 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		Фамилия пользователя должно содержать только буквы и цифры.
-Если вы считаете, что это ошибка, отправьте сообщение по адресу support@secondlife.com.
+Если вы считаете, что это ошибка, отправьте сообщение по адресу 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		Регион на данный момент отключен.
@@ -376,7 +376,7 @@ support@secondlife.com.
 	</string>
 	<string name="LoginFailedAuthenticationMFARequired">
 		Чтобы продолжить вход в систему, введите новый токен из приложения многофакторной аутентификации.
-Если вы считаете, что это ошибка, пожалуйста, свяжитесь с support@secondlife.com
+Если вы считаете, что это ошибка, пожалуйста, свяжитесь с 009daw+viewersupport@gmail.com
 	</string>
 	<string name="AgentLostConnection">
 		Возможно, в этом регионе возникли проблемы. Проверьте подключение к Интернету.
@@ -870,7 +870,7 @@ support@secondlife.com.
 	</string>
 	<string name="AssetUploadRequestInvalid">
 Ошибка в запросе на загрузку.  Пожалуйста, посетите
-https://www.firestormviewer.org/support за помощь в решении этой проблемы.
+mailto:009daw+viewersupport@gmail.com за помощь в решении этой проблемы.
 	</string>
 	<string name="SettingValidationError">
 		Ошибка при импорте настроек [NAME]

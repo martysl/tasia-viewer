@@ -238,7 +238,7 @@ Durante este tiempo, las personas con cuentas gratuitas no podrán acceder a Sec
 	<string name="LoginFailedComputerProhibited">
 		No se puede acceder a Second Life desde este ordenador.
 Si crees que se trata de un error, ponte en contacto con
-support@secondlife.com.
+009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAcountSuspended">
 		No se podrá acceder a tu cuenta hasta las
@@ -251,13 +251,13 @@ Si no puedes cambiar la contraseña, llama al número (866) 476-9763.
 	</string>
 	<string name="LoginFailedTransformError">
 		Se han detectado datos incorrectos en el inicio de sesión.
-Ponte en contacto con support@secondlife.com.
+Ponte en contacto con 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAccountMaintenance">
 		Se están realizando tareas rutinarias de mantenimiento en tu cuenta.
 No se podrá acceder a tu cuenta hasta las
 [TIME] (horario de la costa del Pacífico de EEUU).
-Si crees que se trata de un error, ponte en contacto con support@secondlife.com.
+Si crees que se trata de un error, ponte en contacto con 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedPendingLogoutFault">
 		La solicitud de cierre de sesión ha obtenido como resultado un error del simulador.
@@ -276,19 +276,19 @@ Por favor, aguarda un momento antes de intentar conectarte nuevamente.
 		Tu cuenta solo puede acceder a Second Life
 entre las [START] y las [END] (horario de la costa del Pacífico de EEUU).
 Inténtalo de nuevo durante ese horario.
-Si crees que se trata de un error, ponte en contacto con support@secondlife.com.
+Si crees que se trata de un error, ponte en contacto con 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		Parámetros incorrectos.
-Si crees que se trata de un error, ponte en contacto con support@secondlife.com.
+Si crees que se trata de un error, ponte en contacto con 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		El parámetro correspondiente al nombre debe contener caracteres alfanuméricos.
-Si crees que se trata de un error, ponte en contacto con support@secondlife.com.
+Si crees que se trata de un error, ponte en contacto con 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		El parámetro correspondiente al apellido debe contener caracteres alfanuméricos.
-Si crees que se trata de un error, ponte en contacto con support@secondlife.com.
+Si crees que se trata de un error, ponte en contacto con 009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		La región se está desconectando.

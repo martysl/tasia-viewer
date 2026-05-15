@@ -48,12 +48,12 @@ int main(int argc, char **argv)
 
     std::string dmpFile{ argv[1] };
     std::string version{ argv[2] };
-    std::string strDb{ argv[3] };
+    std::string strEndpoint{ argv[3] };
     std::string strAsk{ argv[4] };
 
     if( strAsk == "ask" )
     {
-        auto choice = fl_choice( "Firestorm has crashed, submit the minidump?", "No", "Yes", nullptr );
+        auto choice = fl_choice( "Tasia Viewer has crashed, submit the minidump to Tasia support?", "No", "Yes", nullptr );
         if( choice == 0 )
         {
             std::cerr << "Abort send due to users choice" << std::endl;
@@ -61,9 +61,17 @@ int main(int argc, char **argv)
         }
     }
 
-    std::string url{ "https://" };
-    url += strDb;
-    url += ".bugsplat.com/post/bp/crash/crashpad.php";
+    std::string url;
+    if (strEndpoint.rfind("https://", 0) == 0 || strEndpoint.rfind("http://", 0) == 0)
+    {
+        url = strEndpoint;
+    }
+    else
+    {
+        url = "https://";
+        url += strEndpoint;
+        url += ".bugsplat.com/post/bp/crash/crashpad.php";
+    }
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -83,7 +91,7 @@ int main(int argc, char **argv)
 
         field = curl_mime_addpart(form);
         curl_mime_name(field, "product");
-        curl_mime_data(field, "Firestorm-Releasex64", CURL_ZERO_TERMINATED);
+        curl_mime_data(field, "Tasia-Releasex64", CURL_ZERO_TERMINATED);
 
         field = curl_mime_addpart(form);
         curl_mime_name(field, "version");
@@ -115,7 +123,7 @@ if (auto curl_handle = curl_easy_init()) {
     // Add the 'product' part
     curl_formadd(&formpost, &lastptr,
                  CURLFORM_COPYNAME, "product",
-                 CURLFORM_COPYCONTENTS, "Firestorm-Releasex64",
+                 CURLFORM_COPYCONTENTS, "Tasia-Releasex64",
                  CURLFORM_END);
 
     // Add the 'version' part

@@ -1,4 +1,10 @@
 set -euo pipefail
+
+BUGSPLAT_DATABASE="${TASIA_CRASH_REPORT_URL:-${TASIA_BUGSPLAT_DATABASE:-${BUGSPLAT_DATABASE:-}}}"
+BUGSPLAT_ARGS=(--crashreporting -DUSE_BUGSPLAT=OFF -DBUGSPLAT_DB=)
+if [ -n "$BUGSPLAT_DATABASE" ]; then
+  BUGSPLAT_ARGS=(--crashreporting -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE")
+fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WIN_SCRIPT_DIR=$(cygpath -w "$SCRIPT_DIR")
 
@@ -39,10 +45,12 @@ if [ -f "$MIRROR_MANIFEST" ]; then
     --strict
 fi
 
-autobuild configure -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"
-XZ_DEFAULTS=-T0 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --crashreporting --package -DUSE_BUGSPLAT=ON -DBUGSPLAT_DB="$BUGSPLAT_DATABASE"
+autobuild configure -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --package "${BUGSPLAT_ARGS[@]}"
+XZ_DEFAULTS=-T0 autobuild build -A 64 -c ReleaseFS_open -- --fmodstudio --avx2 --package "${BUGSPLAT_ARGS[@]}"
 
 version=$(tr -d '\n' < ./indra/newview/VIEWER_VERSION.txt)
 revision=$(tr -d '\n' < ./revision.txt)
 VIEWER_VERSION="${version}.${revision}"
-npx -y @bugsplat/symbol-upload@10.1.11 -d "build-*" -f "**/*.pdb" -a "Firestorm-Releasex64" -v "${VIEWER_VERSION}"
+if [ -n "$BUGSPLAT_DATABASE" ]; then
+  npx -y @bugsplat/symbol-upload@10.1.11 -d "build-*" -f "**/*.pdb" -a "Tasia-Releasex64" -v "${VIEWER_VERSION}"
+fi

@@ -250,7 +250,7 @@ Second Life için ödeme yapmış olan kişilere öncelik tanımak amacıyla, ü
 	<string name="LoginFailedComputerProhibited">
 		Second Life&apos;a bu bilgisayardan erişemezsiniz.
 Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun:
-support@secondlife.com.
+009daw+viewersupport@gmail.com.
 	</string>
 	<string name="LoginFailedAcountSuspended">
 		Hesabınıza şu zamana kadar erişemeyeceksiniz:
@@ -262,13 +262,13 @@ Lütfen yardım almak için http://support.secondlife.com adresinden Second Life
 	</string>
 	<string name="LoginFailedTransformError">
 		Oturum açılması sırasında veri tutarsızlığı saptandı.
-Lütfen şu adrese başvurun: support@secondlife.com
+Lütfen şu adrese başvurun: 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedAccountMaintenance">
 		Hesabınızda küçük çaplı bir bakım işlemi sürüyor.
 Hesabınıza şu zamana kadar erişemeyeceksiniz:
 Pasifik Saati ile [TIME].
-Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun: support@secondlife.com
+Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun: 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedPendingLogoutFault">
 		Oturum kapatma talebi simülatörden bir hata yanıtı gelmesine neden oldu.
@@ -287,19 +287,19 @@ Lütfen yeniden oturum açmayı denemeden önce bir dakika bekleyin.
 		Hesabınız Second Life&apos;a sadece
 Pasifik Saati ile [START] ve [END] arasında erişebilir.
 Lütfen bu saatler arasında tekrar uğrayın.
-Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun: support@secondlife.com
+Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun: 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedIncorrectParameters">
 		Yanlış parametreler.
-Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun: support@secondlife.com
+Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun: 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedFirstNameNotAlphanumeric">
 		Ad parametresi alfasayısal olmalıdır.
-Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun: support@secondlife.com
+Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun: 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LoginFailedLastNameNotAlphanumeric">
 		Soyadı parametresi alfasayısal olmalıdır.
-Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun: support@secondlife.com
+Bunun bir hata olduğunu düşünüyorsanız, lütfen şu adrese başvurun: 009daw+viewersupport@gmail.com
 	</string>
 	<string name="LogoutFailedRegionGoingOffline">
 		Bölge şu anda çevrimdışı oluyor.
