@@ -1,0 +1,118 @@
+name: Build Tasia Viewer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+env:
+  AUTOBUILD_ADDRSIZE: 64
+  AUTOBUILD_BUILD_ID: ${{ github.run_id }}
+  AUTOBUILD_INSTALLABLE_CACHE: ${{ github.workspace }}/.autobuild-installables
+  AUTOBUILD_VARIABLES_FILE: ${{ github.workspace }}/.build-variables/variables
+  AUTOBUILD_VCS_INFO: "true"
+  XZ_DEFAULTS: -T0
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14, windows-2022]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout viewer source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install autobuild and Python deps
+        run: pip install -r requirements.txt
+
+      - name: Checkout build variables
+        uses: actions/checkout@v4
+        with:
+          repository: FirestormViewer/fs-build-variables
+          path: .build-variables
+
+      - name: Remove proprietary packages we don't have
+        run: |
+          # fmodstudio and kdu have file:// URLs pointing to /opt/firestorm/
+          # which doesn't exist in CI. We don't need them for ReleaseFS_open.
+          autobuild installables remove fmodstudio || true
+          autobuild installables remove kdu || true
+
+      - name: Cache autobuild packages
+        uses: actions/cache@v4
+        with:
+          path: .autobuild-installables
+          key: ${{ runner.os }}-64-ReleaseFS_open-${{ hashFiles('autobuild.xml') }}
+
+      - name: Set VSVER for Windows
+        if: runner.os == 'Windows'
+        run: echo "AUTOBUILD_VSVER=170" >> $GITHUB_ENV
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            mesa-common-dev libgl1-mesa-dev libxinerama-dev \
+            libxrandr-dev libpulse-dev libglu1-mesa-dev \
+            libfreetype6-dev libfontconfig1 ninja-build
+          sudo apt-get clean
+
+      - name: Install macOS build prerequisites
+        if: runner.os == 'macOS'
+        run: |
+          # macOS ships bash 3 — the build scripts need bash 4+
+          brew install bash gnu-sed ninja
+
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
+        run: autobuild configure -c ReleaseFS_open -A ${{ env.AUTOBUILD_ADDRSIZE }} -- --package --ninja
+
+      - name: Configure (macOS / Windows)
+        if: runner.os != 'Linux'
+        run: autobuild configure -c ReleaseFS_open -A ${{ env.AUTOBUILD_ADDRSIZE }} -- --package
+
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        run: autobuild build -c ReleaseFS_open -A ${{ env.AUTOBUILD_ADDRSIZE }} --no-configure -- --package --ninja
+
+      - name: Build (macOS / Windows)
+        if: runner.os != 'Linux'
+        run: autobuild build -c ReleaseFS_open -A ${{ env.AUTOBUILD_ADDRSIZE }} --no-configure -- --package
+
+      - name: Upload artifacts - Linux
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tasia-Viewer-Linux
+          path: |
+            build-linux-x86_64/newview/*.tar.xz
+            build-linux-x86_64/newview/*.bz2
+
+      - name: Upload artifacts - macOS
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tasia-Viewer-macOS
+          path: |
+            build-darwin-x86_64/newview/*.dmg
+            build-darwin-x86_64/newview/*.bz2
+
+      - name: Upload artifacts - Windows
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tasia-Viewer-Windows
+          path: |
+            build-vc170-64/newview/Release/*Setup.exe
+            build-vc170-64/newview/Release/*.xz
