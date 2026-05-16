@@ -31,3 +31,5 @@ Next work:
 - release branch created
 - GitHub Actions: manual-only workflow, single-platform
 - GCC -Wmaybe-uninitialized fixed (real fix, not suppression)
+- **Grid Lock added**: I-Grid Beta included, SL grids blocked programmatically at all entry points, startup purge of existing SL grids
+- **Version bumped to 8.0.1**: Display version 8.0.1.<GitHub run number>, commit SHA visible in About window

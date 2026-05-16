@@ -172,6 +172,16 @@ jobs:
         run: |
           brew install bash gnu-sed ninja
 
+      - name: Set Tasia build metadata
+        shell: bash
+        run: |
+          echo "revision=${{ github.run_number }}" >> "$GITHUB_ENV"
+          echo "VIEWER_VERSION_GITHASH=${{ github.sha }}" >> "$GITHUB_ENV"
+          TASIA_SHORT_SHA="${{ github.sha }}"
+          echo "TASIA_SHORT_SHA=${TASIA_SHORT_SHA::7}" >> "$GITHUB_ENV"
+          echo "TASIA_DISPLAY_VERSION=8.0.1.${{ github.run_number }}" >> "$GITHUB_ENV"
+          echo "TASIA_BUILD_NUMBER=${{ github.run_number }}" >> "$GITHUB_ENV"
+
       - name: Configure with FMOD
         shell: bash
         run: |

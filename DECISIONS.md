@@ -10,3 +10,5 @@
 | 2026-05-16 | Build order: Linux → Windows → macOS | Linux is most accessible for development |
 | 2026-05-16 | FMOD packages stay private always | Licensing restriction |
 | 2026-05-16 | Real fix over warning suppression | Fixed LLTweenableValueLerp constructors instead of using -Wno-error |
+| 2026-05-16 | SL grid blocking: URI-driven, not name-driven | Avoids false positives from grids sharing names with SL servers |
+| 2026-05-16 | Version 8.0.1 with GitHub run number as build metadata | Run number is traceable and unique |
