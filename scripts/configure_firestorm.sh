@@ -366,8 +366,18 @@ then
 
     # load autobuild provided shell functions and variables
     eval "$("$AUTOBUILD_EXEC" source_environment)"
-    # vsvars is needed for determing path to VS runtime redist files in Copy3rdPartyLibs.cmake
-    load_vsvars
+
+    # load_vsvars is only needed if MSVC is not already loaded (e.g. vsdevcmd or msvc-dev-cmd)
+    # If VCToolsInstallDir is set, MSVC is already in PATH and load_vsvars would
+    # override the correct environment. Skip it.
+    if [ -z "${VCToolsInstallDir:-}" ]; then
+        echo "MSVC environment not loaded yet, calling load_vsvars..."
+        # vsvars is needed for determining path to VS runtime redist files in Copy3rdPartyLibs.cmake
+        load_vsvars
+    else
+        echo "MSVC environment already loaded (VCToolsInstallDir=${VCToolsInstallDir})"
+        echo "Skipping load_vsvars to preserve existing VS environment."
+    fi
 fi
 
 if [ -z "$AUTOBUILD_VARIABLES_FILE" ]

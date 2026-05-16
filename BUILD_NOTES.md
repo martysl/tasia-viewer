@@ -2,41 +2,38 @@
 
 ## Build Environment
 - **Platform**: Ubuntu 22.04 (GitHub Actions runner)
-- **Compiler**: GCC 11+ 
-- **Build system**: CMake + autobuild + Ninja
+- **Compiler**: GCC 11+ (Linux), MSVC v143 (Windows)
+- **Build system**: CMake + autobuild + Ninja (Linux) / MSBuild (Windows)
 - **FMOD**: Required (2.03.07), private package in martysl/tasia-private-deps
-
-## Known Build Issues
-
-### GCC -Wmaybe-uninitialized (FIXED)
-- **File**: `indra/newview/llvisualeffect.h:130` - `LLTweenableValueLerp<LLVector4>::m_StartTime`
-- **Fix**: Added member initializers in constructor (m_StartTime(0.0), m_Duration(0.0), m_StartValue(), m_EndValue())
-- **Status**: ✅ Fixed in commit e466846140
-
-## Configuration
-- Channel: `Tasia-Releasex64`
-- `--fmodstudio` flag required
-- No KDU
 
 ## Workflow
 - Manual trigger only via GitHub Actions (`workflow_dispatch`)
 - Single platform per run
 - Build order: Linux → Windows → macOS
 
-## 2026-05-16: BugSplat removal / crash reporter reconfiguration
+## 2026-05-16: Windows CI — MSVC compiler not found fix
 
-### Summary
-Replaced the BugSplat crash reporting pipeline with a generic HTTP crash endpoint. All BugSplat-specific validation, fallback URL construction, and DB-name logic have been removed or relaxed.
+### Root cause
+The `configure_firestorm.sh` script unconditionally calls `load_vsvars` on Windows (line 370).
+In CI environments where MSVC is already set up (via `ilammy/msvc-dev-cmd@v1` or `VsDevCmd.bat`),
+`load_vsvars` re-initializes the Visual Studio environment, overriding/corrupting the
+correct PATH, INCLUDE, and LIB variables. CMake then can't find the compiler.
 
-### Changes
+### Fix
+**File**: `scripts/configure_firestorm.sh`
+**Change**: Added a guard around `load_vsvars` — check if `VCToolsInstallDir` is already set.
+If MSVC env is already loaded, skip `load_vsvars` and preserve the existing environment.
 
-1. **`indra/linux_crash_logger/linux_crash_logger.cpp`** — Removed BugSplat fallback URL construction. The endpoint string is now used directly as-is (`std::string url = strEndpoint;`).
+```bash
+if [ -z "${VCToolsInstallDir:-}" ]; then
+    load_vsvars
+else
+    echo "MSVC already loaded, skipping load_vsvars"
+fi
+```
 
-2. **`indra/newview/llappviewerlinux.cpp`** — Renamed `gBugsplatDB` → `gCrashReportURL`. Changed all `"BUGSPLAT"` log tags to `"CRASHREPORT"`. The validation block now reads `"CrashReportURL"` from `build_data.json`, accepts any non-empty URL (no domain/prefix check), and rejects empty values instead.
-
-3. **`indra/newview/viewer_manifest.py`** — Changed `build_data.json` key from `"BugSplat DB"` to `"CrashReportURL"`. Validation now requires an `http://` or `https://` URL prefix instead of the old `tasia_` / specific-domain check.
-
-4. **`scripts/configure_firestorm.sh`** — Hardcoded the crash endpoint to `https://apps.easierit.org/igrid/bugs/api/v1/report` instead of constructing a dynamic `tasia_<channel>` BugSplat DB name.
-
-### Rationale
-Eliminates the dependency on BugSplat's proprietary SDK/API and lets the crash reporter send dumps to any standard HTTP endpoint. The viewer-side code no longer hardcodes assumptions about which SaaS service processes the crashes.
+### Workflow state (windows-build-test branch)
+- Uses `ilammy/msvc-dev-cmd@v1` with `arch: x64, vsversion: 2022`
+- Verify MSVC tools step confirms `cl.exe` and `cmake` are found
+- Configure step uses `autobuild configure` with `--fmodstudio --package`
+- Linux/macOS configure step unchanged

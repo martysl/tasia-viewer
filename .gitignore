@@ -132,3 +132,13 @@ cmake-build-*
 /indra/cmake_tracking
 revision.txt
 checks.json
+# local secrets
+.env
+*.env
+token.txt
+tokens.txt
+*.token
+*.secret
+secrets/
+# private/proprietary dependencies
+private-deps/
