@@ -40,6 +40,23 @@ if (NOT DEFINED CMAKE_CXX_STANDARD)
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Suppress GCC -Wmaybe-uninitialized errors triggered by newer GCC versions.
+# Must be after project() (which sets CMAKE_SYSTEM_NAME) but before
+# Variables.cmake and 00-Common.cmake read the environment LL_BUILD_* vars.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    foreach(VAR
+        LL_BUILD LL_BUILD_RELEASE LL_BUILD_RELWITHDEBINFO
+        LL_BUILD_LINUX_RELEASE LL_BUILD_LINUX_RELEASEFS
+        LL_BUILD_LINUX_RELEASEFS_OPEN LL_BUILD_LINUX_RELWITHDEBINFO
+        LL_BUILD_LINUX_RELWITHDEBINFOOS LL_BUILD_LINUX_RELWITHDEBINFOFS
+        LL_BUILD_LINUX_RELEASEOS LL_BUILD_LINUX_DEBUG
+    )
+        if(DEFINED ENV{${VAR}} AND NOT ENV{${VAR}} STREQUAL "")
+            set(ENV{${VAR}} "${ENV{${VAR}}} -Wno-error=maybe-uninitialized")
+        endif()
+    endforeach()
+endif()
+
 include(Variables)
 include(BuildVersion)
 include(Prebuilt)
