@@ -2,8 +2,23 @@ name: Build Tasia Viewer
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
+    inputs:
+      target:
+        description: "Which platform to build"
+        required: true
+        default: linux
+        type: choice
+        options:
+          - linux
+          - windows
+          - macos
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.target }}
+  cancel-in-progress: true
 
 env:
   AUTOBUILD_ADDRSIZE: 64
@@ -16,11 +31,10 @@ env:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-22.04, macos-14, windows-2022]
-    runs-on: ${{ matrix.os }}
+    name: Build Tasia Viewer - ${{ inputs.target }} - FMOD
+    timeout-minutes: 240
+
+    runs-on: ${{ inputs.target == 'linux' && 'ubuntu-22.04' || inputs.target == 'windows' && 'windows-2022' || 'macos-14' }}
 
     steps:
       - name: Checkout viewer source
@@ -31,7 +45,8 @@ jobs:
       - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Install autobuild and Python deps
         run: pip install -r requirements.txt
@@ -42,34 +57,112 @@ jobs:
           repository: FirestormViewer/fs-build-variables
           path: .build-variables
 
-      - name: Remove proprietary packages we don't have
+      - name: Remove KDU (proprietary, cannot use)
+        shell: bash
         run: |
-          # fmodstudio and kdu have file:// URLs pointing to /opt/firestorm/
-          # which doesn't exist in CI. We don't need them for ReleaseFS_open.
-          autobuild installables remove fmodstudio || true
           autobuild installables remove kdu || true
+          echo "KDU installable removed."
 
-      - name: Cache autobuild packages
-        uses: actions/cache@v4
-        with:
-          path: .autobuild-installables
-          key: ${{ runner.os }}-64-ReleaseFS_open-${{ hashFiles('autobuild.xml') }}
+      - name: Download private FMOD autobuild package
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.FMOD_DEPS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::FMOD_DEPS_TOKEN secret is missing."
+            echo "::error::Create a read-only token that can download release assets from martysl/tasia-private-deps."
+            exit 1
+          fi
+
+          mkdir -p private-deps
+
+          case "${{ inputs.target }}" in
+            linux)
+              FMOD_PLATFORM="linux64"
+              FMOD_PATTERN="*linux64*.tar.bz2"
+              ;;
+            windows)
+              FMOD_PLATFORM="windows64"
+              FMOD_PATTERN="*windows64*.tar.bz2"
+              ;;
+            macos)
+              FMOD_PLATFORM="darwin64"
+              FMOD_PATTERN="*darwin64*.tar.bz2"
+              ;;
+          esac
+
+          echo "FMOD_PLATFORM=$FMOD_PLATFORM" >> "$GITHUB_ENV"
+
+          echo "::group::Downloading FMOD package"
+          echo "Pattern: $FMOD_PATTERN"
+          gh release download fmod-20307 \
+            --repo martysl/tasia-private-deps \
+            --pattern "$FMOD_PATTERN" \
+            --dir private-deps
+          echo "::endgroup::"
+
+          FMOD_PACKAGE="$(find private-deps -type f -name '*.tar.bz2' | head -n 1)"
+
+          if [ -z "$FMOD_PACKAGE" ]; then
+            echo "::error::FMOD autobuild package was not downloaded."
+            echo "::error::Expected pattern: $FMOD_PATTERN"
+            echo "::error::Check repo: martysl/tasia-private-deps"
+            echo "::error::Check release tag: fmod-20307"
+            exit 1
+          fi
+
+          echo "Using FMOD package: $FMOD_PACKAGE"
+          echo "FMOD_PACKAGE=$FMOD_PACKAGE" >> "$GITHUB_ENV"
+
+          FMOD_HASH="$(python3 -c "
+import hashlib
+import sys
+with open(sys.argv[1], 'rb') as f:
+    print(hashlib.md5(f.read()).hexdigest())
+" "$FMOD_PACKAGE")"
+          echo "FMOD_HASH=$FMOD_HASH" >> "$GITHUB_ENV"
+
+          FMOD_FILE_URL="$(python3 -c "
+import pathlib
+import sys
+p = pathlib.Path(sys.argv[1]).resolve()
+print(p.as_uri())
+" "$FMOD_PACKAGE")"
+          echo "FMOD_FILE_URL=$FMOD_FILE_URL" >> "$GITHUB_ENV"
+
+          echo "FMOD package ready: $FMOD_FILE_URL (MD5: $FMOD_HASH)"
+
+      - name: Point autobuild to private FMOD package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Updating autobuild installable 'fmodstudio' ..."
+          echo "  platform: $FMOD_PLATFORM"
+          echo "  url:      $FMOD_FILE_URL"
+          echo "  hash:     $FMOD_HASH"
+
+          autobuild installables edit fmodstudio \
+            platform="$FMOD_PLATFORM" \
+            hash="$FMOD_HASH" \
+            url="$FMOD_FILE_URL"
+
+          echo "autobuild installable 'fmodstudio' updated."
 
       - name: Load autobuild environment
         shell: bash
         run: |
-          # autobuild's source_environment reads AUTOBUILD_VARIABLES_FILE and
-          # exports all the LL_BUILD_* vars that cmake needs (including the
-          # -iwithsysroot check on macOS).
           autobuild source_environment > .source_env
           . .source_env
-          # Persist the key vars for subsequent steps
           echo "LL_BUILD=$LL_BUILD" >> "$GITHUB_ENV"
           echo "LL_BUILD_RELEASE=$LL_BUILD_RELEASE" >> "$GITHUB_ENV"
 
       - name: Set VSVER for Windows
         if: runner.os == 'Windows'
-        run: echo "AUTOBUILD_VSVER=170" >> $GITHUB_ENV
+        shell: bash
+        run: echo "AUTOBUILD_VSVER=170" >> "$GITHUB_ENV"
 
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
@@ -85,48 +178,67 @@ jobs:
       - name: Install macOS build prerequisites
         if: runner.os == 'macOS'
         run: |
-          # macOS ships bash 3 — the build scripts need bash 4+
           brew install bash gnu-sed ninja
 
-      - name: Configure (Linux)
-        if: runner.os == 'Linux'
-        run: autobuild configure -c ReleaseFS_open -A ${{ env.AUTOBUILD_ADDRSIZE }} -- --package --ninja
+      - name: Configure with FMOD
+        shell: bash
+        run: |
+          EXTRA_ARGS=""
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            EXTRA_ARGS="--ninja"
+          fi
+          # shellcheck disable=SC2086
+          autobuild configure \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            -- \
+            --fmodstudio \
+            --package \
+            $EXTRA_ARGS
 
-      - name: Configure (macOS / Windows)
-        if: runner.os != 'Linux'
-        run: autobuild configure -c ReleaseFS_open -A ${{ env.AUTOBUILD_ADDRSIZE }} -- --package
+      - name: Build with FMOD
+        shell: bash
+        run: |
+          EXTRA_ARGS=""
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            EXTRA_ARGS="--ninja"
+          fi
+          # shellcheck disable=SC2086
+          autobuild build \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            --no-configure \
+            -- \
+            --fmodstudio \
+            --package \
+            $EXTRA_ARGS
 
-      - name: Build (Linux)
-        if: runner.os == 'Linux'
-        run: autobuild build -c ReleaseFS_open -A ${{ env.AUTOBUILD_ADDRSIZE }} --no-configure -- --package --ninja
-
-      - name: Build (macOS / Windows)
-        if: runner.os != 'Linux'
-        run: autobuild build -c ReleaseFS_open -A ${{ env.AUTOBUILD_ADDRSIZE }} --no-configure -- --package
-
-      - name: Upload artifacts - Linux
+      - name: Upload artifact - Linux
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: Tasia-Viewer-Linux
+          name: Tasia-Viewer-Linux-FMOD
+          if-no-files-found: error
           path: |
             build-linux-x86_64/newview/*.tar.xz
             build-linux-x86_64/newview/*.bz2
 
-      - name: Upload artifacts - macOS
+      - name: Upload artifact - macOS
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v4
         with:
-          name: Tasia-Viewer-macOS
+          name: Tasia-Viewer-macOS-FMOD
+          if-no-files-found: error
           path: |
             build-darwin-x86_64/newview/*.dmg
             build-darwin-x86_64/newview/*.bz2
 
-      - name: Upload artifacts - Windows
+      - name: Upload artifact - Windows
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: Tasia-Viewer-Windows
+          name: Tasia-Viewer-Windows-FMOD
+          if-no-files-found: error
           path: |
             build-vc170-64/newview/Release/*Setup.exe
             build-vc170-64/newview/Release/*.xz
