@@ -26,7 +26,10 @@ Windows CI build is the active task on `windows-build-test` branch.
 ## Current Windows Blocker
 **CMake cannot find C/CXX compiler** on GitHub Actions `windows-2022` runner.
 - Root cause: `configure_firestorm.sh` calls `load_vsvars` which resets the MSVC dev environment that `ilammy/msvc-dev-cmd@v1` set up.
-- Fix attempted: Guard `load_vsvars` behind `VCToolsInstallDir` check + save/restore MSVC env vars around `autobuild source_environment`.
-- Build `25973284340` still failed: `VCToolsInstallDir` was empty at guard time despite save/restore.
-- Added `[TASIA DEBUG]` logging to trace env state at script entry, after save, and after restore.
-- **Next**: Push debug logging, trigger build, inspect log output.
+- Build `25973424632` debug logging showed:
+  - `VCToolsInstallDir` is **NOT set** by `ilammy/msvc-dev-cmd@v1` ❌
+  - `VSINSTALLDIR` **IS set** by `ilammy/msvc-dev-cmd@v1` ✅
+  - `cl.exe` is in PATH ✅
+- **Fix applied**: Changed guard from `[ -z "${VCToolsInstallDir:-}" ]` to `[ -z "${VSINSTALLDIR:-}" ]` — matches what `msvc-dev-cmd` actually sets.
+- Also cleaned up save/restore: removed `VCToolsInstallDir` save/restore (pointless since never set).
+- **Next**: Push fix, trigger Windows build, verify CMake finds C/CXX compiler.

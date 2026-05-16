@@ -349,12 +349,6 @@ echo -e "       Logging to $LOG"
 
 if [ $TARGET_PLATFORM == "windows" ]
 then
-    # DEBUG: log MSVC env state at entry
-    echo "[TASIA DEBUG] VCToolsInstallDir at entry: '${VCToolsInstallDir:-<EMPTY>}'"
-    echo "[TASIA DEBUG] VSINSTALLDIR at entry: '${VSINSTALLDIR:-<EMPTY>}'"
-    echo "[TASIA DEBUG] VCINSTALLDIR at entry: '${VCINSTALLDIR:-<EMPTY>}'"
-    echo "[TASIA DEBUG] PATH contains cl.exe: $(which cl.exe 2>/dev/null || echo 'NOT FOUND')"
-
     if [ -z "${AUTOBUILD_VSVER}" ]
     then
         echo "AUTOBUILD_VSVER not set, this can lead to Autobuild picking a higher VS version than desired."
@@ -371,39 +365,31 @@ then
     fi
 
     # Save MSVC env vars before autobuild source_environment may reset them
-    _saved_VCToolsInstallDir="${VCToolsInstallDir:-}"
     _saved_VSINSTALLDIR="${VSINSTALLDIR:-}"
     _saved_VCINSTALLDIR="${VCINSTALLDIR:-}"
-    echo "[TASIA DEBUG] Saved VCToolsInstallDir: '${_saved_VCToolsInstallDir:-<EMPTY>}'"
 
     # load autobuild provided shell functions and variables
     eval "$("$AUTOBUILD_EXEC" source_environment)"
 
     # Restore MSVC env vars that autobuild source_environment may have reset
-    if [ -n "$_saved_VCToolsInstallDir" ] && [ -z "${VCToolsInstallDir:-}" ]; then
-        echo "[TASIA DEBUG] VCToolsInstallDir was cleared by source_environment, restoring..."
-        export VCToolsInstallDir="$_saved_VCToolsInstallDir"
-    fi
     if [ -n "$_saved_VSINSTALLDIR" ] && [ -z "${VSINSTALLDIR:-}" ]; then
-        echo "[TASIA DEBUG] VSINSTALLDIR was cleared, restoring..."
+        echo "VSINSTALLDIR was cleared by autobuild source_environment, restoring..."
         export VSINSTALLDIR="$_saved_VSINSTALLDIR"
     fi
     if [ -n "$_saved_VCINSTALLDIR" ] && [ -z "${VCINSTALLDIR:-}" ]; then
-        echo "[TASIA DEBUG] VCINSTALLDIR was cleared, restoring..."
+        echo "VCINSTALLDIR was cleared by autobuild source_environment, restoring..."
         export VCINSTALLDIR="$_saved_VCINSTALLDIR"
     fi
 
-    echo "[TASIA DEBUG] VCToolsInstallDir after restore: '${VCToolsInstallDir:-<EMPTY>}'"
-
     # load_vsvars is only needed if MSVC is not already loaded (e.g. vsdevcmd or msvc-dev-cmd)
-    # If VCToolsInstallDir is set, MSVC is already in PATH and load_vsvars would
+    # If VSINSTALLDIR is set, MSVC is already in PATH and load_vsvars would
     # override the correct environment. Skip it.
-    if [ -z "${VCToolsInstallDir:-}" ]; then
+    if [ -z "${VSINSTALLDIR:-}" ]; then
         echo "MSVC environment not loaded yet, calling load_vsvars..."
         # vsvars is needed for determining path to VS runtime redist files in Copy3rdPartyLibs.cmake
         load_vsvars
     else
-        echo "MSVC environment already loaded (VCToolsInstallDir=${VCToolsInstallDir})"
+        echo "MSVC environment already loaded (VSINSTALLDIR=${VSINSTALLDIR})"
         echo "Skipping load_vsvars to preserve existing VS environment."
     fi
 fi

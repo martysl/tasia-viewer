@@ -8,7 +8,6 @@
 
 ## Windows blocker
 - **Root cause**: `configure_firestorm.sh` calls `load_vsvars` which resets MSVC environment that `ilammy/msvc-dev-cmd` already set up.
-- **Fix attempted**: Guard `load_vsvars` + save/restore MSVC env vars around `autobuild source_environment`.
-- **Build result**: Guard still triggered (`VCToolsInstallDir` empty at guard time). Save/restore didn't help.
-- **Added debug logging**: `[TASIA DEBUG]` lines trace `VCToolsInstallDir`, `VSINSTALLDIR`, `VCINSTALLDIR` at entry, save, and restore.
-- **Next**: Push debug logging, trigger Windows build, read debug output to find root cause.
+- **Bug in guard**: Was checking `VCToolsInstallDir` but `ilammy/msvc-dev-cmd@v1` does NOT set this var. It sets `VSINSTALLDIR`.
+- **Fix**: Changed guard to check `VSINSTALLDIR` instead. Also keeps save/restore of `VSINSTALLDIR`/`VCINSTALLDIR` around `autobuild source_environment`.
+- **Next**: Push fix, trigger Windows build, verify CMake finds C/CXX compiler.
