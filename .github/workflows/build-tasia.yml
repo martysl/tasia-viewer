@@ -252,18 +252,18 @@ jobs:
           fi
 
           NOTES="$(mktemp)"
-          cat > "$NOTES" <<EOF
-Tasia Viewer Linux beta build.
-
-Version: 8.0.1.${GITHUB_RUN_NUMBER}
-Commit: ${GITHUB_SHA::7}
-Channel: Tasia-Releasex64
-FMOD: enabled
-KDU: removed
-
-This is a beta/pre-release build.
-Mom must test before stable release.
-EOF
+          printf '%s\n' \
+            "Tasia Viewer Linux beta build." \
+            "" \
+            "Version: 8.0.1.${GITHUB_RUN_NUMBER}" \
+            "Commit: ${GITHUB_SHA::7}" \
+            "Channel: Tasia-Releasex64" \
+            "FMOD: enabled" \
+            "KDU: removed" \
+            "" \
+            "This is a beta/pre-release build." \
+            "Mom must test before stable release." \
+            > "$NOTES"
 
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$PACKAGE" --clobber
