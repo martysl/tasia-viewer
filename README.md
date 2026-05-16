@@ -9,3 +9,5 @@
 - No official releases, no support, no documentation
 
 If you are not the intended user, this repository will not be useful to you.
+
+See [LICENSE](LICENSE) for usage terms.
