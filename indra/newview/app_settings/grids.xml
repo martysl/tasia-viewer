@@ -64,8 +64,41 @@
             <string>https://i.let-us.cyou/wp-login.php?action=register</string>
             <key>search</key>
             <string>http://search.i.let-us.cyou</string>
-            <key>slurl_base</key>
+        <key>slurl_base</key>
             <string>hop://i.let-us.cyou:8002/</string>
+        <key>web_profile_url</key>
+            <string>https://i.let-us.cyou/profile/[AGENT_NAME]</string>
+        </map>
+
+        <key>not.let-us.cyou:8002</key>
+        <map>
+            <key>LastModified</key>
+            <date>2026-05-16T12:00:00Z</date>
+            <key>gatekeeper</key>
+            <string>not.let-us.cyou:8002</string>
+            <key>gridname</key>
+            <string>I-Grid Beta</string>
+            <key>gridnick</key>
+            <string>I-Grid Beta</string>
+            <key>help</key>
+            <string>https://not.let-us.cyou/help</string>
+            <key>login_identifier_types</key>
+            <array>
+                <string>agent</string>
+                <string>account</string>
+            </array>
+            <key>loginpage</key>
+            <string>https://web.ai.let-us.cyou/jopensim-beta/</string>
+            <key>loginuri</key>
+            <array>
+                <string>https://not.let-us.cyou:8002/</string>
+            </array>
+            <key>name</key>
+            <string>not.let-us.cyou:8002</string>
+            <key>register</key>
+            <string>https://i.let-us.cyou/wp-login.php?action=register</string>
+            <key>slurl_base</key>
+            <string>hop://not.let-us.cyou:8002/</string>
             <key>web_profile_url</key>
             <string>https://i.let-us.cyou/profile/[AGENT_NAME]</string>
         </map>

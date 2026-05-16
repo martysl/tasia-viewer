@@ -237,6 +237,8 @@ public:
     bool isInSLBeta();
     bool isInOpenSim();
     bool isInAuroraSim();
+    bool isSLGrid(const std::string& grid);
+    bool isCurrentGridSL();
     void saveGridList();
     void clearFavorites();
     void addGrid(GridEntry* grid_info, AddState state);

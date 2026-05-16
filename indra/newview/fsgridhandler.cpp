@@ -196,6 +196,23 @@ void LLGridManager::initGrids()
     initGridList(grid_file, FINISH);
     initGridList(grid_remote_file, FINISH);
     initGridList(grid_user_file, FINISH);
+
+    // Purge any Second Life grids from user/remote lists
+    std::vector<std::string> sl_grids;
+    for (LLSD::map_iterator grid_iter = mGridList.beginMap();
+         grid_iter != mGridList.endMap();
+         ++grid_iter)
+    {
+        if (isSLGrid(grid_iter->first))
+        {
+            sl_grids.push_back(grid_iter->first);
+        }
+    }
+    for (const auto& sl_grid : sl_grids)
+    {
+        LL_INFOS("GridManager") << "Removing blocked Second Life grid: " << sl_grid << LL_ENDL;
+        mGridList[sl_grid]["USER_DELETED"] = true;
+    }
 #endif
 
     if(!mCommandLineDone)
@@ -505,6 +522,13 @@ void LLGridManager::gridInfoResponderCB(GridEntry* grid_entry)
 
 void LLGridManager::addGrid(const std::string& loginuri)
 {
+    // Block Second Life grids
+    if (isSLGrid(loginuri))
+    {
+        LLNotificationsUtil::add("GridBlockedSL");
+        return;
+    }
+
     GridEntry* grid_entry = new GridEntry;
     grid_entry->set_current = true;
     grid_entry->grid = LLSD::emptyMap();
@@ -558,6 +582,13 @@ void LLGridManager::addGrid(GridEntry* grid_entry,  AddState state)
             LLSD args;
             args["GRID"] = grid;
             LLNotificationsUtil::add("InvalidGrid", args);
+            state = FAIL;
+        }
+
+        // Block Second Life grids
+        if (state != FAIL && isSLGrid(grid))
+        {
+            LLNotificationsUtil::add("GridBlockedSL");
             state = FAIL;
         }
 
@@ -1046,6 +1077,13 @@ void LLGridManager::setGridChoice(const std::string& grid)
     }
     else
     {
+        // Block selection of Second Life grids
+        if (isSLGrid(grid_name))
+        {
+            LLNotificationsUtil::add("GridBlockedSL");
+            return;
+        }
+
         LL_DEBUGS("GridManager")<< "setting grid choice: " << grid << LL_ENDL;
         mGrid = grid;// AW: don't set mGrid anywhere else
         getGridData(mConnectedGrid);
@@ -1280,6 +1318,53 @@ bool LLGridManager::isInOpenSim()
 bool LLGridManager::isInAuroraSim()
 {
     return (EGridPlatform == GP_AURORA);
+}
+
+bool LLGridManager::isSLGrid(const std::string& grid)
+{
+    // Check the grid name/hostname for Second Life patterns
+    std::string grid_lower = utf8str_tolower(grid);
+    if (grid_lower.find("lindenlab.com") != std::string::npos ||
+        grid_lower.find("secondlife.com") != std::string::npos)
+    {
+        return true;
+    }
+
+    // Check against stored grid data if available
+    if (mGridList.has(grid))
+    {
+        // Check login URIs
+        if (mGridList[grid].has(GRID_LOGIN_URI_VALUE))
+        {
+            LLSD uris = mGridList[grid][GRID_LOGIN_URI_VALUE];
+            for (LLSD::array_iterator it = uris.beginArray(); it != uris.endArray(); ++it)
+            {
+                std::string uri_str = utf8str_tolower(it->asString());
+                if (uri_str.find("lindenlab.com") != std::string::npos ||
+                    uri_str.find("secondlife.com") != std::string::npos)
+                {
+                    return true;
+                }
+            }
+        }
+
+        // Check grid label
+        if (mGridList[grid].has(GRID_LABEL_VALUE))
+        {
+            std::string label = utf8str_tolower(mGridList[grid][GRID_LABEL_VALUE].asString());
+            if (label.find("second life") != std::string::npos)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool LLGridManager::isCurrentGridSL()
+{
+    return isSLGrid(mGrid);
 }
 
 void LLGridManager::saveGridList()

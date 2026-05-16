@@ -1461,6 +1461,13 @@ You need to enter either the Username or both the First and Last name of your av
 '[GRID]' is not a valid grid identifier.
   </notification>
   
+   <notification
+    name="GridBlockedSL"
+    type="alertmodal">
+    <tag>fail</tag>
+Second Life grids are not supported by Tasia Viewer. This viewer is configured for I-Grid/OpenSim only.
+   </notification>
+
   <notification
    icon="alertmodal.tga"
    name="InvalidLocationSLURL"
