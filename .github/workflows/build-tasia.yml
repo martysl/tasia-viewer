@@ -234,6 +234,15 @@ jobs:
           unset CC || true
           unset CXX || true
 
+          # Use VS-bundled CMake if available (better VS 2022 compatibility)
+          VS_CMAKE="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
+          if [ -f "$VS_CMAKE" ]; then
+            VS_CMAKE_DIR="$(dirname "$VS_CMAKE")"
+            echo "Using VS-bundled CMake from: $VS_CMAKE_DIR"
+            export PATH="$VS_CMAKE_DIR:$PATH"
+          fi
+          cmake --version
+
           autobuild configure \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \

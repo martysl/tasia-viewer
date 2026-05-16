@@ -364,8 +364,24 @@ then
         export AUTOBUILD_EXEC=`which autobuild`
     fi
 
+    # Save MSVC env vars before autobuild source_environment may reset them
+    _saved_VCToolsInstallDir="${VCToolsInstallDir:-}"
+    _saved_VSINSTALLDIR="${VSINSTALLDIR:-}"
+    _saved_VCINSTALLDIR="${VCINSTALLDIR:-}"
+
     # load autobuild provided shell functions and variables
     eval "$("$AUTOBUILD_EXEC" source_environment)"
+
+    # Restore MSVC env vars that autobuild source_environment may have reset
+    if [ -n "$_saved_VCToolsInstallDir" ] && [ -z "${VCToolsInstallDir:-}" ]; then
+        export VCToolsInstallDir="$_saved_VCToolsInstallDir"
+    fi
+    if [ -n "$_saved_VSINSTALLDIR" ] && [ -z "${VSINSTALLDIR:-}" ]; then
+        export VSINSTALLDIR="$_saved_VSINSTALLDIR"
+    fi
+    if [ -n "$_saved_VCINSTALLDIR" ] && [ -z "${VCINSTALLDIR:-}" ]; then
+        export VCINSTALLDIR="$_saved_VCINSTALLDIR"
+    fi
 
     # load_vsvars is only needed if MSVC is not already loaded (e.g. vsdevcmd or msvc-dev-cmd)
     # If VCToolsInstallDir is set, MSVC is already in PATH and load_vsvars would
