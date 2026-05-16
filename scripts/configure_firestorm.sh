@@ -364,9 +364,11 @@ then
         export AUTOBUILD_EXEC=`which autobuild`
     fi
 
-    # Save MSVC env vars before autobuild source_environment may reset them
+    # Save MSVC env vars AND critical PATH entries before autobuild source_environment may reset them
     _saved_VSINSTALLDIR="${VSINSTALLDIR:-}"
     _saved_VCINSTALLDIR="${VCINSTALLDIR:-}"
+    # Save the MSVC bin directory (contains cl.exe, link.exe, etc.)
+    _saved_MSVC_BIN_DIR="$(dirname $(which cl.exe 2>/dev/null) 2>/dev/null || true)"
 
     # load autobuild provided shell functions and variables
     eval "$("$AUTOBUILD_EXEC" source_environment)"
@@ -379,6 +381,11 @@ then
     if [ -n "$_saved_VCINSTALLDIR" ] && [ -z "${VCINSTALLDIR:-}" ]; then
         echo "VCINSTALLDIR was cleared by autobuild source_environment, restoring..."
         export VCINSTALLDIR="$_saved_VCINSTALLDIR"
+    fi
+    # Ensure cl.exe is in PATH — source_environment may have removed MSVC bin dirs
+    if [ -n "$_saved_MSVC_BIN_DIR" ] && ! which cl.exe >/dev/null 2>&1; then
+        echo "cl.exe was removed from PATH by autobuild source_environment, prepending..."
+        export PATH="$_saved_MSVC_BIN_DIR:$PATH"
     fi
 
     # load_vsvars is only needed if MSVC is not already loaded (e.g. vsdevcmd or msvc-dev-cmd)
@@ -584,7 +591,15 @@ if [ $WANTS_CONFIG -eq $TRUE ] ; then
             CMAKE_ARCH="-A Win32"
         fi
         UNATTENDED="-DUNATTENDED=ON"
+        # When vswhere is broken (common on GitHub Actions windows-2022 runners),
+        # tell CMake explicitly which VS instance to use for compiler detection.
+        # Export as env var to avoid bash word-splitting issues with spaces in the path.
+        if [ -n "${VSINSTALLDIR:-}" ]; then
+            echo "Setting CMAKE_GENERATOR_INSTANCE=${VSINSTALLDIR}"
+            export CMAKE_GENERATOR_INSTANCE="${VSINSTALLDIR}"
+        fi
     fi
+
 
     if [ $WANTS_NINJA -eq $TRUE ] ; then
         TARGET="Ninja"
