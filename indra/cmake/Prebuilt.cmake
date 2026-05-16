@@ -1,5 +1,5 @@
 # -*- cmake -*-
-include_guard()
+include_guard(GLOBAL)
 
 include(FindAutobuild)
 if(INSTALL_PROPRIETARY)
@@ -47,7 +47,6 @@ macro (use_prebuilt_binary _binary)
                 WORKING_DIRECTORY "${ROOT_PROJECT_DIR}"
                 RESULT_VARIABLE ${_binary}_installed
                 )
-        message(STATUS "DEBUG WRITE: PREBUILD_TRACKING_DIR='${PREBUILD_TRACKING_DIR}' AUTOBUILD_INSTALL_DIR='${AUTOBUILD_INSTALL_DIR}' binary='${_binary}' path='${PREBUILD_TRACKING_DIR}/${_binary}_installed'")
         file(WRITE ${PREBUILD_TRACKING_DIR}/${_binary}_installed "${${_binary}_installed}")
     endif(${PREBUILD_TRACKING_DIR}/sentinel_installed IS_NEWER_THAN ${PREBUILD_TRACKING_DIR}/${_binary}_installed OR NOT ${${_binary}_installed} EQUAL 0)
 
