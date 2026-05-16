@@ -234,11 +234,10 @@ jobs:
           unset CC || true
           unset CXX || true
 
-          'scripts/configure_firestorm.sh' \
-            --config \
-            --version \
-            --opensim \
-            --platform windows \
+          autobuild configure \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            -- \
             --fmodstudio \
             --package
 
