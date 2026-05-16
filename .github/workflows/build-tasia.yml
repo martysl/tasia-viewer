@@ -199,31 +199,25 @@ jobs:
       - name: Configure with FMOD
         shell: bash
         run: |
-          EXTRA_ARGS=""
+          EXTRA_ARGS=()
           if [ "${{ runner.os }}" = "Linux" ]; then
-            EXTRA_ARGS="--ninja"
-          elif [ "${{ runner.os }}" = "Windows" ]; then
-            EXTRA_ARGS="-G \"Visual Studio 17 2022\" -A x64"
+            EXTRA_ARGS=("--ninja")
           fi
-          # shellcheck disable=SC2086
           autobuild configure \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
             -- \
             --fmodstudio \
             --package \
-            $EXTRA_ARGS
+            "${EXTRA_ARGS[@]}"
 
       - name: Build with FMOD
         shell: bash
         run: |
-          EXTRA_ARGS=""
+          EXTRA_ARGS=()
           if [ "${{ runner.os }}" = "Linux" ]; then
-            EXTRA_ARGS="--ninja"
-          elif [ "${{ runner.os }}" = "Windows" ]; then
-            EXTRA_ARGS="-G \"Visual Studio 17 2022\" -A x64"
+            EXTRA_ARGS=("--ninja")
           fi
-          # shellcheck disable=SC2086
           autobuild build \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
@@ -231,7 +225,7 @@ jobs:
             -- \
             --fmodstudio \
             --package \
-            $EXTRA_ARGS
+            "${EXTRA_ARGS[@]}"
 
       - name: Upload artifact - Linux
         if: runner.os == 'Linux'
