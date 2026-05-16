@@ -244,12 +244,11 @@ class ViewerManifest(LLManifest,FSViewerManifest):
                             "Update Service":"https://update.secondlife.com/update",
                             }
             # Only store this if it's both present and non-empty
-            bugsplat_db = self.args.get('bugsplat')
-            if bugsplat_db:
-                if not bugsplat_db.startswith("tasia_") and \
-                        bugsplat_db != "https://i.let-us.cyou/hg/crashraport.php":
-                    raise ManifestError("Refusing to package non-Tasia crash endpoint: {}".format(bugsplat_db))
-                build_data_dict["BugSplat DB"] = bugsplat_db
+            crash_report_url = self.args.get('bugsplat')
+            if crash_report_url:
+                if not crash_report_url.startswith("https://") and not crash_report_url.startswith("http://"):
+                    raise ManifestError("CrashReportURL must be an http(s) URL, got: {}".format(crash_report_url))
+                build_data_dict["CrashReportURL"] = crash_report_url
             build_data_dict = self.finish_build_data_dict(build_data_dict)
             with open(os.path.join(os.pardir,'build_data.json'), 'w') as build_data_handle:
                 json.dump(build_data_dict,build_data_handle)

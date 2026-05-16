@@ -161,13 +161,13 @@ LLAppViewerLinux::~LLAppViewerLinux()
 #if LL_SEND_CRASH_REPORTS
 std::string gCrashLogger;
 std::string gVersion;
-std::string gBugsplatDB;
+std::string gCrashReportURL;
 std::string gCrashBehavior;
 
 static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded)
 {
     if( fork() == 0 )
-        execl( gCrashLogger.c_str(), gCrashLogger.c_str(), descriptor.path(), gVersion.c_str(), gBugsplatDB.c_str(),  gCrashBehavior.c_str(), nullptr );
+        execl( gCrashLogger.c_str(), gCrashLogger.c_str(), descriptor.path(), gVersion.c_str(), gCrashReportURL.c_str(),  gCrashBehavior.c_str(), nullptr );
     return succeeded;
 }
 
@@ -179,7 +179,7 @@ void setupBreakpad()
     llifstream inf(build_data_fname.c_str());
     if(!inf.is_open())
     {
-        LL_WARNS("BUGSPLAT") << "Can't initialize BugSplat, can't read '" << build_data_fname << "'" << LL_ENDL;
+        LL_WARNS("CRASHREPORT") << "Can't initialize crash reporting, can't read '" << build_data_fname << "'" << LL_ENDL;
         return;
     }
 
@@ -187,15 +187,15 @@ void setupBreakpad()
     boost::json::value build_data = boost::json::parse(inf, ec);
     if(ec.failed())
     {
-        LL_WARNS("BUGSPLAT") << "Can't initialize BugSplat, can't parse '" << build_data_fname << "': "
+        LL_WARNS("CRASHREPORT") << "Can't initialize crash reporting, can't parse '" << build_data_fname << "': "
                              << ec.what() << LL_ENDL;
         return;
     }
 
-    if (!build_data.is_object() || !build_data.as_object().contains("BugSplat DB"))
+    if (!build_data.is_object() || !build_data.as_object().contains("CrashReportURL"))
     {
-        LL_WARNS("BUGSPLAT") << "Can't initialize BugSplat, no 'BugSplat DB' entry in '" << build_data_fname
-                             << "'" << LL_ENDL;
+        LL_WARNS("CRASHREPORT") << "Can't initialize crash reporting, no 'CrashReportURL' entry in '" << build_data_fname
+                                << "'" << LL_ENDL;
         return;
     }
 
@@ -203,16 +203,15 @@ void setupBreakpad()
             LL_VIEWER_VERSION_MAJOR << '.' << LL_VIEWER_VERSION_MINOR << '.' << LL_VIEWER_VERSION_PATCH
                                     << '.' << LL_VIEWER_VERSION_BUILD);
 
-    boost::json::value BugSplat_DB = build_data.at("BugSplat DB");
-    gBugsplatDB = boost::json::value_to<std::string>(BugSplat_DB);
-    if (gBugsplatDB.rfind("tasia_", 0) != 0 &&
-        gBugsplatDB.rfind("https://i.let-us.cyou/hg/crashraport.php", 0) != 0)
+    boost::json::value CrashReportURL = build_data.at("CrashReportURL");
+    gCrashReportURL = boost::json::value_to<std::string>(CrashReportURL);
+    if (gCrashReportURL.empty())
     {
-        LL_WARNS("BUGSPLAT") << "Refusing to initialize non-Tasia crash endpoint: " << gBugsplatDB << LL_ENDL;
+        LL_WARNS("CRASHREPORT") << "CrashReportURL is empty, crash reporting disabled" << LL_ENDL;
         return;
     }
 
-    LL_INFOS("BUGSPLAT") << "Initializing with crash logger: " << gCrashLogger << " database: " << gBugsplatDB << " version: " << gVersion << LL_ENDL;
+    LL_INFOS("CRASHREPORT") << "Initializing with crash logger: " << gCrashLogger << " URL: " << gCrashReportURL << " version: " << gVersion << LL_ENDL;
 
     google_breakpad::MinidumpDescriptor *descriptor = new google_breakpad::MinidumpDescriptor(gDirUtilp->getExpandedFilename(LL_PATH_DUMP, ""));
     google_breakpad::ExceptionHandler *eh = new google_breakpad::ExceptionHandler(*descriptor, NULL, dumpCallback, NULL, true, -1);

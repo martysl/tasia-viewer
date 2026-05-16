@@ -61,17 +61,7 @@ int main(int argc, char **argv)
         }
     }
 
-    std::string url;
-    if (strEndpoint.rfind("https://", 0) == 0 || strEndpoint.rfind("http://", 0) == 0)
-    {
-        url = strEndpoint;
-    }
-    else
-    {
-        url = "https://";
-        url += strEndpoint;
-        url += ".bugsplat.com/post/bp/crash/crashpad.php";
-    }
+    std::string url = strEndpoint;
 
     curl_global_init(CURL_GLOBAL_ALL);
 

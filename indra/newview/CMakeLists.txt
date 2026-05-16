@@ -98,6 +98,7 @@ set(viewer_SOURCE_FILES
     exoflickr.cpp
     exoflickrauth.cpp
     fsprimfeedauth.cpp
+    tasiafeedconnect.cpp
     exogroupmutelist.cpp
     floatermedialists.cpp
     fsareasearch.cpp
@@ -185,6 +186,7 @@ set(viewer_SOURCE_FILES
     lfsimfeaturehandler.cpp
     llflickrconnect.cpp
     llfloaterflickr.cpp
+    llfloatertasiafeed.cpp
     fsprimfeedconnect.cpp
     fsfloaterprimfeed.cpp
     llpanelopenregionsettings.cpp
@@ -940,6 +942,7 @@ set(viewer_HEADER_FILES
     exoflickr.h
     exoflickrauth.h
     fsprimfeedauth.h
+    tasiafeedconnect.h
     exogroupmutelist.h
     floatermedialists.h
     fsareasearch.h
@@ -1030,6 +1033,7 @@ set(viewer_HEADER_FILES
     lfsimfeaturehandler.h
     llflickrconnect.h
     llfloaterflickr.h
+    llfloatertasiafeed.h
     fsprimfeedconnect.h
     fsfloaterprimfeed.h
     # <FS:Ansariel> [Legacy Bake]

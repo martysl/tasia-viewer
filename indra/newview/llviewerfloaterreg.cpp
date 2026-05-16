@@ -229,6 +229,7 @@
 #include "llfloaterdisplayname.h"
 #include "fsfloaterprimfeed.h"
 #include "llfloaterflickr.h"
+#include "llfloatertasiafeed.h"
 #include "llfloaterscriptrecover.h"
 #include "llfloatersearchreplace.h"
 #include "llpanelgroup.h"
@@ -634,6 +635,7 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("delete_queue", "floater_script_queue.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterDeleteQueue>);
     LLFloaterReg::add("flickr", "floater_flickr.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterFlickr>);
     LLFloaterReg::add("primfeed", "floater_primfeed.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterPrimfeed>);
+    LLFloaterReg::add("tasiafeed", "floater_tasiafeed.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterTasiaFeed>);
     LLFloaterReg::add("fs_asset_blacklist", "floater_fs_asset_blacklist.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterAssetBlacklist>);
     LLFloaterReg::add("fs_avatar_render_settings", "floater_fs_avatar_render_settings.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterAvatarRenderSettings>);
     LLFloaterReg::add("fs_blocklist", "floater_fs_blocklist.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterBlocklist>);

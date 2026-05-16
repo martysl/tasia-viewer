@@ -1468,6 +1468,22 @@ You need to enter either the Username or both the First and Last name of your av
 Second Life grids are not supported by Tasia Viewer. This viewer is configured for I-Grid/OpenSim only.
    </notification>
 
+   <notification
+    name="TasiaFeedUploadComplete"
+    type="alertmodal">
+    <tag>success</tag>
+Snapshot uploaded to TasiaFeed!
+[URL]
+   </notification>
+
+   <notification
+    name="TasiaFeedUploadFailed"
+    type="alertmodal">
+    <tag>fail</tag>
+Snapshot upload to TasiaFeed failed.
+[MESSAGE]
+   </notification>
+
   <notification
    icon="alertmodal.tga"
    name="InvalidLocationSLURL"

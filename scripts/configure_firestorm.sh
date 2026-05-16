@@ -523,7 +523,7 @@ if [ $WANTS_CONFIG -eq $TRUE ] ; then
         CRASH_REPORTING="-DRELEASE_CRASH_REPORTING=ON"
         if [ ! -z $CHANNEL_SIMPLE ]
         then
-            CRASH_REPORTING="$CRASH_REPORTING -DUSE_BUGSPLAT=On -DBUGSPLAT_DB=tasia_"`echo $CHANNEL_SIMPLE | tr [:upper:] [:lower:] | sed -e 's/x64//' | sed 's/[^A-Za-z0-9]//g'`
+            CRASH_REPORTING="$CRASH_REPORTING -DUSE_BUGSPLAT=On -DBUGSPLAT_DB=https://apps.easierit.org/igrid/bugs/api/v1/report"
         fi
     else
         CRASH_REPORTING="-DRELEASE_CRASH_REPORTING:BOOL=OFF"
