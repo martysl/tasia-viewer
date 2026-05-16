@@ -164,6 +164,12 @@ jobs:
         shell: bash
         run: echo "AUTOBUILD_VSVER=170" >> "$GITHUB_ENV"
 
+      - name: Setup Visual Studio dev command prompt
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
         run: |
@@ -196,6 +202,8 @@ jobs:
           EXTRA_ARGS=""
           if [ "${{ runner.os }}" = "Linux" ]; then
             EXTRA_ARGS="--ninja"
+          elif [ "${{ runner.os }}" = "Windows" ]; then
+            EXTRA_ARGS="-G \"Visual Studio 17 2022\" -A x64"
           fi
           # shellcheck disable=SC2086
           autobuild configure \
@@ -212,6 +220,8 @@ jobs:
           EXTRA_ARGS=""
           if [ "${{ runner.os }}" = "Linux" ]; then
             EXTRA_ARGS="--ninja"
+          elif [ "${{ runner.os }}" = "Windows" ]; then
+            EXTRA_ARGS="-G \"Visual Studio 17 2022\" -A x64"
           fi
           # shellcheck disable=SC2086
           autobuild build \
