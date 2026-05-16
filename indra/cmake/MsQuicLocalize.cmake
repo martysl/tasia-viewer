@@ -1,5 +1,6 @@
 # -*- cmake -*-
 # Script-mode CMake helper invoked from MsQuic.cmake.
+cmake_policy(SET CMP0057 NEW)
 #
 # Renames symbols originating from MsQuic's bundled quictls (its OpenSSL fork)
 # inside libmsquic.a so they cannot collide with the viewer's own libcrypto.a

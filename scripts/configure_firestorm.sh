@@ -595,13 +595,14 @@ if [ $WANTS_CONFIG -eq $TRUE ] ; then
     fi
 
     cmake -G "$TARGET" $CMAKE_ARCH ../indra $CMAKE_ARGS | tee "$LOG"
+    declare -i CMAKE_EXIT=${PIPESTATUS[0]}
 
     if [ $TARGET_PLATFORM == "windows" -a $USE_VSTOOL -eq $TRUE ] ; then
         echo "Setting startup project via vstool"
         ../indra/tools/vstool/VSTool.exe --solution Firestorm.sln --startup firestorm-bin --workingdir firestorm-bin "..\\..\\indra\\newview" --config $BTYPE
     fi
         # Check the return code of the build command
-    if [ $? -ne 0 ]; then
+    if [ $CMAKE_EXIT -ne 0 ]; then
         echo "Configure failed!"
         exit 1
     fi    
@@ -621,17 +622,20 @@ if [ $WANTS_BUILD -eq $TRUE ] ; then
             echo $JOBS
         fi
         if [ $WANTS_NINJA -eq $TRUE ] ; then
-            ninja -j $JOBS | tee -a "$LOG"
+            ninja -j $JOBS 2>&1 | tee -a "$LOG"
+            declare -i BUILD_EXIT=${PIPESTATUS[0]}
         else
-            make -j $JOBS | tee -a "$LOG"
+            make -j $JOBS 2>&1 | tee -a "$LOG"
+            declare -i BUILD_EXIT=${PIPESTATUS[0]}
         fi
     elif [ $TARGET_PLATFORM == "windows" ] ; then
         msbuild.exe Firestorm.sln -p:Configuration=${BTYPE} -flp:LogFile="logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
             -flp1:"errorsonly;LogFile=logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
             -verbosity:normal -toolsversion:Current -p:"VCBuildAdditionalOptions= /incremental"
+        declare -i BUILD_EXIT=$?
     fi
     # Check the return code of the build command
-    if [ $? -ne 0 ]; then
+    if [ $BUILD_EXIT -ne 0 ]; then
         echo "Build failed!"
         exit 1
     fi    
