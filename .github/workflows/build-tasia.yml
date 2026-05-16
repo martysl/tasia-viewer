@@ -116,20 +116,12 @@ jobs:
           echo "Using FMOD package: $FMOD_PACKAGE"
           echo "FMOD_PACKAGE=$FMOD_PACKAGE" >> "$GITHUB_ENV"
 
-          FMOD_HASH="$(python3 -c "
-import hashlib
-import sys
-with open(sys.argv[1], 'rb') as f:
-    print(hashlib.md5(f.read()).hexdigest())
-" "$FMOD_PACKAGE")"
+          # Calculate MD5 hash of downloaded FMOD package
+          FMOD_HASH=$(python3 -c "import hashlib,sys; print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$FMOD_PACKAGE")
           echo "FMOD_HASH=$FMOD_HASH" >> "$GITHUB_ENV"
 
-          FMOD_FILE_URL="$(python3 -c "
-import pathlib
-import sys
-p = pathlib.Path(sys.argv[1]).resolve()
-print(p.as_uri())
-" "$FMOD_PACKAGE")"
+          # Build file:// URI for the downloaded package
+          FMOD_FILE_URL=$(python3 -c "import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_uri())" "$FMOD_PACKAGE")
           echo "FMOD_FILE_URL=$FMOD_FILE_URL" >> "$GITHUB_ENV"
 
           echo "FMOD package ready: $FMOD_FILE_URL (MD5: $FMOD_HASH)"
