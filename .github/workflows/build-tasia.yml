@@ -164,11 +164,24 @@ jobs:
         shell: bash
         run: echo "AUTOBUILD_VSVER=170" >> "$GITHUB_ENV"
 
-      - name: Setup Visual Studio dev command prompt
+      - name: Setup MSVC dev environment
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
+          vsversion: 2022
+
+      - name: Verify MSVC tools
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "PATH=$PATH"
+          where cl || true
+          where cmake || true
+          where msbuild || true
+          cl 2>&1 | head -20 || true
+          cmake --version
 
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
@@ -196,7 +209,8 @@ jobs:
           echo "TASIA_DISPLAY_VERSION=8.0.1.${{ github.run_number }}" >> "$GITHUB_ENV"
           echo "TASIA_BUILD_NUMBER=${{ github.run_number }}" >> "$GITHUB_ENV"
 
-      - name: Configure with FMOD
+      - name: Configure Linux/macOS with FMOD
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           EXTRA_ARGS=()
@@ -207,6 +221,26 @@ jobs:
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
             -- \
+            --fmodstudio \
+            --package \
+            "${EXTRA_ARGS[@]}"
+
+      - name: Configure Windows with FMOD
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          unset CC || true
+          unset CXX || true
+
+          EXTRA_ARGS=("-G" "Visual Studio 17 2022" "-A" "x64" "-T" "v143")
+
+          '../scripts/configure_firestorm.sh' \
+            --config \
+            --version \
+            --opensim \
+            --platform windows \
             --fmodstudio \
             --package \
             "${EXTRA_ARGS[@]}"
