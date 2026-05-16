@@ -130,7 +130,12 @@ template<typename T>
 class LLTweenableValueLerp : public LLTweenableValue<T>
 {
 public:
-    LLTweenableValueLerp(const T& defaultValue) : LLTweenableValue<T>(defaultValue) {}
+    LLTweenableValueLerp(const T& defaultValue) : LLTweenableValue<T>(defaultValue)
+        , m_StartTime(0.0)
+        , m_Duration(0.0)
+        , m_StartValue()
+        , m_EndValue()
+    {}
     T    get() override;
     void start(const T& endValue, double duration) override
     {
