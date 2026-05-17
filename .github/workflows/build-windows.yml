@@ -2,6 +2,15 @@ name: Build Tasia Viewer Windows
 
 'on':
   workflow_dispatch:
+    inputs:
+      probe_only:
+        description: "Windows dependency probe only (no full build)"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 permissions:
   contents: read
@@ -153,7 +162,44 @@ jobs:
             --ninja \
             "-DLOCAL_DIST_DIR:PATH=$LOCAL_DIST_DIR"
 
+      - name: Windows dependency probe
+        if: inputs.probe_only == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "=== Boost / Collada packages ==="
+          find .autobuild-installables build-vc170-64 -iname "*boost*" -o -iname "*collada*" 2>/dev/null | head -200 || true
+
+          echo ""
+          echo "=== Link response file ==="
+          if [ -f build-vc170-64/newview/CMakeFiles/firestorm-bin.rsp ]; then
+            grep -i "boost.*filesystem\|collada" build-vc170-64/newview/CMakeFiles/firestorm-bin.rsp || echo "(no boost/collada entries in rsp)"
+          else
+            echo "firestorm-bin.rsp not generated yet"
+            # Try alternate paths
+            find build-vc170-64 -name "*.rsp" | head -5
+          fi
+
+          echo ""
+          echo "=== CMakeCache boost/collada ==="
+          if [ -f build-vc170-64/CMakeCache.txt ]; then
+            grep -i "boost\|collada" build-vc170-64/CMakeCache.txt | head -200 || true
+          else
+            echo "CMakeCache.txt not found"
+          fi
+
+          echo ""
+          echo "=== Boost version check ==="
+          find build-vc170-64/_deps -maxdepth 3 -name "CMakeLists.txt" -path "*boost*" 2>/dev/null | head -5
+          head -5 build-vc170-64/_deps/boost-src/CMakeLists.txt 2>/dev/null || echo "boost-src not found"
+
+          echo ""
+          echo "Probe complete. Stopping before full build."
+          exit 0
+
       - name: Build Windows with FMOD
+        if: inputs.probe_only != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -167,6 +213,7 @@ jobs:
             --ninja
 
       - name: Create Windows ZIP artifact
+        if: inputs.probe_only != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -182,6 +229,7 @@ jobs:
           PY
 
       - name: Upload artifact - Windows
+        if: inputs.probe_only != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: Tasia-Viewer-Windows-FMOD
