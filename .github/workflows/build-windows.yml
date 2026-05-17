@@ -3,6 +3,14 @@ name: Build Tasia Viewer Windows
 'on':
   workflow_dispatch:
     inputs:
+      clean_build:
+        description: "Clean build directory before build"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
       probe_only:
         description: "Windows dependency probe only (no full build)"
         required: true
@@ -136,6 +144,25 @@ jobs:
           echo "TASIA_DISPLAY_VERSION=8.0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
           echo "TASIA_BUILD_NUMBER=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
 
+      - name: Optional clean Windows build
+        if: runner.os == 'Windows' && inputs.clean_build == 'true'
+        shell: bash
+        run: |
+          rm -rf build-vc170-64
+
+      - name: Restore Windows build cache
+        if: runner.os == 'Windows'
+        id: restore-windows-build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            build-vc170-64
+            .autobuild-installables
+          key: windows-build-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            windows-build-${{ github.ref_name }}-
+            windows-build-
+
       - name: Configure Windows with FMOD
         shell: bash
         run: |
@@ -235,3 +262,12 @@ jobs:
           name: Tasia-Viewer-Windows-FMOD
           if-no-files-found: error
           path: Tasia-Viewer-Windows-FMOD.zip
+
+      - name: Save Windows build cache
+        if: always() && runner.os == 'Windows'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            build-vc170-64
+            .autobuild-installables
+          key: windows-build-${{ github.ref_name }}-${{ github.run_id }}
