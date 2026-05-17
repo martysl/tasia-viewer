@@ -228,15 +228,32 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
           echo "=== Boost version.hpp ==="
-          grep -E "#define BOOST_VERSION|#define BOOST_LIB_VERSION" build-vc170-64/_deps/boost-src/boost/version.hpp
+          for p in \
+            build-vc170-64/_deps/boost-src/boost/version.hpp \
+            build-vc170-64/_deps/boost-build/boost/version.hpp \
+            build-vc170-64/boost/version.hpp; do
+            if [ -f "$p" ]; then
+              grep -E "#define BOOST_VERSION|#define BOOST_LIB_VERSION" "$p"
+              found=1
+              break
+            fi
+          done
+          if [ -z "${found:-}" ]; then
+            echo "version.hpp not found, checking CMakeCache..."
+            grep -i "boost_VERSION\|BOOST_VERSION" build-vc170-64/CMakeCache.txt 2>/dev/null || echo "Not in CMakeCache either"
+          fi
 
           echo "=== Colladadom lib ==="
-          ls -lah build-vc170-64/packages/lib/release/libcollada14dom23-s.lib
+          ls -lah build-vc170-64/packages/lib/release/libcollada14dom23-s.lib 2>/dev/null || echo "not found at expected path"
 
           echo "=== Boost filesystem build dir ==="
-          test -d build-vc170-64/_deps/boost-build/libs/filesystem
+          test -d build-vc170-64/_deps/boost-build/libs/filesystem && echo "Found boost-build/libs/filesystem" || echo "boost-build/libs/filesystem not found"
+          # Also check build dir listing
+          echo "=== _deps/boost-build contents (top 2 levels) ==="
+          find build-vc170-64/_deps/boost-build -maxdepth 2 -name "*.lib" -o -name "*.a" 2>/dev/null | head -20 || echo "(empty)"
+          set -e
 
       - name: Build Windows with FMOD
         if: inputs.probe_only != 'true'
