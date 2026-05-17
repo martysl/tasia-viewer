@@ -1,6 +1,6 @@
 name: Build Tasia Viewer
 
-on:
+'on':
   workflow_dispatch:
     inputs:
       target:
@@ -252,18 +252,7 @@ jobs:
           fi
 
           NOTES="$(mktemp)"
-          cat > "$NOTES" <<EOF
-Tasia Viewer Linux beta build.
-
-Version: 8.0.1.${GITHUB_RUN_NUMBER}
-Commit: ${GITHUB_SHA::7}
-Channel: Tasia-Releasex64
-FMOD: enabled
-KDU: removed
-
-This is a beta/pre-release build.
-Mom must test before stable release.
-EOF
+          python3 -c "open('$NOTES','w').write('Tasia Viewer Linux beta build.\n\nVersion: 8.0.1.${GITHUB_RUN_NUMBER}\nCommit: ${GITHUB_SHA::7}\nChannel: Tasia-Releasex64\nFMOD: enabled\nKDU: removed\n\nThis is a beta/pre-release build.\nMom must test before stable release.\n')"
 
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$PACKAGE" --clobber
