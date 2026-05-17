@@ -414,6 +414,13 @@ else
     FIND=find
 fi
 
+# Auto-detect Ninja on Windows when --ninja passthrough via autobuild configure
+# does not work (autobuild strips unknown flags before calling this script).
+# This avoids the broken vswhere detection on CI runners.
+if [ $TARGET_PLATFORM == "windows" ] && [ $WANTS_NINJA -eq $FALSE ] && which ninja >/dev/null 2>&1; then
+    echo "ninja detected in PATH, enabling Ninja generator automatically"
+    WANTS_NINJA=$TRUE
+fi
 
 CHANNEL_SIMPLE="$CHANNEL"
 if [ -z $CHANNEL ] ; then
