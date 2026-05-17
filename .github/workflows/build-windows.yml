@@ -1,0 +1,171 @@
+name: Build Tasia Viewer Windows
+
+'on':
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AUTOBUILD_ADDRSIZE: 64
+  AUTOBUILD_BUILD_ID: ${{ github.run_id }}
+  AUTOBUILD_INSTALLABLE_CACHE: ${{ github.workspace }}/.autobuild-installables
+  AUTOBUILD_VARIABLES_FILE: ${{ github.workspace }}/.build-variables/variables
+  AUTOBUILD_VCS_INFO: "true"
+  AUTOBUILD_VSVER: 170
+  LL_SKIP_REQUIRE_SYSROOT: 1
+  XZ_DEFAULTS: -T0
+
+jobs:
+  build-windows:
+    name: Build Windows FMOD
+    runs-on: windows-2022
+    timeout-minutes: 240
+
+    steps:
+      - name: Checkout viewer source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install autobuild and Python deps
+        run: pip install -r requirements.txt
+
+      - name: Checkout build variables
+        uses: actions/checkout@v4
+        with:
+          repository: FirestormViewer/fs-build-variables
+          path: .build-variables
+
+      - name: Remove KDU
+        shell: bash
+        run: |
+          autobuild installables remove kdu || true
+          echo "KDU installable removed."
+
+      - name: Download private FMOD autobuild package
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.FMOD_DEPS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::FMOD_DEPS_TOKEN secret is missing."
+            exit 1
+          fi
+
+          mkdir -p private-deps
+          gh release download fmod-20307 \
+            --repo martysl/tasia-private-deps \
+            --pattern "*windows64*.tar.bz2" \
+            --dir private-deps
+
+          FMOD_PACKAGE="$(find private-deps -type f -name '*.tar.bz2' | head -n 1)"
+          if [ -z "$FMOD_PACKAGE" ]; then
+            echo "::error::FMOD Windows autobuild package was not downloaded."
+            exit 1
+          fi
+
+          FMOD_HASH=$(python3 -c "import hashlib,sys; print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$FMOD_PACKAGE")
+          FMOD_FILE_URL=$(python3 -c "import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_uri())" "$FMOD_PACKAGE")
+
+          echo "FMOD_PLATFORM=windows64" >> "$GITHUB_ENV"
+          echo "FMOD_PACKAGE=$FMOD_PACKAGE" >> "$GITHUB_ENV"
+          echo "FMOD_HASH=$FMOD_HASH" >> "$GITHUB_ENV"
+          echo "FMOD_FILE_URL=$FMOD_FILE_URL" >> "$GITHUB_ENV"
+
+      - name: Point autobuild to private FMOD package
+        shell: bash
+        run: |
+          set -euo pipefail
+          autobuild installables edit fmodstudio \
+            platform="$FMOD_PLATFORM" \
+            hash="$FMOD_HASH" \
+            url="$FMOD_FILE_URL"
+
+      - name: Load autobuild environment
+        shell: bash
+        run: |
+          autobuild source_environment > .source_env
+          . .source_env
+          echo "LL_BUILD=$LL_BUILD" >> "$GITHUB_ENV"
+          echo "LL_BUILD_RELEASE=$LL_BUILD_RELEASE" >> "$GITHUB_ENV"
+
+      - name: Setup MSVC dev environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          vsversion: 2022
+
+      - name: Install Windows build prerequisites
+        shell: bash
+        run: |
+          choco install ninja --no-progress -y || true
+          ninja --version
+          cmake --version
+          where cl
+
+      - name: Set Tasia build metadata
+        shell: bash
+        run: |
+          echo "revision=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          echo "VIEWER_VERSION_GITHASH=${GITHUB_SHA}" >> "$GITHUB_ENV"
+          TASIA_SHORT_SHA="${GITHUB_SHA}"
+          echo "TASIA_SHORT_SHA=${TASIA_SHORT_SHA::7}" >> "$GITHUB_ENV"
+          echo "TASIA_DISPLAY_VERSION=8.0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          echo "TASIA_BUILD_NUMBER=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+
+      - name: Configure Windows with FMOD
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          unset CC || true
+          unset CXX || true
+
+          VS_CMAKE="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
+          if [ -f "$VS_CMAKE" ]; then
+            VS_CMAKE_DIR="$(dirname "$VS_CMAKE")"
+            export PATH="$VS_CMAKE_DIR:$PATH"
+          fi
+
+          autobuild configure \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            -- \
+            --fmodstudio \
+            --package \
+            --ninja
+
+      - name: Build Windows with FMOD
+        shell: bash
+        run: |
+          set -euo pipefail
+          autobuild build \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            --no-configure \
+            -- \
+            --fmodstudio \
+            --package \
+            --ninja
+
+      - name: Upload artifact - Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tasia-Viewer-Windows-FMOD
+          if-no-files-found: error
+          path: |
+            build-vc170-64/newview/Release/*Setup.exe
+            build-vc170-64/newview/Release/*.xz

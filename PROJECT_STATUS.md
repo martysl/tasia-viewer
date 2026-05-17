@@ -8,7 +8,7 @@ Windows CI build is the active task on `windows-build-test` branch.
 | Platform | Build | Runtime |
 |----------|-------|---------|
 | Linux    | ✅ v8.0.1-39 | ✅ (basic login) |
-| Windows  | ❌ Ninja build: missing llwebrtc.dll byproduct (build 25992060682) | - |
+| Windows  | ❌ Ninja build: MSQuic C files compiled as C++ (build 25992480046) | - |
 | macOS    | ⏳ blocked on Windows first | - |
 
 ## Completed Milestones
@@ -27,8 +27,8 @@ Windows CI build is the active task on `windows-build-test` branch.
 - TasiaFeed upload response fix: read parsed JSON keys directly
 
 ## Current Windows Blocker
-**Ninja does not know how to produce `sharedlibs/llwebrtc.dll`** during the
-Windows build.
+**MSQuic C files are compiled as C++ on Windows Ninja builds** because global
+Windows compile options force `/TP` for every source language.
 
 ### Root Cause
 `vswhere` (VS instance discovery) is **broken** on GitHub Actions `windows-2022` runner.
@@ -60,6 +60,18 @@ Declared `${SHARED_LIB_STAGING_DIR}/llwebrtc.dll` as a Windows byproduct of the
 `llwebrtc` POST_BUILD copy command in `indra/llwebrtc/CMakeLists.txt`, so Ninja
 can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 
+### New build result (build 25992480046 / #44)
+- ✅ llwebrtc byproduct issue fixed; build progressed further.
+- ❌ Failed compiling MSQuic C source (`_deps/msquic-src/src/core/api.c`).
+- Root cause: global Windows `/TP` option compiles `.c` files as C++, causing
+  C++ conversion and syntax errors in MSQuic.
+
+### Fix in progress for build #44 failure
+- `indra/cmake/00-Common.cmake`: changed `/TP` to
+  `$<$<COMPILE_LANGUAGE:CXX>:/TP>` so only C++ sources are forced to C++ mode.
+- `.github/workflows/build-windows.yml`: added Windows-only workflow on
+  `windows-build-test` to isolate Windows CI from Linux CI.
+
 ### Previous abandoned fixes
 - `CMAKE_GENERATOR_INSTANCE` env var: CMake evaluates it before `-G` is
   processed, so it can't fix vswhere-based detection for VS generators.
@@ -67,6 +79,7 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 ## Next Steps
 1. ✅ Auto-detect Ninja on Windows committed & pushed
 2. ✅ Build #43 verified CMake configure succeeds with Ninja
-3. ⏳ Commit/push llwebrtc Ninja byproduct fix
-4. ⏳ Trigger new Windows CI build
-5. ⏳ Verify entire Windows build completes
+3. ✅ Build #44 verified llwebrtc byproduct fix works
+4. ⏳ Commit/push Windows-only workflow + MSQuic `/TP` fix
+5. ⏳ Trigger `build-windows.yml`
+6. ⏳ Verify entire Windows build completes

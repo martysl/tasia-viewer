@@ -119,7 +119,7 @@ if (WINDOWS)
   add_compile_options(
           /Zo
           /GS
-          /TP
+          $<$<COMPILE_LANGUAGE:CXX>:/TP>
           /W3
           /c
           /Zc:forScope
@@ -292,5 +292,4 @@ if (LINUX OR DARWIN)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m${ADDRESS_SIZE}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m${ADDRESS_SIZE}")
 endif (LINUX OR DARWIN)
-
 
