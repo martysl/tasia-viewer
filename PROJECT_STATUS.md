@@ -16,11 +16,11 @@ Next work:
 
 ## Build Status
 
-| Platform | Build | Runtime |
-|----------|-------|---------|
-| Linux    | ✅ v0.1.0 | ✅ (basic login) |
-| Windows  | ⏳ blocked on Linux first | - |
-| macOS    | ⏳ blocked on Windows first | - |
+| Platform | Build | Runtime | TasiaFeed upload |
+|----------|-------|---------|------------------|
+| Linux    | ✅ v0.1.0 | ✅ (basic login) | ❌ HTTP bug (postJsonAndSuspend fix applied, new build needed) |
+| Windows  | ⏳ blocked on Linux first | - | - |
+| macOS    | ⏳ blocked on Windows first | - | - |
 
 ## Completed Milestones
 

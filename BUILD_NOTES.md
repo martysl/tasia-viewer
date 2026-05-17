@@ -23,6 +23,24 @@
 - Single platform per run
 - Build order: Linux → Windows → macOS
 
+## 2026-05-17: TasiaFeed upload HTTP fix
+
+### Symptom
+Viewer says "No response from server" when clicking Upload to TasiaFeed. Server works fine (verified via curl).
+
+### Root cause
+In `tasiafeedconnect.cpp`, the upload coroutine serialized the LLSD body to a JSON string, then passed it to `postAndSuspend`. There is **no** `postAndSuspend` overload that takes `std::string` — the string was implicitly converted to `LLSD`, wrapping the raw JSON inside LLSD notation. The PHP server received non-JSON data (`<llsd><string>{...}</string></llsd>`) and returned an empty response. The adapter had no `HTTP_RESULTS_RAW` → "No response from server".
+
+### Fix
+Changed `postAndSuspend` to `postJsonAndSuspend`, which takes an `LLSD` body and sends it as proper raw JSON (via `HttpCoroJSONHandler` + `BufferArray`). Removed the manual `boost::json::serialize(LlsdToJson(body))` pre-serialization.
+
+### Files
+- `indra/newview/tasiafeedconnect.cpp`
+
+### Commits
+- `main`: 75d0d60276
+- `windows-build-test`: 43f6446404
+
 ## 2026-05-16: BugSplat removal / crash reporter reconfiguration
 
 ### Summary
