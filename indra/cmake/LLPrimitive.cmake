@@ -24,38 +24,46 @@ use_prebuilt_binary(colladadom)
 use_prebuilt_binary(minizip-ng) # needed for colladadom
 use_prebuilt_binary(libxml2)
 
-if (WINDOWS)
-    target_link_libraries( ll::minizip-ng INTERFACE ${ARCH_PREBUILT_DIRS_RELEASE}/minizip.lib )
-else()
-    target_link_libraries( ll::minizip-ng INTERFACE ${ARCH_PREBUILT_DIRS_RELEASE}/libminizip.a )
-endif()
+# Use find_library for cross-platform support (Apple Silicon compat).
+# Misfitz fix: use the same colladadom + boost pattern across all platforms
+# instead of platform-specific blocks that could miss ll::boost on Windows.
+find_library(MINIZIPNG_LIBRARY
+    NAMES
+    minizip.lib
+    libminizip.a
+    PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
+target_link_libraries(ll::minizip-ng INTERFACE ${MINIZIPNG_LIBRARY})
+
+find_library(LIBXML2_LIBRARY
+    NAMES
+    libxml2.lib
+    libxml2.a
+    PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
+target_link_libraries(ll::libxml INTERFACE ${LIBXML2_LIBRARY})
 
 if (WINDOWS)
-    target_link_libraries( ll::libxml INTERFACE ${ARCH_PREBUILT_DIRS_RELEASE}/libxml2.lib Bcrypt.lib)
-else()
-    target_link_libraries( ll::libxml INTERFACE ${ARCH_PREBUILT_DIRS_RELEASE}/libxml2.a)
+    target_link_libraries( ll::libxml INTERFACE Bcrypt.lib)
 endif()
 
 target_include_directories( ll::colladadom SYSTEM INTERFACE
         ${LIBS_PREBUILT_DIR}/include/collada
         ${LIBS_PREBUILT_DIR}/include/collada/1.4
         )
-if (WINDOWS)
-    # Colladadom prebuilt lib references boost::filesystem::detail::path_traits::convert.
-    # On Windows, use FetchContent Boost::filesystem (1.87) directly at the
-    # colladadom level so the linker resolves these symbols in the right order.
-    target_link_libraries(ll::colladadom INTERFACE
-        ${ARCH_PREBUILT_DIRS_RELEASE}/libcollada14dom23-s.lib
-        Boost::filesystem
-        ll::libxml
-        ll::minizip-ng )
-elseif (DARWIN)
-    target_link_libraries(ll::colladadom INTERFACE collada14dom ll::boost ll::libxml ll::minizip-ng)
-elseif (LINUX)
-    # GLIB uses pcre, so we need to keep it for Linux
-    add_library( ll::pcre INTERFACE IMPORTED )
-    use_prebuilt_binary(pcre)
-    target_link_libraries( ll::pcre INTERFACE pcrecpp pcre )
 
-    target_link_libraries(ll::colladadom INTERFACE collada14dom ll::boost ll::libxml ll::minizip-ng)
-endif()
+find_library(COLLADADOM_LIBRARY
+    NAMES
+    libcollada14dom23-s.lib
+    collada14dom
+    PATHS "${ARCH_PREBUILT_DIRS_RELEASE}" REQUIRED NO_DEFAULT_PATH)
+
+# ll::boost is required on all platforms because the prebuilt colladadom
+# references boost::filesystem symbols (path_traits::convert, etc.).
+target_link_libraries(ll::colladadom INTERFACE ${COLLADADOM_LIBRARY} ll::boost ll::libxml ll::minizip-ng)
+
+# <FS> GLIB uses pcre, so we need to keep it for Linux builds
+if (LINUX)
+   add_library( ll::pcre INTERFACE IMPORTED )
+   use_prebuilt_binary(pcre)
+   target_link_libraries( ll::pcre INTERFACE pcrecpp pcre )
+endif ()
+# </FS>
