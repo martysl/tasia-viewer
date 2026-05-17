@@ -30,6 +30,18 @@ Windows CI build is the active task on `windows-build-test` branch.
 **Windows reaches final `firestorm-bin.exe` link but fails resolving Boost
 filesystem symbols from `libcollada14dom23-s.lib`.**
 
+### Root Cause (real one this time)
+**ABI mismatch**: prebuilt `libcollada14dom23-s.lib` was compiled against
+**Boost 1.86**, but FetchContent built **Boost 1.87**. The `path_traits::convert`
+symbol was renamed/removed in Boost 1.87's filesystem ABI changes.
+
+### Fix (build #52 and #53)
+- `indra/cmake/Boost.cmake`: use **Boost 1.86.0** on Windows (via FetchContent)
+  to match the prebuilt colladadom. Keep 1.87.0 on other platforms.
+- `indra/cmake/LLPrimitive.cmake`: adopted Misfitz fix (commit 7bba6b835f) —
+  use `find_library` + link `ll::boost` on **all** platforms (was missing on
+  Windows).
+
 ### Root Cause
 `vswhere` (VS instance discovery) is **broken** on GitHub Actions `windows-2022` runner.
 CMake uses vswhere when using `-G "Visual Studio 17 2022"`, and if vswhere fails,
@@ -123,21 +135,14 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 - **Never push Windows viewer code to `linux`**. Only CI workflow files (`build-windows.yml`) may live on `linux` for dispatch purposes.
 
 ## Latest Windows Build
-- Build #48 (25996616402): ❌ boost filesystem unresolved from colladadom.
-- Build #49 (25998856384): ❌ same error — `ll::boost` via FetchContent Boost 1.87 doesn't export `path_traits::convert` (ABI changed).
-- Build #50 (26000378886): ❌ `libboost_filesystem-vc143-mt-x64-1_86.lib` not found (autobuild skips boost since FetchContent replaces it).
-- Build #51 (26000598938): 🚀 running — link `Boost::filesystem` directly (no ll::boost wrapper).
-- Workflow checks out `ref: windows-build-test` so code comes from the right branch.
-- Produces ZIP artifact `Tasia-Viewer-Windows-FMOD.zip`.
+- Build #48 (25996616402): ❌ boost filesystem unresolved.
+- Build #49 (25998856384): ❌ same — `ll::boost` in colladadom didn't help (1.87 vs 1.86 ABI).
+- Build #50 (26000378886): ❌ prebuilt boost 1.86 lib not found on runner.
+- Build #51 (26000598938): ❌ Boost::filesystem direct link still 1.87 ABI.
+- Build #52 (26000669561): ❌ same — Misfitz's `find_library` + `ll::boost` fix alone not enough.
+- Build #53 (26002326106): 🚀 running — **Boost 1.86.0 on Windows** + Misfitz cmake fix.
 
 ## Next Steps
-1. ✅ Auto-detect Ninja on Windows committed & pushed
-2. ✅ Build #43 verified CMake configure succeeds with Ninja
-3. ✅ Build #44 verified llwebrtc byproduct fix works
-4. ✅ Build #45 verified MSQuic `/TP` fix works
-5. ✅ Windows Ninja manifest sharedlibs path fix committed & pushed
-6. ✅ Final link + Windows ZIP artifact fixes committed & pushed
-7. ✅ Build #48 failed — boost filesystem unresolved
-8. ✅ Build #49 failed — same, ABI mismatch (Boost 1.87 vs 1.86 colladadom)
-9. ✅ Build #50 triggered — direct link against prebuilt Boost 1.86 filesystem
-10. ⏳ Wait for build #50 result — verify ZIP artifact
+1-6. ✅ All Ninja/build fixes applied.
+7-11. ✅ All boost ABI attempts documented.
+12. ⏳ **Build #53** with Boost 1.86 + unified cmake — verify link succeeds.
