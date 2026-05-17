@@ -7,8 +7,8 @@ Windows CI build is the active task on `windows-build-test` branch.
 ## Build Status
 | Platform | Build | Runtime |
 |----------|-------|---------|
-| Linux    | ✅ v0.1.0 | ✅ (basic login) |
-| Windows  | ❌ MSVC compiler not found | - |
+| Linux    | ✅ v8.0.1-39 | ✅ (basic login) |
+| Windows  | ❌ Ninja build: missing llwebrtc.dll byproduct (build 25992060682) | - |
 | macOS    | ⏳ blocked on Windows first | - |
 
 ## Completed Milestones
@@ -16,33 +16,57 @@ Windows CI build is the active task on `windows-build-test` branch.
 - FMOD integration working (private deps pipeline)
 - KDU removed
 - Second Life grids removed from bundled defaults
-- release branch created
 - GitHub Actions: manual-only workflow, single-platform
 - Grid Lock added (I-Grid Beta included, SL blocked programmatically)
 - Version bumped to 8.0.1 (display version with GitHub run number)
 - TasiaFeed and TasiaBugReport backend integration (PHP + DB)
 - BugSplat removed, crash reporter reconfigured to generic HTTP endpoint
+- TasiaFeed crash fix: removed manual draw() call, use refreshControls()
+- TasiaFeed upload URL fix: added .php extension
+- TasiaFeed upload HTTP fix: postJsonAndSuspend instead of postAndSuspend
+- TasiaFeed upload response fix: read parsed JSON keys directly
 
 ## Current Windows Blocker
-**CMake cannot find C/CXX compiler** on GitHub Actions `windows-2022` runner.
+**Ninja does not know how to produce `sharedlibs/llwebrtc.dll`** during the
+Windows build.
 
-### Root Cause (refined)
-The problem is **not** `load_vsvars` — the error occurs whether `load_vsvars` runs or is skipped.
-- `ilammy/msvc-dev-cmd@v1` log shows: `Not found with vswhere` — `vswhere` (VS instance discovery) is **broken** on this runner.
-- CMake uses vswhere to find the VS instance when using `-G "Visual Studio 17 2022"`.
-- If vswhere fails, CMake cannot identify the compiler even though the MSVC env vars are set.
+### Root Cause
+`vswhere` (VS instance discovery) is **broken** on GitHub Actions `windows-2022` runner.
+CMake uses vswhere when using `-G "Visual Studio 17 2022"`, and if vswhere fails,
+CMake cannot identify the compiler.
 
-### Fixes applied so far
+### Solution: Ninja generator
+Switched to **Ninja** generator on Windows CI. Ninja does not require vswhere —
+it finds `cl.exe` from PATH (set by `ilammy/msvc-dev-cmd@v1`).
 
-**Fix 1 - Guard fix**: Changed `load_vsvars` guard from `VCToolsInstallDir` to `VSINSTALLDIR` (build `25973540095` confirmed it works).
+### Problem: `--ninja` passthrough broken
+`autobuild configure` consumes the `--ninja` flag and does **not** forward it to
+`configure_firestorm.sh`. Build log showed `NINJA: false` even though `--ninja`
+was passed in the workflow.
 
-**Fix 2 - PATH save/restore**: `autobuild source_environment` may remove MSVC bin directories from PATH. Added save/restore of `cl.exe` path.
+### Fix applied (commit 79dee2e63c)
+Auto-detect Ninja on Windows: if `TARGET_PLATFORM == "windows"` and `ninja`
+is available on PATH, automatically enable Ninja generator. This bypasses the
+autobuild passthrough issue.
 
-**Fix 3 - CMAKE_GENERATOR_INSTANCE**: Set the environment variable `CMAKE_GENERATOR_INSTANCE` to `VSINSTALLDIR` to bypass broken vswhere and tell CMake directly which VS instance to use.
+### New build result (build 25992060682 / #43)
+- ✅ CMake configure succeeded with Ninja.
+- ✅ Build entered Ninja phase.
+- ❌ Failed at: `ninja: error: 'sharedlibs/llwebrtc.dll', needed by
+  'newview/copy_touched.bat', missing and no known rule to make it`.
 
-### Debug findings
-- Build `25973424632` debug logging: `VCToolsInstallDir` empty at entry (not set by `msvc-dev-cmd`), `VSINSTALLDIR` and `VCINSTALLDIR` set, `cl.exe` in PATH.
-- Build `25973540095`: Guard correctly skips `load_vsvars` but CMake still fails with same error.
+### Fix applied for build #43 failure
+Declared `${SHARED_LIB_STAGING_DIR}/llwebrtc.dll` as a Windows byproduct of the
+`llwebrtc` POST_BUILD copy command in `indra/llwebrtc/CMakeLists.txt`, so Ninja
+can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 
-### Next
-Push fixes 2+3, trigger Windows build, verify CMake finds C/CXX compiler.
+### Previous abandoned fixes
+- `CMAKE_GENERATOR_INSTANCE` env var: CMake evaluates it before `-G` is
+  processed, so it can't fix vswhere-based detection for VS generators.
+
+## Next Steps
+1. ✅ Auto-detect Ninja on Windows committed & pushed
+2. ✅ Build #43 verified CMake configure succeeds with Ninja
+3. ⏳ Commit/push llwebrtc Ninja byproduct fix
+4. ⏳ Trigger new Windows CI build
+5. ⏳ Verify entire Windows build completes
