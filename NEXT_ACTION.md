@@ -17,12 +17,14 @@
   - llwebrtc DLL as Ninja byproduct ✅
   - MSQuic C files no longer forced as C++ ✅
   - Viewer manifest Ninja single-config sharedlibs fallback ✅
-  - Explicit `ll::boost` link for final target ✅
+  - ✅ ~~Explicit `ll::boost` link for final target~~ → **Real fix**: `ll::boost` in `ll::colladadom`
   - MSVC `/MAP` flag syntax fixed ✅
   - ZIP artifact instead of installer ✅
 - **Workflow**: `build-windows.yml` lives on `linux` branch (for dispatch), but
   checks out `ref: windows-build-test` so build uses Windows code.
-- **Next**: Run #25996616402 — waiting for build result. Verify ZIP artifact.
+- **Build #48 (25996616402)**: ❌ succeeded 1638/1640 objects, failed at final link (boost filesystem)
+- **Build #49 (25998856384)**: 🚀 running with real fix — `ll::boost` added to `ll::colladadom` in `LLPrimitive.cmake`
+- **Next**: Wait for build #49 result. Verify ZIP artifact.
 
 ## Branch Rules (set in stone)
 - **Linux builds** → `linux` branch, `build-tasia.yml` with `target=linux`.

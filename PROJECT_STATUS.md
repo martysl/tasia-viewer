@@ -8,7 +8,7 @@ Windows CI build is the active task on `windows-build-test` branch.
 | Platform | Build | Runtime |
 |----------|-------|---------|
 | Linux    | ✅ v8.0.1-39 | ✅ (basic login) |
-| Windows  | ❌ Final link: Boost filesystem unresolved from colladadom (build 25993589573) | - |
+| Windows  | ❌ Final link: Boost filesystem unresolved from colladadom (#48 = 25996616402, #49 = 25998856384 running) | - |
 | macOS    | ⏳ blocked on Windows first | - |
 
 ## Completed Milestones
@@ -90,12 +90,28 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
   referenced by `libcollada14dom23-s.lib`.
 - Warning found: malformed `/MAP"secondlife-bin.MAP"` becomes `/MAPsecondlife-bin.MAP` under Ninja/MSVC.
 
-### Fix in progress for build #46 failure
+### Fix applied for build #46 failure (was not enough)
 - `indra/newview/CMakeLists.txt`: explicitly link `ll::boost` into final viewer
   target so Boost filesystem is present after colladadom.
 - Fixed MSVC release map flag to `/MAP:secondlife-bin.MAP`.
 - Windows CI now disables installer packaging and creates a ZIP from
   `LOCAL_DIST_DIR` unpacked output instead.
+
+### New build result (build #48 = 25996616402)
+- ✅ Build reached 1638/1640 objects — almost complete!
+- ❌ Failed at final link: same `boost::filesystem::detail::path_traits::convert` 
+  unresolved symbols from `libcollada14dom23-s.lib`.
+- Reason: `ll::boost` in viewer target didn't solve it because the dependency
+  must be declared at the `ll::colladadom` level.
+
+### Real root cause found (commit 7d2133b3ab)
+- `indra/cmake/LLPrimitive.cmake` line 44: on Windows, `ll::colladadom` was
+  missing `ll::boost` in its INTERFACE link libraries. Linux and Darwin had it.
+- The prebuilt `libcollada14dom23-s.lib` references `boost::filesystem` symbols,
+  so `ll::boost` must be linked at the `ll::colladadom` level so CMake orders 
+  dependencies correctly.
+- **Fix**: added `ll::boost` to the Windows `target_link_libraries` for
+  `ll::colladadom`, matching Linux and Darwin.
 
 ### Previous abandoned fixes
 - `CMAKE_GENERATOR_INSTANCE` env var: CMake evaluates it before `-G` is
@@ -107,7 +123,8 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 - **Never push Windows viewer code to `linux`**. Only CI workflow files (`build-windows.yml`) may live on `linux` for dispatch purposes.
 
 ## Latest Windows Build
-- Build #48 (25996616402) triggered from `linux` branch via `build-windows.yml`.
+- Build #48 (25996616402): ❌ boost filesystem unresolved from colladadom.
+- Build #49 (25998856384): 🚀 running with the real fix (ll::boost in ll::colladadom).
 - Workflow checks out `ref: windows-build-test` so code comes from the right branch.
 - Produces ZIP artifact `Tasia-Viewer-Windows-FMOD.zip`.
 
@@ -118,5 +135,6 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 4. ✅ Build #45 verified MSQuic `/TP` fix works
 5. ✅ Windows Ninja manifest sharedlibs path fix committed & pushed
 6. ✅ Final link + Windows ZIP artifact fixes committed & pushed
-7. ✅ Build #48 triggered — waiting for result
-8. ⏳ Verify ZIP artifact is produced
+7. ✅ Build #48 failed — boost filesystem unresolved
+8. ✅ Build #49 triggered with real fix (ll::boost in ll::colladadom)
+9. ⏳ Wait for build #49 result — verify ZIP artifact
