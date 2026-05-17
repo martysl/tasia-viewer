@@ -23,8 +23,11 @@
 - **Workflow**: `build-windows.yml` lives on `linux` branch (for dispatch), but
   checks out `ref: windows-build-test` so build uses Windows code.
 - **Build #48 (25996616402)**: ❌ succeeded 1638/1640 objects, failed at final link (boost filesystem)
-- **Build #49 (25998856384)**: 🚀 running with real fix — `ll::boost` added to `ll::colladadom` in `LLPrimitive.cmake`
-- **Next**: Wait for build #49 result. Verify ZIP artifact.
+- **Build #49 (25998856384)**: ❌ same error — `ll::boost` via FetchContent Boost 1.87 doesn't help (ABI changed)
+- **Real root cause**: colladadom prebuilt `libcollada14dom23-s.lib` compiled against **Boost 1.86**, but we link **Boost 1.87** via FetchContent. `boost::filesystem::detail::path_traits::convert` was changed/removed in 1.87.
+- **Real fix**: Link `libboost_filesystem-vc143-mt-x64-1_86.lib` (prebuilt 1.86) directly into `ll::colladadom` on Windows, not the FetchContent 1.87 version.
+- **Build #50 (26000378886)**: 🚀 running with real fix — prebuilt Boost 1.86 filesystem linked directly
+- **Next**: Wait for build #50 result. Verify ZIP artifact.
 
 ## Branch Rules (set in stone)
 - **Linux builds** → `linux` branch, `build-tasia.yml` with `target=linux`.

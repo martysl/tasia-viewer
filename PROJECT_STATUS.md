@@ -124,7 +124,8 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 
 ## Latest Windows Build
 - Build #48 (25996616402): ❌ boost filesystem unresolved from colladadom.
-- Build #49 (25998856384): 🚀 running with the real fix (ll::boost in ll::colladadom).
+- Build #49 (25998856384): ❌ same error — `ll::boost` via FetchContent Boost 1.87 doesn't export `path_traits::convert` (ABI changed).
+- Build #50 (26000378886): 🚀 running — direct link against prebuilt Boost 1.86 filesystem lib.
 - Workflow checks out `ref: windows-build-test` so code comes from the right branch.
 - Produces ZIP artifact `Tasia-Viewer-Windows-FMOD.zip`.
 
@@ -136,5 +137,6 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 5. ✅ Windows Ninja manifest sharedlibs path fix committed & pushed
 6. ✅ Final link + Windows ZIP artifact fixes committed & pushed
 7. ✅ Build #48 failed — boost filesystem unresolved
-8. ✅ Build #49 triggered with real fix (ll::boost in ll::colladadom)
-9. ⏳ Wait for build #49 result — verify ZIP artifact
+8. ✅ Build #49 failed — same, ABI mismatch (Boost 1.87 vs 1.86 colladadom)
+9. ✅ Build #50 triggered — direct link against prebuilt Boost 1.86 filesystem
+10. ⏳ Wait for build #50 result — verify ZIP artifact
