@@ -564,13 +564,6 @@ if [ $WANTS_CONFIG -eq $TRUE ] ; then
 
     if [ $WANTS_NINJA -eq $TRUE ] ; then
         TARGET="Ninja"
-        # When using Ninja on Windows, CMake needs explicit compiler paths
-        # since vswhere may be broken (common on GitHub Actions runners).
-        # cl.exe is in PATH from msvc-dev-cmd / load_vsvars.
-        if [ $TARGET_PLATFORM == "windows" ] ; then
-            # Force CMake to use MSVC from PATH rather than searching via vswhere
-            CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_C_COMPILER:FILEPATH=cl.exe -DCMAKE_CXX_COMPILER:FILEPATH=cl.exe"
-        fi
     fi
 
     CACHE_OPT=""
@@ -636,18 +629,10 @@ if [ $WANTS_BUILD -eq $TRUE ] ; then
             declare -i BUILD_EXIT=${PIPESTATUS[0]}
         fi
     elif [ $TARGET_PLATFORM == "windows" ] ; then
-        if [ $WANTS_NINJA -eq $TRUE ] ; then
-            if [ "$JOBS" == "0" ]; then
-                JOBS=4
-            fi
-            ninja -j $JOBS 2>&1 | tee -a "$LOG"
-            declare -i BUILD_EXIT=${PIPESTATUS[0]}
-        else
-            msbuild.exe Firestorm.sln -p:Configuration=${BTYPE} -flp:LogFile="logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
-                -flp1:"errorsonly;LogFile=logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
-                -verbosity:normal -toolsversion:Current -p:"VCBuildAdditionalOptions= /incremental"
-            declare -i BUILD_EXIT=$?
-        fi
+        msbuild.exe Firestorm.sln -p:Configuration=${BTYPE} -flp:LogFile="logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
+            -flp1:"errorsonly;LogFile=logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
+            -verbosity:normal -toolsversion:Current -p:"VCBuildAdditionalOptions= /incremental"
+        declare -i BUILD_EXIT=$?
     fi
     # Check the return code of the build command
     if [ $BUILD_EXIT -ne 0 ]; then
