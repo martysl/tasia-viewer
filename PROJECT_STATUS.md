@@ -101,12 +101,22 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 - `CMAKE_GENERATOR_INSTANCE` env var: CMake evaluates it before `-G` is
   processed, so it can't fix vswhere-based detection for VS generators.
 
+## Build Rules (set in stone)
+- **Linux builds** → use `linux` branch. Trigger via `build-tasia.yml` with `target=linux`.
+- **Windows builds** → use `windows-build-test` branch. Trigger via `build-windows.yml` (file lives on `linux` branch for dispatch, but checks out `windows-build-test` code).
+- **Never push Windows viewer code to `linux`**. Only CI workflow files (`build-windows.yml`) may live on `linux` for dispatch purposes.
+
+## Latest Windows Build
+- Build #48 (25996616402) triggered from `linux` branch via `build-windows.yml`.
+- Workflow checks out `ref: windows-build-test` so code comes from the right branch.
+- Produces ZIP artifact `Tasia-Viewer-Windows-FMOD.zip`.
+
 ## Next Steps
 1. ✅ Auto-detect Ninja on Windows committed & pushed
 2. ✅ Build #43 verified CMake configure succeeds with Ninja
 3. ✅ Build #44 verified llwebrtc byproduct fix works
 4. ✅ Build #45 verified MSQuic `/TP` fix works
-5. ⏳ Commit/push Windows Ninja manifest sharedlibs path fix
-6. ⏳ Commit/push final link + Windows ZIP artifact fixes
-7. ⏳ Trigger Windows CI build
+5. ✅ Windows Ninja manifest sharedlibs path fix committed & pushed
+6. ✅ Final link + Windows ZIP artifact fixes committed & pushed
+7. ✅ Build #48 triggered — waiting for result
 8. ⏳ Verify ZIP artifact is produced
