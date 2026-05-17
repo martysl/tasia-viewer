@@ -151,13 +151,12 @@ jobs:
           rm -rf build-vc170-64
 
       - name: Restore Windows build cache
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && inputs.clean_build != 'true'
         id: restore-windows-build-cache
         uses: actions/cache/restore@v4
         with:
           path: |
             build-vc170-64
-            .autobuild-installables
           key: windows-build-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
             windows-build-${{ github.ref_name }}-
@@ -225,6 +224,20 @@ jobs:
           echo "Probe complete. Stopping before full build."
           exit 0
 
+      - name: Verify Boost version for Windows
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "=== Boost version.hpp ==="
+          grep -E "#define BOOST_VERSION|#define BOOST_LIB_VERSION" build-vc170-64/_deps/boost-src/boost/version.hpp
+
+          echo "=== Colladadom lib ==="
+          ls -lah build-vc170-64/packages/lib/release/libcollada14dom23-s.lib
+
+          echo "=== Boost filesystem build dir ==="
+          test -d build-vc170-64/_deps/boost-build/libs/filesystem
+
       - name: Build Windows with FMOD
         if: inputs.probe_only != 'true'
         shell: bash
@@ -269,5 +282,4 @@ jobs:
         with:
           path: |
             build-vc170-64
-            .autobuild-installables
           key: windows-build-${{ github.ref_name }}-${{ github.run_id }}

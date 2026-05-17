@@ -58,7 +58,13 @@ find_library(COLLADADOM_LIBRARY
 
 # ll::boost is required on all platforms because the prebuilt colladadom
 # references boost::filesystem symbols (path_traits::convert, etc.).
-target_link_libraries(ll::colladadom INTERFACE ${COLLADADOM_LIBRARY} ll::boost ll::libxml ll::minizip-ng)
+target_link_libraries(ll::colladadom INTERFACE
+        ${COLLADADOM_LIBRARY}
+        Boost::filesystem
+        Boost::system
+        ll::boost
+        ll::libxml
+        ll::minizip-ng)
 
 # <FS> GLIB uses pcre, so we need to keep it for Linux builds
 if (LINUX)
