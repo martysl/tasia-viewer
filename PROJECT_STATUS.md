@@ -125,7 +125,8 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 ## Latest Windows Build
 - Build #48 (25996616402): ❌ boost filesystem unresolved from colladadom.
 - Build #49 (25998856384): ❌ same error — `ll::boost` via FetchContent Boost 1.87 doesn't export `path_traits::convert` (ABI changed).
-- Build #50 (26000378886): 🚀 running — direct link against prebuilt Boost 1.86 filesystem lib.
+- Build #50 (26000378886): ❌ `libboost_filesystem-vc143-mt-x64-1_86.lib` not found (autobuild skips boost since FetchContent replaces it).
+- Build #51 (26000598938): 🚀 running — link `Boost::filesystem` directly (no ll::boost wrapper).
 - Workflow checks out `ref: windows-build-test` so code comes from the right branch.
 - Produces ZIP artifact `Tasia-Viewer-Windows-FMOD.zip`.
 
