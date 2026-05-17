@@ -1,6 +1,6 @@
 name: Build Tasia Viewer
 
-on:
+'on':
   workflow_dispatch:
     inputs:
       target:
