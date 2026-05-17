@@ -3,7 +3,7 @@
 ## Current
 1. ✅ Linux build works (v8.0.1-39 tagged).
 2. ✅ Grid lock implemented, version bumped to 8.0.1.
-3. ❌ **Windows CI build — fix Windows Ninja/MSQuic compile.** ← NOW
+3. ❌ **Windows CI build — fix Windows Ninja manifest copy.** ← NOW
 4. ⏳ macOS build (blocked on Windows).
 
 ## Windows blocker
@@ -18,13 +18,15 @@
   Ninja phase.
 - **Build #44 result** ✅ llwebrtc byproduct issue fixed; build progressed to
   real C/C++ compilation.
-- **New blocker** ❌ MSQuic `.c` source is compiled with `/TP` as C++, causing
-  C++ conversion/syntax errors.
-- **Fix in progress**: scope `/TP` to C++ sources only in
-  `indra/cmake/00-Common.cmake`.
+- **Build #45 result** ✅ MSQuic `.c` compile issue fixed; build progressed to
+  viewer manifest copy.
+- **New blocker** ❌ `viewer_manifest.py` searches `sharedlibs/Release`, but
+  single-config Ninja stages DLLs in `sharedlibs/`.
+- **Fix in progress**: add single-config Ninja sharedlibs fallback in
+  `indra/newview/viewer_manifest.py`.
 - **Workflow isolation in progress**: add `.github/workflows/build-windows.yml`
   so Windows CI is platform-specific on `windows-build-test`.
-- **Next**: Commit/push Windows-only workflow + `/TP` fix, trigger Windows CI.
+- **Next**: Commit/push manifest path fix, trigger Windows CI.
 
 ## TasiaFeed (all fixed, verified in Linux pre-release v8.0.1-39)
 - ✅ Upload URL: added `.php` extension

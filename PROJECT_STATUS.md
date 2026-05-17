@@ -8,7 +8,7 @@ Windows CI build is the active task on `windows-build-test` branch.
 | Platform | Build | Runtime |
 |----------|-------|---------|
 | Linux    | ✅ v8.0.1-39 | ✅ (basic login) |
-| Windows  | ❌ Ninja build: MSQuic C files compiled as C++ (build 25992480046) | - |
+| Windows  | ❌ Ninja manifest copy: sharedlibs path mismatch (build 25992846062) | - |
 | macOS    | ⏳ blocked on Windows first | - |
 
 ## Completed Milestones
@@ -27,8 +27,8 @@ Windows CI build is the active task on `windows-build-test` branch.
 - TasiaFeed upload response fix: read parsed JSON keys directly
 
 ## Current Windows Blocker
-**MSQuic C files are compiled as C++ on Windows Ninja builds** because global
-Windows compile options force `/TP` for every source language.
+**Windows Ninja builds stage shared DLLs in `sharedlibs/`, but
+`viewer_manifest.py` searches `sharedlibs/Release`.**
 
 ### Root Cause
 `vswhere` (VS instance discovery) is **broken** on GitHub Actions `windows-2022` runner.
@@ -72,6 +72,18 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 - `.github/workflows/build-windows.yml`: added Windows-only workflow on
   `windows-build-test` to isolate Windows CI from Linux CI.
 
+### New build result (build 25992846062 / #45)
+- ✅ MSQuic C compile issue fixed; build progressed further.
+- ✅ `llwebrtc.dll` linked successfully.
+- ❌ Failed during `viewer_manifest.py --actions=copy` because shared DLLs were
+  staged in `build-vc170-64/sharedlibs/`, while the manifest searched
+  `build-vc170-64/sharedlibs/Release`.
+
+### Fix in progress for build #45 failure
+- `indra/newview/viewer_manifest.py`: when `configuration` is `.` (single-config
+  Ninja) and `sharedlibs/<buildtype>` does not exist, use `sharedlibs/` as the
+  staging path.
+
 ### Previous abandoned fixes
 - `CMAKE_GENERATOR_INSTANCE` env var: CMake evaluates it before `-G` is
   processed, so it can't fix vswhere-based detection for VS generators.
@@ -80,6 +92,7 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 1. ✅ Auto-detect Ninja on Windows committed & pushed
 2. ✅ Build #43 verified CMake configure succeeds with Ninja
 3. ✅ Build #44 verified llwebrtc byproduct fix works
-4. ⏳ Commit/push Windows-only workflow + MSQuic `/TP` fix
-5. ⏳ Trigger `build-windows.yml`
-6. ⏳ Verify entire Windows build completes
+4. ✅ Build #45 verified MSQuic `/TP` fix works
+5. ⏳ Commit/push Windows Ninja manifest sharedlibs path fix
+6. ⏳ Trigger Windows CI build
+7. ⏳ Verify entire Windows build completes

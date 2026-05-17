@@ -670,9 +670,14 @@ class Windows_x86_64_Manifest(ViewerManifest):
                                         'llplugin', 'slplugin', self.args['configuration']),
                            "slplugin.exe")
 
+        sharedlibs_path = os.path.join(self.args['build'], os.pardir,
+                                       'sharedlibs', self.args['buildtype'])
+        if self.args['configuration'] in ('', '.') and not os.path.isdir(sharedlibs_path):
+            sharedlibs_path = os.path.join(self.args['build'], os.pardir,
+                                           'sharedlibs')
+
         # Get shared libs from the shared libs staging directory
-        with self.prefix(src=os.path.join(self.args['build'], os.pardir,
-                                          'sharedlibs', self.args['buildtype'])):
+        with self.prefix(src=sharedlibs_path):
             # WebRTC libraries
             for libfile in (
                     'llwebrtc.dll',
@@ -784,8 +789,7 @@ class Windows_x86_64_Manifest(ViewerManifest):
                 self.path("v8_context_snapshot.bin")
 
             # MSVC DLLs needed for CEF and have to be in same directory as plugin
-            with self.prefix(src=os.path.join(self.args['build'], os.pardir,
-                                              'sharedlibs', self.args['buildtype'])):
+            with self.prefix(src=sharedlibs_path):
                 self.path("msvcp140.dll")
                 self.path("vcruntime140.dll")
                 self.path_optional("vcruntime140_1.dll")
