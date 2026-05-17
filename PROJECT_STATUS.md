@@ -8,7 +8,7 @@ Windows CI build is the active task on `windows-build-test` branch.
 | Platform | Build | Runtime |
 |----------|-------|---------|
 | Linux    | ✅ v8.0.1-39 | ✅ (basic login) |
-| Windows  | ❌ Ninja manifest copy: sharedlibs path mismatch (build 25992846062) | - |
+| Windows  | ❌ Final link: Boost filesystem unresolved from colladadom (build 25993589573) | - |
 | macOS    | ⏳ blocked on Windows first | - |
 
 ## Completed Milestones
@@ -27,8 +27,8 @@ Windows CI build is the active task on `windows-build-test` branch.
 - TasiaFeed upload response fix: read parsed JSON keys directly
 
 ## Current Windows Blocker
-**Windows Ninja builds stage shared DLLs in `sharedlibs/`, but
-`viewer_manifest.py` searches `sharedlibs/Release`.**
+**Windows reaches final `firestorm-bin.exe` link but fails resolving Boost
+filesystem symbols from `libcollada14dom23-s.lib`.**
 
 ### Root Cause
 `vswhere` (VS instance discovery) is **broken** on GitHub Actions `windows-2022` runner.
@@ -84,6 +84,19 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
   Ninja) and `sharedlibs/<buildtype>` does not exist, use `sharedlibs/` as the
   staging path.
 
+### New build result (build 25993589573 / #46)
+- ✅ Manifest/sharedlibs fix worked; build progressed to final executable link.
+- ❌ Failed linking `firestorm-bin.exe` with unresolved Boost filesystem symbols
+  referenced by `libcollada14dom23-s.lib`.
+- Warning found: malformed `/MAP"secondlife-bin.MAP"` becomes `/MAPsecondlife-bin.MAP` under Ninja/MSVC.
+
+### Fix in progress for build #46 failure
+- `indra/newview/CMakeLists.txt`: explicitly link `ll::boost` into final viewer
+  target so Boost filesystem is present after colladadom.
+- Fixed MSVC release map flag to `/MAP:secondlife-bin.MAP`.
+- Windows CI now disables installer packaging and creates a ZIP from
+  `LOCAL_DIST_DIR` unpacked output instead.
+
 ### Previous abandoned fixes
 - `CMAKE_GENERATOR_INSTANCE` env var: CMake evaluates it before `-G` is
   processed, so it can't fix vswhere-based detection for VS generators.
@@ -94,5 +107,6 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 3. ✅ Build #44 verified llwebrtc byproduct fix works
 4. ✅ Build #45 verified MSQuic `/TP` fix works
 5. ⏳ Commit/push Windows Ninja manifest sharedlibs path fix
-6. ⏳ Trigger Windows CI build
-7. ⏳ Verify entire Windows build completes
+6. ⏳ Commit/push final link + Windows ZIP artifact fixes
+7. ⏳ Trigger Windows CI build
+8. ⏳ Verify ZIP artifact is produced

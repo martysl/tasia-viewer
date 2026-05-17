@@ -2280,7 +2280,7 @@ if (WINDOWS)
         # *TODO -reenable this once we get server usage sorted out
         LINK_FLAGS "/debug /NODEFAULTLIB:LIBCMT /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /NOEXP /NOIMPLIB"
         LINK_FLAGS_DEBUG "/NODEFAULTLIB:\"LIBCMT;LIBCMTD;MSVCRT\" /INCREMENTAL:NO /LARGEADDRESSAWARE /NOEXP /NOIMPLIB"
-        LINK_FLAGS_RELEASE "/FORCE:MULTIPLE /MAP\"secondlife-bin.MAP\" /OPT:REF /LARGEADDRESSAWARE /NOEXP /NOIMPLIB"
+        LINK_FLAGS_RELEASE "/FORCE:MULTIPLE /MAP:secondlife-bin.MAP /OPT:REF /LARGEADDRESSAWARE /NOEXP /NOIMPLIB"
         )
     target_compile_options(${VIEWER_BINARY_NAME} PRIVATE /bigobj)
 
@@ -2408,7 +2408,7 @@ if (WINDOWS)
             --build=${CMAKE_CURRENT_BINARY_DIR}
             --buildtype=$<IF:$<BOOL:${LL_GENERATOR_IS_MULTI_CONFIG}>,$<CONFIG>,${CMAKE_BUILD_TYPE}>
             "--channel=${VIEWER_CHANNEL}"
-            --configuration=$<CONFIG>
+            --configuration=$<IF:$<BOOL:${LL_GENERATOR_IS_MULTI_CONFIG}>,$<CONFIG>,.>
             --dest=${LOCAL_DIST_DIR}
             --grid=${GRID}
             --source=${CMAKE_CURRENT_SOURCE_DIR}
@@ -2574,6 +2574,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
         ll::openxr
         fs::glod # <FS:Beq/> restore GLOD dependencies
         fs::discord # <FS:Ansariel> Discord  support
+        ll::boost
         )
 
 if( TARGET ll::intel_memops )
@@ -3104,4 +3105,3 @@ if (LL_TESTS)
 endif (LL_TESTS)
 
 check_message_template(${VIEWER_BINARY_NAME})
-

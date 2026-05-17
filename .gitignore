@@ -140,5 +140,9 @@ tokens.txt
 *.token
 *.secret
 secrets/
+server/tasiafeed/config.local.php
+server/tasiafeed/feed.sqlite*
+server/tasiafeed/uploads/
+server/tasiafeed/thumbs/
 # private/proprietary dependencies
 private-deps/

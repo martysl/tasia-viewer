@@ -29,6 +29,13 @@ if (empty($image_base64)) {
     jsonResponse(['success' => false, 'message' => 'Missing image data'], 400);
 }
 
+if (is_string($image_base64) && strpos($image_base64, 'data:image/') === 0) {
+    $commaPos = strpos($image_base64, ',');
+    if ($commaPos !== false) {
+        $image_base64 = substr($image_base64, $commaPos + 1);
+    }
+}
+
 $image_data = base64_decode($image_base64, true);
 if ($image_data === false || $image_data === '') {
     jsonResponse(['success' => false, 'message' => 'Invalid base64 image data'], 400);
@@ -78,7 +85,25 @@ foreach ([$full_dir, $thumb_dir] as $d) {
 }
 
 // ---------- Save image ----------
+$db = getDB();
 $token = generateToken();
+$ownerToken = generateOwnerToken();
+for ($i = 0; $i < 5; $i++) {
+    $check = $db->prepare('SELECT 1 FROM posts WHERE token = :token LIMIT 1');
+    $check->execute([':token' => $token]);
+    if (!$check->fetchColumn()) {
+        break;
+    }
+    $token = generateToken();
+}
+for ($i = 0; $i < 5; $i++) {
+    $check = $db->prepare('SELECT 1 FROM posts WHERE owner_token = :owner_token LIMIT 1');
+    $check->execute([':owner_token' => $ownerToken]);
+    if (!$check->fetchColumn()) {
+        break;
+    }
+    $ownerToken = generateOwnerToken();
+}
 $filename = $token . '.' . $ext;
 $thumbname = $token . '_thumb.' . $ext;
 
@@ -91,21 +116,50 @@ if (file_put_contents($filepath, $image_data) === false) {
 chmod($filepath, 0644);
 
 // ---------- Generate thumbnail ----------
-createThumbnail($filepath, $thumbpath, $mime);
+if (!createThumbnail($filepath, $thumbpath, $mime)) {
+    @unlink($filepath);
+    jsonResponse(['success' => false, 'message' => 'Server error: cannot create thumbnail'], 500);
+}
 chmod($thumbpath, 0644);
 
+// ---------- Optional WebDAV mirror ----------
+$storageBackend = getSetting($db, 'storage_backend', 'local');
+if ($storageBackend === 'webdav') {
+    $webdavUrl = getSetting($db, 'webdav_url');
+    $webdavUsername = getSetting($db, 'webdav_username');
+    $webdavPassword = getSetting($db, 'webdav_password');
+
+    if ($webdavUrl === '' || $webdavUsername === '' || $webdavPassword === '') {
+        @unlink($filepath);
+        @unlink($thumbpath);
+        jsonResponse(['success' => false, 'message' => 'WebDAV storage is enabled but not fully configured'], 500);
+    }
+
+    $webdavBase = rtrim($webdavUrl, '/');
+    webdavEnsureDatedCollection($webdavBase . '/uploads', $date_dir, $webdavUsername, $webdavPassword);
+    webdavEnsureDatedCollection($webdavBase . '/thumbs', $date_dir, $webdavUsername, $webdavPassword);
+
+    $remoteUpload = $webdavBase . '/uploads/' . $date_dir . '/' . $filename;
+    $remoteThumb = $webdavBase . '/thumbs/' . $date_dir . '/' . $thumbname;
+    if (!webdavPut($remoteUpload, $filepath, $webdavUsername, $webdavPassword) ||
+        !webdavPut($remoteThumb, $thumbpath, $webdavUsername, $webdavPassword)) {
+        @unlink($filepath);
+        @unlink($thumbpath);
+        jsonResponse(['success' => false, 'message' => 'Server error: WebDAV upload failed'], 502);
+    }
+}
+
 // ---------- Store metadata ----------
-$db = getDB();
 $stmt = $db->prepare('
     INSERT INTO posts
         (token, filename, thumbname, title, description, visibility, maturity,
          avatar_name, grid_name, region_name, position,
-         viewer_ver, commit_sha, build_num, user_uuid,
+         viewer_ver, commit_sha, build_num, user_uuid, owner_token,
          ip_addr, user_agent)
     VALUES
         (:token, :filename, :thumbname, :title, :description, :visibility, :maturity,
          :avatar_name, :grid_name, :region_name, :position,
-         :viewer_ver, :commit_sha, :build_num, :user_uuid,
+         :viewer_ver, :commit_sha, :build_num, :user_uuid, :owner_token,
          :ip_addr, :user_agent)
 ');
 
@@ -115,7 +169,7 @@ $stmt->execute([
     ':thumbname'   => $date_dir . '/' . $thumbname,
     ':title'       => mb_substr(trim((string)($body['title'] ?? '')), 0, 255),
     ':description' => mb_substr(trim((string)($body['description'] ?? '')), 0, 1000),
-    ':visibility'  => in_array($body['visibility'] ?? '', [VISIBILITY_PUBLIC, VISIBILITY_UNLISTED], true) ? $body['visibility'] : VISIBILITY_PUBLIC,
+    ':visibility'  => in_array($body['visibility'] ?? '', [VISIBILITY_PUBLIC, VISIBILITY_UNLISTED, VISIBILITY_PRIVATE], true) ? $body['visibility'] : VISIBILITY_PUBLIC,
     ':maturity'    => in_array($body['maturity'] ?? '', ['general', 'moderate', 'restricted'], true) ? $body['maturity'] : 'general',
     ':avatar_name' => mb_substr(trim((string)($body['avatar_name'] ?? '')), 0, 255),
     ':grid_name'   => mb_substr(trim((string)($body['grid_name'] ?? '')), 0, 255),
@@ -125,6 +179,7 @@ $stmt->execute([
     ':commit_sha'  => mb_substr(trim((string)($body['commit_sha'] ?? '')), 0, 40),
     ':build_num'   => mb_substr(trim((string)($body['build_num'] ?? '')), 0, 20),
     ':user_uuid'   => mb_substr(trim((string)($body['user_uuid'] ?? '')), 0, 64),
+    ':owner_token' => $ownerToken,
     ':ip_addr'     => $_SERVER['REMOTE_ADDR'] ?? '',
     ':user_agent'  => mb_substr(trim((string)($_SERVER['HTTP_USER_AGENT'] ?? '')), 0, 500),
 ]);
@@ -132,16 +187,22 @@ $stmt->execute([
 $postId = $db->lastInsertId();
 
 $postUrl = BASE_URL . '/post.php?id=' . $token;
+$ownerUrl = BASE_URL . '/owner.php?token=' . $ownerToken;
 
 jsonResponse([
     'success'  => true,
     'post_url' => $postUrl,
+    'owner_url' => $ownerUrl,
     'message'  => 'Snapshot uploaded',
 ]);
 
 // ---------- Helper: create thumbnail ----------
-function createThumbnail(string $srcPath, string $dstPath, string $mime): void
+function createThumbnail(string $srcPath, string $dstPath, string $mime): bool
 {
+    if (!function_exists('imagecreatetruecolor')) {
+        return copy($srcPath, $dstPath);
+    }
+
     switch ($mime) {
         case 'image/jpeg': $img = @imagecreatefromjpeg($srcPath); break;
         case 'image/png':  $img = @imagecreatefrompng($srcPath); break;
@@ -151,8 +212,7 @@ function createThumbnail(string $srcPath, string $dstPath, string $mime): void
 
     if ($img === false) {
         // Copy original as fallback
-        copy($srcPath, $dstPath);
-        return;
+        return copy($srcPath, $dstPath);
     }
 
     $srcW = imagesx($img);
@@ -173,10 +233,67 @@ function createThumbnail(string $srcPath, string $dstPath, string $mime): void
     imagedestroy($img);
 
     switch ($mime) {
-        case 'image/jpeg': imagejpeg($thumb, $dstPath, 85); break;
-        case 'image/png':  imagepng($thumb, $dstPath, 8); break;
-        case 'image/webp': imagewebp($thumb, $dstPath, 85); break;
-        default:           imagejpeg($thumb, $dstPath, 85); break;
+        case 'image/jpeg': $ok = imagejpeg($thumb, $dstPath, 85); break;
+        case 'image/png':  $ok = imagepng($thumb, $dstPath, 8); break;
+        case 'image/webp': $ok = imagewebp($thumb, $dstPath, 85); break;
+        default:           $ok = imagejpeg($thumb, $dstPath, 85); break;
     }
     imagedestroy($thumb);
+    return $ok;
+}
+
+function webdavPut(string $url, string $localPath, string $username, string $password): bool
+{
+    if (!function_exists('curl_init')) {
+        return false;
+    }
+
+    $fp = fopen($localPath, 'rb');
+    if ($fp === false) {
+        return false;
+    }
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_UPLOAD => true,
+        CURLOPT_PUT => true,
+        CURLOPT_INFILE => $fp,
+        CURLOPT_INFILESIZE => filesize($localPath),
+        CURLOPT_USERPWD => $username . ':' . $password,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 60,
+    ]);
+    curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    curl_close($ch);
+    fclose($fp);
+
+    return $code >= 200 && $code < 300;
+}
+
+function webdavEnsureDatedCollection(string $baseUrl, string $dateDir, string $username, string $password): void
+{
+    $path = rtrim($baseUrl, '/');
+    webdavMkcol($path, $username, $password);
+    foreach (explode('/', $dateDir) as $part) {
+        $path .= '/' . rawurlencode($part);
+        webdavMkcol($path, $username, $password);
+    }
+}
+
+function webdavMkcol(string $url, string $username, string $password): void
+{
+    if (!function_exists('curl_init')) {
+        return;
+    }
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_CUSTOMREQUEST => 'MKCOL',
+        CURLOPT_USERPWD => $username . ':' . $password,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 20,
+    ]);
+    curl_exec($ch);
+    curl_close($ch);
 }

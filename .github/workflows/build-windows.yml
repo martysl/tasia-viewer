@@ -140,13 +140,17 @@ jobs:
             export PATH="$VS_CMAKE_DIR:$PATH"
           fi
 
+          LOCAL_DIST_DIR="$(pwd)/build-vc170-64/newview/unpacked"
+          mkdir -p "$LOCAL_DIST_DIR"
+
           autobuild configure \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
             -- \
             --fmodstudio \
-            --package \
-            --ninja
+            --no-package \
+            --ninja \
+            "-DLOCAL_DIST_DIR:PATH=$LOCAL_DIST_DIR"
 
       - name: Build Windows with FMOD
         shell: bash
@@ -158,14 +162,27 @@ jobs:
             --no-configure \
             -- \
             --fmodstudio \
-            --package \
+            --no-package \
             --ninja
+
+      - name: Create Windows ZIP artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import shutil
+          from pathlib import Path
+
+          dist = Path('build-vc170-64/newview/unpacked')
+          if not dist.is_dir():
+              raise SystemExit(f'Missing unpacked Windows dist: {dist}')
+          archive = shutil.make_archive('Tasia-Viewer-Windows-FMOD', 'zip', dist)
+          print(f'Created {archive}')
+          PY
 
       - name: Upload artifact - Windows
         uses: actions/upload-artifact@v4
         with:
           name: Tasia-Viewer-Windows-FMOD
           if-no-files-found: error
-          path: |
-            build-vc170-64/newview/Release/*Setup.exe
-            build-vc170-64/newview/Release/*.xz
+          path: Tasia-Viewer-Windows-FMOD.zip

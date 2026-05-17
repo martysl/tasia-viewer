@@ -4,6 +4,21 @@ declare(strict_types=1);
 // TasiaFeed Configuration
 // Upload this directory to: https://apps.easierit.org/igrid/feed/
 
+$localConfig = __DIR__ . '/config.local.php';
+if (is_file($localConfig)) {
+    require_once $localConfig;
+}
+
+function tasiafeedConfigValue(string $name, string $default = ''): string
+{
+    if (defined($name)) {
+        return (string)constant($name);
+    }
+
+    $value = getenv($name);
+    return ($value === false) ? $default : (string)$value;
+}
+
 // --- Paths ---
 define('STORAGE_DIR', __DIR__ . '/uploads');
 define('THUMBS_DIR', __DIR__ . '/thumbs');
@@ -23,9 +38,12 @@ define('THUMB_HEIGHT', 280);
 define('ITEMS_PER_PAGE', 30);
 
 // --- Auth ---
-// Simple shared secret for admin access. Change this in production.
-define('ADMIN_SECRET', 'tasia123');
+// Set with TASIAFEED_ADMIN_SECRET environment variable or config.local.php.
+// Keep config.local.php out of git.
+// Temporary default requested by Mom; change in production.
+define('ADMIN_SECRET', tasiafeedConfigValue('TASIAFEED_ADMIN_SECRET', 'tasia123'));
 
 // --- Post visibility ---
 define('VISIBILITY_PUBLIC', 'public');
 define('VISIBILITY_UNLISTED', 'unlisted');
+define('VISIBILITY_PRIVATE', 'private');

@@ -249,6 +249,8 @@ jobs:
             export PATH="$VS_CMAKE_DIR:$PATH"
           fi
           cmake --version
+          LOCAL_DIST_DIR="$(pwd)/build-vc170-64/newview/unpacked"
+          mkdir -p "$LOCAL_DIST_DIR"
 
           # Use Ninja generator to bypass broken vswhere on windows-2022 runners.
           # Ninja + MSVC (cl.exe in PATH from msvc-dev-cmd) avoids the vswhere
@@ -258,8 +260,9 @@ jobs:
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
             -- \
             --fmodstudio \
-            --package \
-            --ninja
+            --no-package \
+            --ninja \
+            "-DLOCAL_DIST_DIR:PATH=$LOCAL_DIST_DIR"
 
       - name: Build with FMOD
         shell: bash
@@ -274,8 +277,24 @@ jobs:
             --no-configure \
             -- \
             --fmodstudio \
-            --package \
+            ${{ runner.os == 'Windows' && '--no-package' || '--package' }} \
             "${EXTRA_ARGS[@]}"
+
+      - name: Create Windows ZIP artifact
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import shutil
+          from pathlib import Path
+
+          dist = Path('build-vc170-64/newview/unpacked')
+          if not dist.is_dir():
+              raise SystemExit(f'Missing unpacked Windows dist: {dist}')
+          archive = shutil.make_archive('Tasia-Viewer-Windows-FMOD', 'zip', dist)
+          print(f'Created {archive}')
+          PY
 
       - name: Upload artifact - Linux
         if: runner.os == 'Linux'
@@ -344,6 +363,4 @@ jobs:
         with:
           name: Tasia-Viewer-Windows-FMOD
           if-no-files-found: error
-          path: |
-            build-vc170-64/newview/Release/*Setup.exe
-            build-vc170-64/newview/Release/*.xz
+          path: Tasia-Viewer-Windows-FMOD.zip

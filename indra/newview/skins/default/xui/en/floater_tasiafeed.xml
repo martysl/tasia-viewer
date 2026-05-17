@@ -94,6 +94,10 @@ Visibility:
 			label="Unlisted"
 			name="unlisted"
 			value="unlisted" />
+		<combo_box.item
+			label="Private"
+			name="private"
+			value="private" />
 	</combo_box>
 
 	<text
