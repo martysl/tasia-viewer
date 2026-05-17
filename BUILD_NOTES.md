@@ -23,23 +23,22 @@
 - Single platform per run
 - Build order: Linux → Windows → macOS
 
-## 2026-05-17: TasiaFeed upload HTTP fix
+## 2026-05-17: TasiaFeed upload fixes
 
-### Symptom
-Viewer says "No response from server" when clicking Upload to TasiaFeed. Server works fine (verified via curl).
+### Fix 1: Wrong HTTP method (postAndSuspend with string → implicit LLSD)
+- **Symptom**: Viewer sends wrapped XML instead of raw JSON
+- **Root cause**: `postAndSuspend` has no `std::string` overload. String body was implicitly converted to LLSD and sent as `application/llsd+xml` XML via `requestPostWithLLSD` → server received `<llsd><string>{json}</string></llsd>`
+- **Fix**: Changed to `postJsonAndSuspend` which sends raw JSON via `HttpCoroJSONHandler`
+- **Commits**: linux: 75d0d60276, windows-build-test: 43f6446404
 
-### Root cause
-In `tasiafeedconnect.cpp`, the upload coroutine serialized the LLSD body to a JSON string, then passed it to `postAndSuspend`. There is **no** `postAndSuspend` overload that takes `std::string` — the string was implicitly converted to `LLSD`, wrapping the raw JSON inside LLSD notation. The PHP server received non-JSON data (`<llsd><string>{...}</string></llsd>`) and returned an empty response. The adapter had no `HTTP_RESULTS_RAW` → "No response from server".
+### Fix 2: Wrong response handler (expected HTTP_RESULTS_RAW)
+- **Symptom**: Even with proper JSON sending, "No response from server" still shows
+- **Root cause**: `TasiaFeedUploadResponse` checked for `HTTP_RESULTS_RAW` ("raw") key, which is **only** set by `HttpCoroRawHandler`. But `postJsonAndSuspend` uses `HttpCoroJSONHandler` which parses JSON and returns keys directly in `aData` (no "raw" key). So every response hit the error path.
+- **Fix**: Rewrote `TasiaFeedUploadResponse` to read the already-parsed JSON keys (`success`, `post_url`, `message`) directly from `aData` instead of going through `HTTP_RESULTS_RAW`.
+- **Commits**: linux: 85493dbca7, windows-build-test: 9cb3609280
 
-### Fix
-Changed `postAndSuspend` to `postJsonAndSuspend`, which takes an `LLSD` body and sends it as proper raw JSON (via `HttpCoroJSONHandler` + `BufferArray`). Removed the manual `boost::json::serialize(LlsdToJson(body))` pre-serialization.
-
-### Files
+### Files changed
 - `indra/newview/tasiafeedconnect.cpp`
-
-### Commits
-- `main`: 75d0d60276
-- `windows-build-test`: 43f6446404
 
 ## 2026-05-16: BugSplat removal / crash reporter reconfiguration
 
