@@ -41,7 +41,7 @@ target_include_directories( ll::colladadom SYSTEM INTERFACE
         ${LIBS_PREBUILT_DIR}/include/collada/1.4
         )
 if (WINDOWS)
-    target_link_libraries(ll::colladadom INTERFACE ${ARCH_PREBUILT_DIRS_RELEASE}/libcollada14dom23-s.lib ll::libxml ll::minizip-ng )
+    target_link_libraries(ll::colladadom INTERFACE ${ARCH_PREBUILT_DIRS_RELEASE}/libcollada14dom23-s.lib ll::boost ll::libxml ll::minizip-ng )
 elseif (DARWIN)
     target_link_libraries(ll::colladadom INTERFACE collada14dom ll::boost ll::libxml ll::minizip-ng)
 elseif (LINUX)
