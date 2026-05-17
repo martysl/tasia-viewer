@@ -194,6 +194,13 @@ jobs:
             libdbus-1-dev
           sudo apt-get clean
 
+      - name: Install Windows build prerequisites
+        if: runner.os == 'Windows'
+        run: |
+          choco install ninja --no-progress -y || true
+          echo "Ninja installed:"
+          ninja --version
+
       - name: Install macOS build prerequisites
         if: runner.os == 'macOS'
         run: |
@@ -243,18 +250,22 @@ jobs:
           fi
           cmake --version
 
+          # Use Ninja generator to bypass broken vswhere on windows-2022 runners.
+          # Ninja + MSVC (cl.exe in PATH from msvc-dev-cmd) avoids the vswhere
+          # dependency entirely.
           autobuild configure \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
             -- \
             --fmodstudio \
-            --package
+            --package \
+            --ninja
 
       - name: Build with FMOD
         shell: bash
         run: |
           EXTRA_ARGS=()
-          if [ "${{ runner.os }}" = "Linux" ]; then
+          if [ "${{ runner.os }}" = "Linux" ] || [ "${{ runner.os }}" = "Windows" ]; then
             EXTRA_ARGS=("--ninja")
           fi
           autobuild build \
