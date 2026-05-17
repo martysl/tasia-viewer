@@ -41,7 +41,15 @@ target_include_directories( ll::colladadom SYSTEM INTERFACE
         ${LIBS_PREBUILT_DIR}/include/collada/1.4
         )
 if (WINDOWS)
-    target_link_libraries(ll::colladadom INTERFACE ${ARCH_PREBUILT_DIRS_RELEASE}/libcollada14dom23-s.lib ll::boost ll::libxml ll::minizip-ng )
+    # colladadom prebuilt lib was compiled against autobuild Boost 1.86, which
+    # exports boost::filesystem::detail::path_traits::convert. FetchContent
+    # Boost 1.87 changed the filesystem ABI and no longer exports this symbol,
+    # so link directly against the prebuilt 1.86 filesystem library.
+    target_link_libraries(ll::colladadom INTERFACE
+        ${ARCH_PREBUILT_DIRS_RELEASE}/libcollada14dom23-s.lib
+        ${ARCH_PREBUILT_DIRS_RELEASE}/libboost_filesystem-vc143-mt-x64-1_86.lib
+        ll::libxml
+        ll::minizip-ng )
 elseif (DARWIN)
     target_link_libraries(ll::colladadom INTERFACE collada14dom ll::boost ll::libxml ll::minizip-ng)
 elseif (LINUX)
