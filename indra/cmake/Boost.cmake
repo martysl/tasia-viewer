@@ -82,6 +82,13 @@ FetchContent_Declare(${_ll_boost_fetchcontent_args})
 unset(_ll_boost_fetchcontent_args)
 FetchContent_MakeAvailable(Boost)
 
+if (MSVC AND TARGET boost_filesystem)
+    # Belt-and-suspenders: ensure the compiled Boost.Filesystem target itself
+    # uses the same wchar_t ABI as prebuilt colladadom, even if config flags are
+    # appended later by the parent build.
+    target_compile_options(boost_filesystem PRIVATE /Zc:wchar_t-)
+endif()
+
 set(CMAKE_CXX_FLAGS "${_ll_boost_saved_cxx_flags}")
 set(CMAKE_C_FLAGS   "${_ll_boost_saved_c_flags}")
 unset(_ll_boost_saved_cxx_flags)

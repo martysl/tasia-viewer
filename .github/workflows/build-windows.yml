@@ -289,6 +289,23 @@ jobs:
             --no-package \
             --ninja
 
+      - name: Dump link response file after failure
+        if: failure() && inputs.probe_only != 'true'
+        shell: bash
+        run: |
+          set +e
+          RSP="build-vc170-64/newview/CMakeFiles/firestorm-bin.rsp"
+          echo "=== firestorm-bin.rsp after failure ==="
+          if [ -f "$RSP" ]; then
+            echo "--- boost/collada entries ---"
+            grep -i "collada\|boost" "$RSP" || echo "(no boost/collada matches)"
+            echo ""
+            echo "--- boost_filesystem files ---"
+            find build-vc170-64/_deps -name "*boost_filesystem*" -type f 2>/dev/null | head -20
+          else
+            echo "RSP not found: $RSP"
+          fi
+
       - name: Create Windows ZIP artifact
         if: inputs.probe_only != 'true'
         shell: bash
