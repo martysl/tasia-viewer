@@ -26,9 +26,8 @@ Windows CI build is the active task on `windows-build-test` branch.
 - TasiaFeed upload HTTP fix: postJsonAndSuspend instead of postAndSuspend
 - TasiaFeed upload response fix: read parsed JSON keys directly
 
-## Current Windows Blocker
-**Windows reaches final `firestorm-bin.exe` link. Latest root cause is a dual
-Boost.Filesystem wchar_t ABI requirement.**
+## Current Windows Status
+**Windows CI now builds successfully and uploads the ZIP artifact.**
 
 ### 2026-05-18 deeper finding
 - Build `26025086918` proved the issue is not just missing Boost 1.86.
@@ -46,8 +45,10 @@ Boost.Filesystem wchar_t ABI requirement.**
   - added the shim to Windows viewer sources
 
 ### Last attempted
-- Commit `8d91d9533b`: `Add Windows Boost.Filesystem ABI shim for colladadom`
-- Dispatched clean run `26028393584` with `clean_build=true`, `probe_only=false`.
+- Commit `09603eb7c1`: `Fix Windows symbol packaging build_data path for Ninja`
+- Dispatched cached run `26032071141` with `clean_build=false`, `probe_only=false`.
+- Result: ✅ success. Artifact `Tasia-Viewer-Windows-FMOD` uploaded
+  (636,116,759 bytes).
 
 ### Root Cause (real one this time)
 **ABI mismatch**: prebuilt `libcollada14dom23-s.lib` was compiled against
@@ -163,9 +164,15 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 - Build `26008774063`: ❌ same colladadom `path_traits::convert` unresolved.
 - Build `26025086918`: ❌ after forcing Boost `/Zc:wchar_t-`, viewer native
   `wchar_t` Boost.Filesystem symbols failed instead — confirmed dual ABI issue.
-- Build `26028393584`: 🚀 running clean with Windows ABI shim.
+- Build `26028393584`: ❌ link succeeded, failed symbol packaging because
+  Ninja single-config used `configuration='.'` and `build_data.json` was not at
+  `./build_data.json`.
+- Build `26032071141`: ✅ success using cache after `fs_viewer_manifest.py`
+  fallback path fix. ZIP artifact uploaded: `Tasia-Viewer-Windows-FMOD`.
 
 ## Next Steps
 1-6. ✅ All Ninja/build fixes applied.
 7-11. ✅ All boost ABI attempts documented.
-12. ⏳ **Build 26028393584** with Boost 1.86 + Windows ABI shim — verify link succeeds.
+12. ✅ **Build 26032071141** succeeded with Boost 1.86 + Windows ABI shim +
+    Ninja build_data fallback.
+13. Next: download/test the Windows ZIP artifact.

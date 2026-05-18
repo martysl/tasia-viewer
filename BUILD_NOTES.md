@@ -55,4 +55,11 @@ correct fix is not changing Boost's ABI globally.
 - Add `indra/newview/llboostfilesystemcompat.cpp` as a Windows-only shim that
   provides colladadom's legacy unsigned-short `path_traits::convert` entry
   points and forwards to native Boost.Filesystem functions.
-- Run `26028393584` is testing this fix from commit `8d91d9533b`.
+- Run `26028393584` confirmed the final link fix; it then failed later in
+  Windows symbol packaging because Ninja single-config passed
+  `configuration='.'` and `fs_viewer_manifest.py` looked for
+  `./build_data.json`.
+- `indra/newview/fs_viewer_manifest.py` now falls back to `dest/build_data.json`
+  and the parent build directory.
+- Run `26032071141` succeeded using restored Windows cache and uploaded
+  `Tasia-Viewer-Windows-FMOD` (636,116,759 bytes).

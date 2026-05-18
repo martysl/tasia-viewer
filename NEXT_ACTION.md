@@ -3,8 +3,8 @@
 ## Current
 1. ✅ Linux build works (v8.0.1-39 tagged).
 2. ✅ Grid lock implemented, version bumped to 8.0.1.
-3. ❌ **Windows CI build — fix final link and ZIP artifact.** ← NOW
-4. ⏳ macOS build (blocked on Windows).
+3. ✅ **Windows CI build — final link fixed, ZIP artifact uploaded.**
+4. ⏳ macOS build or Windows artifact runtime test ← NEXT
 
 ## Windows blocker
 - **Real root cause**: `vswhere` is broken on GitHub Actions `windows-2022`
@@ -31,9 +31,12 @@
 - **Current fix**: keep Boost 1.86 native for viewer code and add
   `indra/newview/llboostfilesystemcompat.cpp`, a Windows-only shim that provides
   colladadom's legacy unsigned-short `path_traits::convert` symbols.
-- **Build 26028393584**: 🚀 running clean on commit `8d91d9533b`.
-- **Next**: Wait for build 26028393584 result. If it fails, inspect the new
-  post-failure RSP/symbol dump.
+- **Build 26028393584**: ❌ link fixed, failed packaging symbols due to
+  `build_data.json` path under Ninja single-config.
+- **Fix**: `indra/newview/fs_viewer_manifest.py` now falls back to destination
+  and parent build paths for `build_data.json`.
+- **Build 26032071141**: ✅ success using restored Windows cache.
+- **Next**: Download/test `Tasia-Viewer-Windows-FMOD` artifact.
 
 ## Branch Rules (set in stone)
 - **Linux builds** → `linux` branch, `build-tasia.yml` with `target=linux`.
