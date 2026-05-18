@@ -14,7 +14,9 @@
 11. ✅ Added loading panel Tasia branding/GIPHY credit and optional loading YouTube media, disabled by default.
 12. ✅ Verified active nearby chat and Firestorm IM use `FSChatHistory`; legacy `LLChatHistory` path is disabled by `#if 0`.
 13. ✅ Ran focused generator/XML/whitespace verification.
-14. **Before GitHub Linux build, ensure `FMOD_DEPS_TOKEN` exists and add `TASIA_GIPHY_API_KEY` if GIPHY should work out of box.** ← NOW
+14. ✅ Linux GitHub Actions build succeeded: `26061745761`.
+15. ✅ Linux prerelease published: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-50`.
+16. **Test Linux prerelease runtime. If good, port feature branch to Windows and run Windows build.** ← NOW
 
 ## Blockers
 - None currently.

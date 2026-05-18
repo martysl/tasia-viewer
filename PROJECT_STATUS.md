@@ -21,6 +21,12 @@ Next work:
 ## 2026-05-18: GIPHY/welcome/loading branch status
 
 ### What is done
+- Linux GitHub Actions build for the GIPHY/welcome/chat preview branch succeeded:
+  - Run: `26061745761`
+  - Commit: `d73371e429172ae53b943a81a10426c73949bafd`
+- Linux prerelease published:
+  - `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-50`
+  - Asset: `Phoenix-FirestormOSTasia-Releasex64_LEGACY-8-0-1-78266.tar.xz`
 - Added build-time generated obfuscated GIPHY API key fallback support.
 - Added generated-file ignores for:
   - `indra/newview/lltasia_giphy_key.generated.h`
@@ -57,7 +63,7 @@ Next work:
 ### What is broken
 - No known breakage from the current edits.
 - Full animated thumbnail rendering inside chat is still not implemented; current chat preview is a safe local GIPHY card with an external open button.
-- No full Linux build has been run for this feature branch yet.
+- Linux build succeeded, but runtime testing of the released package is still needed.
 
 ### What was last attempted
 - Generated empty local fallback key files with no secret present.
@@ -71,6 +77,7 @@ Next work:
 - Added GIPHY chat preview cards, loading branding/GIPHY credit, optional YouTube loading media, and reran focused XML/whitespace/script checks successfully.
 - Enabled loading YouTube by default, added image URL chat previews, verified active IM coverage through `FSChatHistory`, and reran focused XML/whitespace/script checks successfully.
 - Corrected YouTube behavior: chat/IM YouTube embeds are now enabled by default via `TasiaYouTubeChatPreview`; loading YouTube is optional/off by default. Focused checks passed again.
+- Published Linux prerelease `v8.0.1-50` from successful run `26061745761`.
 
 ### Exact last failing step
 - None in this session.
@@ -82,7 +89,7 @@ Next work:
 - Keep Linux feature work on `feature/tasia-giphy-welcome-loading-linux` until Linux build succeeds.
 
 ### Next exact action
-- For GitHub Linux build: ensure existing `FMOD_DEPS_TOKEN` secret is present. Add `TASIA_GIPHY_API_KEY` repo secret if the packaged GIPHY picker should work without users manually setting `TasiaGiphyAPIKey`.
+- Test Linux prerelease `v8.0.1-50` locally. If runtime is good, port the feature branch to Windows and run the Windows build.
 
 ## Build Status
 
