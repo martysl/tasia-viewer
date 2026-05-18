@@ -186,6 +186,94 @@ jobs:
             --ninja \
             "-DLOCAL_DIST_DIR:PATH=$LOCAL_DIST_DIR"
 
+      - name: Windows dependency probe
+        if: inputs.probe_only == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "=== Boost / Collada packages ==="
+          find .autobuild-installables build-vc170-64 -iname "*boost*" -o -iname "*collada*" 2>/dev/null | head -200 || true
+
+          echo ""
+          echo "=== Link response file ==="
+          if [ -f build-vc170-64/newview/CMakeFiles/firestorm-bin.rsp ]; then
+            grep -i "boost.*filesystem\|collada" build-vc170-64/newview/CMakeFiles/firestorm-bin.rsp || echo "(no boost/collada entries in rsp)"
+          else
+            echo "firestorm-bin.rsp not generated yet"
+            # Try alternate paths
+            find build-vc170-64 -name "*.rsp" | head -5
+          fi
+
+          echo ""
+          echo "=== CMakeCache boost/collada ==="
+          if [ -f build-vc170-64/CMakeCache.txt ]; then
+            grep -i "boost\|collada" build-vc170-64/CMakeCache.txt | head -200 || true
+          else
+            echo "CMakeCache.txt not found"
+          fi
+
+          echo ""
+          echo "=== Boost version check ==="
+          find build-vc170-64/_deps -maxdepth 3 -name "CMakeLists.txt" -path "*boost*" 2>/dev/null | head -5
+          head -5 build-vc170-64/_deps/boost-src/CMakeLists.txt 2>/dev/null || echo "boost-src not found"
+
+          echo ""
+          echo "Probe complete. Stopping before full build."
+          exit 0
+
+      - name: Verify Boost version for Windows
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set +e
+          echo "=== Boost version.hpp ==="
+          for p in \
+            build-vc170-64/_deps/boost-src/boost/version.hpp \
+            build-vc170-64/_deps/boost-build/boost/version.hpp \
+            build-vc170-64/boost/version.hpp; do
+            if [ -f "$p" ]; then
+              grep -E "#define BOOST_VERSION|#define BOOST_LIB_VERSION" "$p"
+              found=1
+              break
+            fi
+          done
+          if [ -z "${found:-}" ]; then
+            echo "version.hpp not found, checking CMakeCache..."
+            grep -i "boost_VERSION\|BOOST_VERSION" build-vc170-64/CMakeCache.txt 2>/dev/null || echo "Not in CMakeCache either"
+          fi
+
+          echo "=== Colladadom lib ==="
+          ls -lah build-vc170-64/packages/lib/release/libcollada14dom23-s.lib 2>/dev/null || echo "not found at expected path"
+
+          echo "=== Boost filesystem build dir ==="
+          test -d build-vc170-64/_deps/boost-build/libs/filesystem && echo "Found boost-build/libs/filesystem" || echo "boost-build/libs/filesystem not found"
+          # Also check build dir listing
+          echo "=== _deps/boost-build contents (top 2 levels) ==="
+          find build-vc170-64/_deps/boost-build -maxdepth 2 -name "*.lib" -o -name "*.a" 2>/dev/null | head -20 || echo "(empty)"
+          set -e
+
+      - name: Dump link response file before build
+        if: inputs.probe_only != 'true'
+        shell: bash
+        run: |
+          set +e
+          RSP="$(find build-vc170-64 -name "firestorm-bin.rsp" -type f 2>/dev/null | head -1)"
+          if [ -f "$RSP" ]; then
+            echo "RSP=$RSP"
+            echo "=== firestorm-bin.rsp (boost/collada entries) ==="
+            grep -i "collada\|boost" "$RSP" || echo "(no matches)"
+            echo ""
+            echo "=== boost_filesystem.library resolved path ==="
+            echo "Checking CMakeCache..."
+            grep -i "boost_filesystem_LIBRARY\|boost_filesystem_location" build-vc170-64/CMakeCache.txt 2>/dev/null || true
+            echo ""
+            echo "=== Searching for boost_filesystem.lib ==="
+            find build-vc170-64/_deps -name "*boost_filesystem*" -type f 2>/dev/null | head -10
+          else
+            echo "RSP not found yet, will be generated during build"
+          fi
+
       - name: Build Windows with FMOD
         shell: bash
         run: |
@@ -200,6 +288,31 @@ jobs:
             --fmodstudio \
             --no-package \
             --ninja
+
+      - name: Dump link response file after failure
+        if: failure() && inputs.probe_only != 'true'
+        shell: bash
+        run: |
+          set +e
+          RSP="$(find build-vc170-64 -name "firestorm-bin.rsp" -type f 2>/dev/null | head -1)"
+          echo "=== firestorm-bin.rsp after failure ==="
+          if [ -f "$RSP" ]; then
+            echo "RSP=$RSP"
+            echo "--- boost/collada entries ---"
+            grep -i "collada\|boost" "$RSP" || echo "(no boost/collada matches)"
+            echo ""
+            echo "--- boost_filesystem files ---"
+            BOOST_FS="$(find build-vc170-64/_deps -name "*boost_filesystem*.lib" -type f 2>/dev/null | head -1)"
+            find build-vc170-64/_deps -name "*boost_filesystem*" -type f 2>/dev/null | head -20
+            if [ -n "$BOOST_FS" ]; then
+              echo ""
+              echo "--- path_traits::convert symbols in boost_filesystem ---"
+              dumpbin //symbols "$BOOST_FS" 2>/dev/null | grep -i "path_traits.*convert" | head -40 || true
+            fi
+          else
+            echo "RSP not found"
+            find build-vc170-64 -name "*.rsp" -type f 2>/dev/null | head -20
+          fi
 
       - name: Create Windows ZIP artifact
         shell: bash
