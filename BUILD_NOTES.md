@@ -2,66 +2,169 @@
 
 ## Build Environment
 - **Platform**: Ubuntu 22.04 (GitHub Actions runner)
-- **Compiler**: GCC 11+ (Linux), MSVC v143 (Windows)
-- **Build system**: CMake + autobuild + Ninja (Linux) / MSBuild (Windows)
+- **Compiler**: GCC 11+ 
+- **Build system**: CMake + autobuild + Ninja
 - **FMOD**: Required (2.03.07), private package in martysl/tasia-private-deps
+
+## Known Build Issues
+
+### GCC -Wmaybe-uninitialized (FIXED)
+- **File**: `indra/newview/llvisualeffect.h:130` - `LLTweenableValueLerp<LLVector4>::m_StartTime`
+- **Fix**: Added member initializers in constructor (m_StartTime(0.0), m_Duration(0.0), m_StartValue(), m_EndValue())
+- **Status**: ✅ Fixed in commit e466846140
+
+## Configuration
+- Channel: `Tasia-Releasex64`
+- `--fmodstudio` flag required
+- No KDU
 
 ## Workflow
 - Manual trigger only via GitHub Actions (`workflow_dispatch`)
 - Single platform per run
 - Build order: Linux → Windows → macOS
 
-## 2026-05-16: Windows CI — MSVC compiler not found fix
+## 2026-05-18: GIPHY/welcome/loading feature branch
 
-### Root cause
-The `configure_firestorm.sh` script unconditionally calls `load_vsvars` on Windows (line 370).
-In CI environments where MSVC is already set up (via `ilammy/msvc-dev-cmd@v1` or `VsDevCmd.bat`),
-`load_vsvars` re-initializes the Visual Studio environment, overriding/corrupting the
-correct PATH, INCLUDE, and LIB variables. CMake then can't find the compiler.
+### Generated GIPHY key support
+- Branch: `feature/tasia-giphy-welcome-loading-linux`
+- Build-time environment variable: `TASIA_GIPHY_API_KEY`
+- Generator: `scripts/generate_tasia_giphy_key.py`
+- Generated ignored files:
+  - `indra/newview/lltasia_giphy_key.generated.h`
+  - `indra/newview/lltasia_giphy_key.generated.cpp`
+- Runtime accessor:
+  - `indra/newview/lltasia_giphy_key.h`
+  - `indra/newview/lltasia_giphy_key.cpp`
 
-### Fix
-**File**: `scripts/configure_firestorm.sh`
-**Change**: Added a guard around `load_vsvars` — check if `VCToolsInstallDir` is already set.
-If MSVC env is already loaded, skip `load_vsvars` and preserve the existing environment.
+### Runtime key priority
+1. `TasiaGiphyAPIKey` user setting
+2. Generated obfuscated build-time fallback
+3. Empty/not configured
 
-```bash
-if [ -z "${VCToolsInstallDir:-}" ]; then
-    load_vsvars
-else
-    echo "MSVC already loaded, skipping load_vsvars"
-fi
-```
+### Verification run
+- `env -u TASIA_GIPHY_API_KEY python3 scripts/generate_tasia_giphy_key.py --header indra/newview/lltasia_giphy_key.generated.h --source indra/newview/lltasia_giphy_key.generated.cpp`
+- Fake-key generator test under `/tmp/opencode`: passed, plaintext fake key not present in generated source.
+- `python3 -m py_compile scripts/generate_tasia_giphy_key.py`: passed.
+- XML parse of `indra/newview/app_settings/settings.xml`: passed.
+- `git diff --check`: passed.
 
-### Workflow state (windows-build-test branch)
-- Uses `ilammy/msvc-dev-cmd@v1` with `arch: x64, vsversion: 2022`
-- Verify MSVC tools step confirms `cl.exe` and `cmake` are found
-- Configure step uses `autobuild configure` with `--fmodstudio --package`
-- Linux/macOS configure step unchanged
+### Full build status
+- No full Linux build has been run yet after these feature edits.
 
-## 2026-05-18: Windows final link — Boost.Filesystem/colladadom ABI
+### Welcome text client
+- Files added:
+  - `indra/newview/lltasia_welcome_client.h`
+  - `indra/newview/lltasia_welcome_client.cpp`
+- `LLProgressView` now requests one random usable line during startup loading.
+- Fetch settings:
+  - `TasiaWelcomeURL`
+  - `TasiaWelcomeURLTimeout`
+  - `TasiaWelcomeMaxBytes`
+- Failure, timeout, empty body, or no valid line leaves the existing server/grid progress message unchanged.
+- Late responses after startup completion are ignored.
 
-### Root cause
-Windows final link reaches `firestorm-bin.exe` but `libcollada14dom23-s.lib`
-references Boost.Filesystem `path_traits::convert` symbols using legacy
-`unsigned short` mangling (`/Zc:wchar_t-`). Viewer code and FetchContent Boost
-1.86 use native `wchar_t` mangling (`/Zc:wchar_t`).
+### GIPHY API client
+- Files added:
+  - `indra/newview/llgiphyclient.h`
+  - `indra/newview/llgiphyclient.cpp`
+- Supports:
+  - search endpoint
+  - trending endpoint
+  - rating from `TasiaGiphyRating`
+  - result parsing for page URL, preview GIF, fixed-width GIF, downsized GIF, and original GIF
+  - `GIPHY is not configured.` fallback when no runtime or generated key is available
+- The client does not log request URLs, because those contain the API key query parameter.
 
-Forcing Boost.Filesystem to `/Zc:wchar_t-` resolves the colladadom side but
-breaks viewer object references to native `wchar_t` Boost symbols. Therefore the
-correct fix is not changing Boost's ABI globally.
+### GIPHY picker floater
+- Files added:
+  - `indra/newview/llfloatergiphypicker.h`
+  - `indra/newview/llfloatergiphypicker.cpp`
+  - `indra/newview/skins/default/xui/en/floater_giphy_picker.xml`
+- Registered floater name: `giphy_picker`
+- Current behavior:
+  - loads trending GIFs on open
+  - supports search button and trending button
+  - lists result title and normal GIPHY page URL
+  - `Use Selected` invokes an optional callback or copies the selected URL to clipboard
+  - includes `Powered by GIPHY` text
+- Nearby chat wiring:
+  - Added `GIF` button to `indra/newview/skins/default/xui/en/floater_fs_nearby_chat.xml`
+  - Button opens `LLFloaterGiphyPicker`
+  - Selected GIF sends the normal GIPHY page URL through `FSFloaterNearbyChat::sendChatFromViewer(...)`
+  - Current whisper/say/shout selection is respected
 
-### Current fix
-- Keep Boost 1.86 native for viewer code.
-- Add `indra/newview/llboostfilesystemcompat.cpp` as a Windows-only shim that
-  provides colladadom's legacy unsigned-short `path_traits::convert` entry
-  points and forwards to native Boost.Filesystem functions.
-- Run `26028393584` confirmed the final link fix; it then failed later in
-  Windows symbol packaging because Ninja single-config passed
-  `configuration='.'` and `fs_viewer_manifest.py` looked for
-  `./build_data.json`.
-- `indra/newview/fs_viewer_manifest.py` now falls back to `dest/build_data.json`
-  and the parent build directory.
-- Run `26032071141` succeeded using restored Windows cache and uploaded
-  `Tasia-Viewer-Windows-FMOD` (636,116,759 bytes).
-- Published prerelease `v8.0.1-15-windows` with
-  `Tasia-Viewer-Windows-FMOD.zip` (641,948,477 bytes as release asset).
+### GIPHY chat previews
+- Implemented in `indra/newview/fschathistory.cpp`.
+- Controlled by `TasiaAnimatedGifChatPreview`.
+- Current preview is a safe local card:
+  - detects supported `giphy.com`, `media.giphy.com`, and `*.giphy.com` URL forms
+  - shows `GIF preview`, canonical GIPHY page URL, `Powered by GIPHY`, and an `Open GIF` button
+  - does not alter the sent chat payload
+  - skips plain-text chat history and loaded chat logs to avoid mass widget creation
+- Full inline animated thumbnail rendering is not implemented yet.
+- Direct image URL previews are also implemented in `FSChatHistory`.
+- Controlled by `TasiaImageChatPreview`.
+- Supported direct image extensions:
+  - `.png`
+  - `.jpg`
+  - `.jpeg`
+  - `.gif`
+  - `.webp`
+  - `.bmp`
+  - `.apng`
+- Active nearby chat and Firestorm IM both use `FSChatHistory`; legacy `LLChatHistory` is currently disabled by `#if 0`.
+- YouTube embeds are implemented in `FSChatHistory`.
+- Controlled by `TasiaYouTubeChatPreview` (default true).
+- Supported URL forms include `youtube.com/watch?v=...`, `youtube.com/embed/...`, `youtube.com/shorts/...`, `youtube.com/live/...`, and `youtu.be/...`.
+- Chat sends and stores the normal URL; Tasia Viewer renders the local embed card.
+
+### Loading panel branding / YouTube
+- `panel_progress.xml` now says `Tasia Viewer uses` and includes `Powered by GIPHY`.
+- Optional YouTube loading media is implemented in `LLProgressView`.
+- Controlled by:
+  - `TasiaLoadingYouTubeEnabled` (default false)
+  - `TasiaLoadingYouTubeURL` (default empty)
+- Accepted URL forms include `youtube.com/watch?v=...`, `youtube.com/embed/...`, `youtube.com/shorts/...`, `youtube.com/live/...`, and `youtu.be/...`.
+- The URL is converted to a muted autoplay embed URL locally; the configured URL is not logged.
+- Loading YouTube is not the default behavior; chat/IM YouTube embeds are the default behavior.
+
+### GitHub Actions readiness
+- Linux workflow `.github/workflows/build-tasia.yml` passes `secrets.TASIA_GIPHY_API_KEY` into configure.
+- Build should still configure if `TASIA_GIPHY_API_KEY` is missing; generated fallback key will be empty and runtime GIPHY picker will report `GIPHY is not configured.` unless `TasiaGiphyAPIKey` is set by the user.
+- Existing `FMOD_DEPS_TOKEN` secret remains required for FMOD dependency download.
+- Generated GIPHY files are ignored and must not be committed.
+
+## 2026-05-17: TasiaFeed upload fixes
+
+### Fix 1: Wrong HTTP method (postAndSuspend with string → implicit LLSD)
+- **Symptom**: Viewer sends wrapped XML instead of raw JSON
+- **Root cause**: `postAndSuspend` has no `std::string` overload. String body was implicitly converted to LLSD and sent as `application/llsd+xml` XML via `requestPostWithLLSD` → server received `<llsd><string>{json}</string></llsd>`
+- **Fix**: Changed to `postJsonAndSuspend` which sends raw JSON via `HttpCoroJSONHandler`
+- **Commits**: linux: 75d0d60276, windows-build-test: 43f6446404
+
+### Fix 2: Wrong response handler (expected HTTP_RESULTS_RAW)
+- **Symptom**: Even with proper JSON sending, "No response from server" still shows
+- **Root cause**: `TasiaFeedUploadResponse` checked for `HTTP_RESULTS_RAW` ("raw") key, which is **only** set by `HttpCoroRawHandler`. But `postJsonAndSuspend` uses `HttpCoroJSONHandler` which parses JSON and returns keys directly in `aData` (no "raw" key). So every response hit the error path.
+- **Fix**: Rewrote `TasiaFeedUploadResponse` to read the already-parsed JSON keys (`success`, `post_url`, `message`) directly from `aData` instead of going through `HTTP_RESULTS_RAW`.
+- **Commits**: linux: 85493dbca7, windows-build-test: 9cb3609280
+
+### Files changed
+- `indra/newview/tasiafeedconnect.cpp`
+
+## 2026-05-16: BugSplat removal / crash reporter reconfiguration
+
+### Summary
+Replaced the BugSplat crash reporting pipeline with a generic HTTP crash endpoint. All BugSplat-specific validation, fallback URL construction, and DB-name logic have been removed or relaxed.
+
+### Changes
+
+1. **`indra/linux_crash_logger/linux_crash_logger.cpp`** — Removed BugSplat fallback URL construction. The endpoint string is now used directly as-is (`std::string url = strEndpoint;`).
+
+2. **`indra/newview/llappviewerlinux.cpp`** — Renamed `gBugsplatDB` → `gCrashReportURL`. Changed all `"BUGSPLAT"` log tags to `"CRASHREPORT"`. The validation block now reads `"CrashReportURL"` from `build_data.json`, accepts any non-empty URL (no domain/prefix check), and rejects empty values instead.
+
+3. **`indra/newview/viewer_manifest.py`** — Changed `build_data.json` key from `"BugSplat DB"` to `"CrashReportURL"`. Validation now requires an `http://` or `https://` URL prefix instead of the old `tasia_` / specific-domain check.
+
+4. **`scripts/configure_firestorm.sh`** — Hardcoded the crash endpoint to `https://apps.easierit.org/igrid/bugs/api/v1/report` instead of constructing a dynamic `tasia_<channel>` BugSplat DB name.
+
+### Rationale
+Eliminates the dependency on BugSplat's proprietary SDK/API and lets the crash reporter send dumps to any standard HTTP endpoint. The viewer-side code no longer hardcodes assumptions about which SaaS service processes the crashes.

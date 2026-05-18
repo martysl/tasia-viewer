@@ -1,54 +1,20 @@
 # Next Action
 
 ## Current
-1. ✅ Linux build works (v8.0.1-39 tagged).
-2. ✅ Grid lock implemented, version bumped to 8.0.1.
-3. ✅ **Windows CI build — final link fixed, ZIP artifact uploaded.**
-4. ⏳ Windows artifact runtime test ← NEXT
-5. ⏳ macOS build after Windows smoke test
+1. ✅ Created Linux feature branch: `feature/tasia-giphy-welcome-loading-linux`.
+2. ✅ Added generated obfuscated GIPHY key fallback infrastructure.
+3. ✅ Added Tasia welcome/GIPHY/loading settings.
+4. ✅ Implemented async welcome.txt random-line fetch and hooked it into `LLProgressView`.
+5. ✅ Implemented `LLGiphyClient` search/trending support and no-key fallback.
+6. ✅ Implemented and registered `LLFloaterGiphyPicker` with search/trending list UI and `Powered by GIPHY` footer.
+7. ✅ Added nearby chat `GIF` button and wired picker selection to send the selected normal GIPHY page URL.
+8. ✅ Added local GIPHY URL preview cards in chat history behind `TasiaAnimatedGifChatPreview`.
+9. ✅ Added direct image URL previews in chat/IM history behind `TasiaImageChatPreview`.
+10. ✅ Added YouTube embeds in chat/IM history behind `TasiaYouTubeChatPreview` enabled by default.
+11. ✅ Added loading panel Tasia branding/GIPHY credit and optional loading YouTube media, disabled by default.
+12. ✅ Verified active nearby chat and Firestorm IM use `FSChatHistory`; legacy `LLChatHistory` path is disabled by `#if 0`.
+13. ✅ Ran focused generator/XML/whitespace verification.
+14. **Before GitHub Linux build, ensure `FMOD_DEPS_TOKEN` exists and add `TASIA_GIPHY_API_KEY` if GIPHY should work out of box.** ← NOW
 
-## Windows blocker
-- **Real root cause**: `vswhere` is broken on GitHub Actions `windows-2022`
-  runner. CMake uses vswhere for VS generator detection.
-- **Solution**: Use **Ninja** generator + `cl.exe` from PATH (set by
-  `msvc-dev-cmd`). Ninja doesn't need vswhere.
-- **Problem**: `autobuild configure` strips `--ninja` flag on passthrough.
-- **Fix** ✅ Auto-detect Ninja on Windows when `ninja` is in PATH.
-- **Build fixes applied**:
-  - llwebrtc DLL as Ninja byproduct ✅
-  - MSQuic C files no longer forced as C++ ✅
-  - Viewer manifest Ninja single-config sharedlibs fallback ✅
-  - ✅ ~~Explicit `ll::boost` link for final target~~ → **Real fix**: `ll::boost` in `ll::colladadom`
-  - MSVC `/MAP` flag syntax fixed ✅
-  - ZIP artifact instead of installer ✅
-- **Workflow**: `build-windows.yml` lives on `linux` branch (for dispatch), but
-  checks out `ref: windows-build-test` so build uses Windows code.
-- **Build #48 (25996616402)**: ❌ succeeded 1638/1640 objects, failed at final link (boost filesystem)
-- **Build #49 (25998856384)**: ❌ same error — `ll::boost` via FetchContent Boost 1.87 doesn't help (ABI changed)
-- **Deeper root cause**: Windows needs Boost 1.86, but also two wchar_t ABIs:
-  viewer code wants native `wchar_t` (`/Zc:wchar_t`), while prebuilt
-  `libcollada14dom23-s.lib` wants legacy unsigned-short mangling
-  (`/Zc:wchar_t-`). Forcing Boost one way only breaks the other side.
-- **Current fix**: keep Boost 1.86 native for viewer code and add
-  `indra/newview/llboostfilesystemcompat.cpp`, a Windows-only shim that provides
-  colladadom's legacy unsigned-short `path_traits::convert` symbols.
-- **Build 26028393584**: ❌ link fixed, failed packaging symbols due to
-  `build_data.json` path under Ninja single-config.
-- **Fix**: `indra/newview/fs_viewer_manifest.py` now falls back to destination
-  and parent build paths for `build_data.json`.
-- **Build 26032071141**: ✅ success using restored Windows cache.
-- **Prerelease**: ✅ `v8.0.1-15-windows` created with
-  `Tasia-Viewer-Windows-FMOD.zip`.
-- **Next**: Download/test `Tasia-Viewer-Windows-FMOD.zip` from prerelease.
-
-## Branch Rules (set in stone)
-- **Linux builds** → `linux` branch, `build-tasia.yml` with `target=linux`.
-- **Windows builds** → `windows-build-test` branch, `build-windows.yml` dispatch.
-- **Never push Windows viewer code to `linux`**. CI workflow files only.
-
-## TasiaFeed (all fixed, verified in Linux pre-release v8.0.1-39)
-- ✅ Upload URL: added `.php` extension
-- ✅ Crash: removed manual `draw()`, use `refreshControls()`
-- ✅ Upload HTTP: `postJsonAndSuspend` instead of `postAndSuspend`
-- ✅ Upload response: read parsed JSON keys directly (no `HTTP_RESULTS_RAW`)
-- ✅ Folder/list feed browsing, private visibility, owner dashboard deployed
+## Blockers
+- None currently.

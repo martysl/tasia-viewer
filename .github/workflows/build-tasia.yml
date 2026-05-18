@@ -219,6 +219,8 @@ jobs:
       - name: Configure Linux/macOS with FMOD
         if: runner.os != 'Windows'
         shell: bash
+        env:
+          TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
         run: |
           EXTRA_ARGS=()
           if [ "${{ runner.os }}" = "Linux" ]; then

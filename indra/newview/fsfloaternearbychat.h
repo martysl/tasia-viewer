@@ -102,6 +102,8 @@ public:
     void handleMinimized(bool minimized);
 
     void onEmojiPickerToggleBtnClicked();
+    void onGiphyPickerButtonClicked();
+    void onGiphySelected(const std::string& url);
 
 protected:
     void onChatBoxKeystroke();

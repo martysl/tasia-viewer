@@ -111,6 +111,8 @@ indra/newview/pilot.xml
 # Firestorm additions
 indra/newview/exoflickrkeys.h
 indra/newview/fsdiscordkey.h
+indra/newview/lltasia_giphy_key.generated.cpp
+indra/newview/lltasia_giphy_key.generated.h
 my_autobuild.xml
 .vscode
 *.srctrlbm
