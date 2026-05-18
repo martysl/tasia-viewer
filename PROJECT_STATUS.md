@@ -21,6 +21,19 @@ Next work:
 ## 2026-05-18: GIPHY/welcome/loading branch status
 
 ### What is done
+- Focused follow-up fixes added after Linux prerelease:
+  - IM windows now have a `GIF` button wired to the existing shared `LLFloaterGiphyPicker`.
+  - Picker selection from IM sends the selected GIPHY URL to that IM session, not nearby chat.
+  - YouTube chat/IM preview detection now accepts common scheme-less links like `youtube.com/...`, `www.youtube.com/...`, and `youtu.be/...`.
+  - `welcome.txt` `<USERNAME>` replacement now keeps the raw chosen line and renders using best available name.
+  - Pre-login welcome name priority: typed login username, saved/remembered username, then `friend` fallback.
+  - After login/teleport, real avatar name is preferred when available.
+- Linux GitHub Actions build for the GIPHY/welcome/chat preview branch succeeded:
+  - Run: `26061745761`
+  - Commit: `d73371e429172ae53b943a81a10426c73949bafd`
+- Linux prerelease published:
+  - `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-50`
+  - Asset: `Phoenix-FirestormOSTasia-Releasex64_LEGACY-8-0-1-78266.tar.xz`
 - Added build-time generated obfuscated GIPHY API key fallback support.
 - Added generated-file ignores for:
   - `indra/newview/lltasia_giphy_key.generated.h`
@@ -57,9 +70,12 @@ Next work:
 ### What is broken
 - No known breakage from the current edits.
 - Full animated thumbnail rendering inside chat is still not implemented; current chat preview is a safe local GIPHY card with an external open button.
-- No full Linux build has been run for this feature branch yet.
+- Linux build succeeded, but runtime testing of the released package is still needed.
 
 ### What was last attempted
+- Added only the requested focused fixes: IM GIF button/support and pre-login `<USERNAME>` replacement.
+- Added small YouTube detection fix for scheme-less YouTube URLs.
+- Ran focused XML/whitespace checks successfully; no GitHub Actions build was triggered for these latest uncommitted fixes.
 - Generated empty local fallback key files with no secret present.
 - Tested the generator with a fake key under `/tmp/opencode` and verified plaintext is not written.
 - Parsed `indra/newview/app_settings/settings.xml` successfully.
@@ -71,6 +87,7 @@ Next work:
 - Added GIPHY chat preview cards, loading branding/GIPHY credit, optional YouTube loading media, and reran focused XML/whitespace/script checks successfully.
 - Enabled loading YouTube by default, added image URL chat previews, verified active IM coverage through `FSChatHistory`, and reran focused XML/whitespace/script checks successfully.
 - Corrected YouTube behavior: chat/IM YouTube embeds are now enabled by default via `TasiaYouTubeChatPreview`; loading YouTube is optional/off by default. Focused checks passed again.
+- Published Linux prerelease `v8.0.1-50` from successful run `26061745761`.
 
 ### Exact last failing step
 - None in this session.
@@ -82,7 +99,7 @@ Next work:
 - Keep Linux feature work on `feature/tasia-giphy-welcome-loading-linux` until Linux build succeeds.
 
 ### Next exact action
-- For GitHub Linux build: ensure existing `FMOD_DEPS_TOKEN` secret is present. Add `TASIA_GIPHY_API_KEY` repo secret if the packaged GIPHY picker should work without users manually setting `TasiaGiphyAPIKey`.
+- Review/commit the focused IM GIF + pre-login username fixes, then trigger a new Linux GitHub Actions build.
 
 ## Build Status
 

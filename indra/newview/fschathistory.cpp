@@ -450,24 +450,47 @@ bool tasiaFindFirstImagePreview(const std::string& text, TasiaImagePreview& prev
 
 bool tasiaFindFirstYouTubePreview(const std::string& text, TasiaYouTubePreview& preview)
 {
+    static const char* YOUTUBE_CANDIDATES[] =
+    {
+        "https://",
+        "http://",
+        "www.youtube.com/",
+        "youtube.com/",
+        "m.youtube.com/",
+        "youtu.be/",
+        "www.youtube-nocookie.com/",
+        "youtube-nocookie.com/"
+    };
+
     std::string::size_type search_pos = 0;
     while (search_pos < text.size())
     {
-        std::string::size_type http_pos = text.find("http://", search_pos);
-        std::string::size_type https_pos = text.find("https://", search_pos);
-        std::string::size_type url_pos = std::min(http_pos, https_pos);
-        if (http_pos == std::string::npos)
+        std::string matched_candidate;
+        std::string::size_type url_pos = std::string::npos;
+        for (const char* candidate : YOUTUBE_CANDIDATES)
         {
-            url_pos = https_pos;
-        }
-        else if (https_pos == std::string::npos)
-        {
-            url_pos = http_pos;
+            std::string::size_type candidate_pos = text.find(candidate, search_pos);
+            if (candidate_pos != std::string::npos && (url_pos == std::string::npos || candidate_pos < url_pos))
+            {
+                url_pos = candidate_pos;
+                matched_candidate = candidate;
+            }
         }
 
         if (url_pos == std::string::npos)
         {
             return false;
+        }
+
+        const bool has_scheme = matched_candidate == "http://" || matched_candidate == "https://";
+        if (!has_scheme && url_pos > 0)
+        {
+            const char previous = text[url_pos - 1];
+            if (isalnum(static_cast<unsigned char>(previous)) || previous == '.' || previous == '/' || previous == '-')
+            {
+                search_pos = url_pos + matched_candidate.size();
+                continue;
+            }
         }
 
         std::string::size_type url_end = text.find_first_of(" \n\r\t<>\"'", url_pos);
@@ -476,7 +499,13 @@ bool tasiaFindFirstYouTubePreview(const std::string& text, TasiaYouTubePreview& 
             url_end = text.size();
         }
 
-        if (tasiaExtractYouTubePreviewFromURL(text.substr(url_pos, url_end - url_pos), preview))
+        std::string candidate_url = text.substr(url_pos, url_end - url_pos);
+        if (!has_scheme)
+        {
+            candidate_url = "https://" + candidate_url;
+        }
+
+        if (tasiaExtractYouTubePreviewFromURL(candidate_url, preview))
         {
             return true;
         }
