@@ -260,8 +260,9 @@ jobs:
         shell: bash
         run: |
           set +e
-          RSP="build-vc170-64/newview/CMakeFiles/firestorm-bin.rsp"
+          RSP="$(find build-vc170-64 -name "firestorm-bin.rsp" -type f 2>/dev/null | head -1)"
           if [ -f "$RSP" ]; then
+            echo "RSP=$RSP"
             echo "=== firestorm-bin.rsp (boost/collada entries) ==="
             grep -i "collada\|boost" "$RSP" || echo "(no matches)"
             echo ""
@@ -294,16 +295,24 @@ jobs:
         shell: bash
         run: |
           set +e
-          RSP="build-vc170-64/newview/CMakeFiles/firestorm-bin.rsp"
+          RSP="$(find build-vc170-64 -name "firestorm-bin.rsp" -type f 2>/dev/null | head -1)"
           echo "=== firestorm-bin.rsp after failure ==="
           if [ -f "$RSP" ]; then
+            echo "RSP=$RSP"
             echo "--- boost/collada entries ---"
             grep -i "collada\|boost" "$RSP" || echo "(no boost/collada matches)"
             echo ""
             echo "--- boost_filesystem files ---"
+            BOOST_FS="$(find build-vc170-64/_deps -name "*boost_filesystem*.lib" -type f 2>/dev/null | head -1)"
             find build-vc170-64/_deps -name "*boost_filesystem*" -type f 2>/dev/null | head -20
+            if [ -n "$BOOST_FS" ]; then
+              echo ""
+              echo "--- path_traits::convert symbols in boost_filesystem ---"
+              dumpbin //symbols "$BOOST_FS" 2>/dev/null | grep -i "path_traits.*convert" | head -40 || true
+            fi
           else
-            echo "RSP not found: $RSP"
+            echo "RSP not found"
+            find build-vc170-64 -name "*.rsp" -type f 2>/dev/null | head -20
           fi
 
       - name: Create Windows ZIP artifact

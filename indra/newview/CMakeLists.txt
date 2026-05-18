@@ -1938,6 +1938,7 @@ endif (LINUX)
 if (WINDOWS)
 
     list(APPEND viewer_SOURCE_FILES
+         llboostfilesystemcompat.cpp
          growlmanager.cpp
          growlnotifierwin.cpp
          llappviewerwin32.cpp
@@ -2575,7 +2576,6 @@ target_link_libraries(${VIEWER_BINARY_NAME}
         fs::glod # <FS:Beq/> restore GLOD dependencies
         fs::discord # <FS:Ansariel> Discord  support
         ll::boost
-        $<TARGET_FILE:boost_filesystem>
         )
 
 if( TARGET ll::intel_memops )
