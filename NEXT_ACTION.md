@@ -24,10 +24,16 @@
   checks out `ref: windows-build-test` so build uses Windows code.
 - **Build #48 (25996616402)**: ❌ succeeded 1638/1640 objects, failed at final link (boost filesystem)
 - **Build #49 (25998856384)**: ❌ same error — `ll::boost` via FetchContent Boost 1.87 doesn't help (ABI changed)
-- **Real root cause**: colladadom prebuilt `libcollada14dom23-s.lib` compiled against **Boost 1.86**, but we link **Boost 1.87** via FetchContent. `boost::filesystem::detail::path_traits::convert` was changed/removed in 1.87.
-- **Real fix**: Link `libboost_filesystem-vc143-mt-x64-1_86.lib` (prebuilt 1.86) directly into `ll::colladadom` on Windows, not the FetchContent 1.87 version.
-- **Build #50 (26000378886)**: 🚀 running with real fix — prebuilt Boost 1.86 filesystem linked directly
-- **Next**: Wait for build #50 result. Verify ZIP artifact.
+- **Deeper root cause**: Windows needs Boost 1.86, but also two wchar_t ABIs:
+  viewer code wants native `wchar_t` (`/Zc:wchar_t`), while prebuilt
+  `libcollada14dom23-s.lib` wants legacy unsigned-short mangling
+  (`/Zc:wchar_t-`). Forcing Boost one way only breaks the other side.
+- **Current fix**: keep Boost 1.86 native for viewer code and add
+  `indra/newview/llboostfilesystemcompat.cpp`, a Windows-only shim that provides
+  colladadom's legacy unsigned-short `path_traits::convert` symbols.
+- **Build 26028393584**: 🚀 running clean on commit `8d91d9533b`.
+- **Next**: Wait for build 26028393584 result. If it fails, inspect the new
+  post-failure RSP/symbol dump.
 
 ## Branch Rules (set in stone)
 - **Linux builds** → `linux` branch, `build-tasia.yml` with `target=linux`.

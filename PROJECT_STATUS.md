@@ -27,8 +27,27 @@ Windows CI build is the active task on `windows-build-test` branch.
 - TasiaFeed upload response fix: read parsed JSON keys directly
 
 ## Current Windows Blocker
-**Windows reaches final `firestorm-bin.exe` link but fails resolving Boost
-filesystem symbols from `libcollada14dom23-s.lib`.**
+**Windows reaches final `firestorm-bin.exe` link. Latest root cause is a dual
+Boost.Filesystem wchar_t ABI requirement.**
+
+### 2026-05-18 deeper finding
+- Build `26025086918` proved the issue is not just missing Boost 1.86.
+- When Boost.Filesystem was forced to `/Zc:wchar_t-`, colladadom-style symbols
+  changed, but viewer objects then failed on native `wchar_t` symbols.
+- Therefore one Boost build cannot satisfy both ABIs:
+  - prebuilt `libcollada14dom23-s.lib` expects legacy `unsigned short` mangling
+    (`/Zc:wchar_t-`)
+  - viewer code expects native `wchar_t` mangling (`/Zc:wchar_t`)
+- Fix now applied on `windows-build-test`:
+  - reverted Boost `/Zc:wchar_t-` forcing
+  - added `indra/newview/llboostfilesystemcompat.cpp`, a Windows-only shim that
+    provides the two legacy unsigned-short `path_traits::convert` symbols and
+    forwards to native Boost 1.86 functions
+  - added the shim to Windows viewer sources
+
+### Last attempted
+- Commit `8d91d9533b`: `Add Windows Boost.Filesystem ABI shim for colladadom`
+- Dispatched clean run `26028393584` with `clean_build=true`, `probe_only=false`.
 
 ### Root Cause (real one this time)
 **ABI mismatch**: prebuilt `libcollada14dom23-s.lib` was compiled against
@@ -140,9 +159,13 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
 - Build #50 (26000378886): ❌ prebuilt boost 1.86 lib not found on runner.
 - Build #51 (26000598938): ❌ Boost::filesystem direct link still 1.87 ABI.
 - Build #52 (26000669561): ❌ same — Misfitz's `find_library` + `ll::boost` fix alone not enough.
-- Build #53 (26002326106): 🚀 running — **Boost 1.86.0 on Windows** + Misfitz cmake fix.
+- Build #53 (26002326106): ✅ probe passed — Boost 1.86 configured.
+- Build `26008774063`: ❌ same colladadom `path_traits::convert` unresolved.
+- Build `26025086918`: ❌ after forcing Boost `/Zc:wchar_t-`, viewer native
+  `wchar_t` Boost.Filesystem symbols failed instead — confirmed dual ABI issue.
+- Build `26028393584`: 🚀 running clean with Windows ABI shim.
 
 ## Next Steps
 1-6. ✅ All Ninja/build fixes applied.
 7-11. ✅ All boost ABI attempts documented.
-12. ⏳ **Build #53** with Boost 1.86 + unified cmake — verify link succeeds.
+12. ⏳ **Build 26028393584** with Boost 1.86 + Windows ABI shim — verify link succeeds.

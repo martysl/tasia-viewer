@@ -37,3 +37,22 @@ fi
 - Verify MSVC tools step confirms `cl.exe` and `cmake` are found
 - Configure step uses `autobuild configure` with `--fmodstudio --package`
 - Linux/macOS configure step unchanged
+
+## 2026-05-18: Windows final link — Boost.Filesystem/colladadom ABI
+
+### Root cause
+Windows final link reaches `firestorm-bin.exe` but `libcollada14dom23-s.lib`
+references Boost.Filesystem `path_traits::convert` symbols using legacy
+`unsigned short` mangling (`/Zc:wchar_t-`). Viewer code and FetchContent Boost
+1.86 use native `wchar_t` mangling (`/Zc:wchar_t`).
+
+Forcing Boost.Filesystem to `/Zc:wchar_t-` resolves the colladadom side but
+breaks viewer object references to native `wchar_t` Boost symbols. Therefore the
+correct fix is not changing Boost's ABI globally.
+
+### Current fix
+- Keep Boost 1.86 native for viewer code.
+- Add `indra/newview/llboostfilesystemcompat.cpp` as a Windows-only shim that
+  provides colladadom's legacy unsigned-short `path_traits::convert` entry
+  points and forwards to native Boost.Filesystem functions.
+- Run `26028393584` is testing this fix from commit `8d91d9533b`.
