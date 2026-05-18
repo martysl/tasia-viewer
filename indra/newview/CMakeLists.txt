@@ -99,6 +99,9 @@ set(viewer_SOURCE_FILES
     exoflickrauth.cpp
     fsprimfeedauth.cpp
     tasiafeedconnect.cpp
+    llgiphyclient.cpp
+    lltasia_welcome_client.cpp
+    lltasia_giphy_key.cpp
     exogroupmutelist.cpp
     floatermedialists.cpp
     fsareasearch.cpp
@@ -186,6 +189,7 @@ set(viewer_SOURCE_FILES
     lfsimfeaturehandler.cpp
     llflickrconnect.cpp
     llfloaterflickr.cpp
+    llfloatergiphypicker.cpp
     llfloatertasiafeed.cpp
     fsprimfeedconnect.cpp
     fsfloaterprimfeed.cpp
@@ -943,6 +947,9 @@ set(viewer_HEADER_FILES
     exoflickrauth.h
     fsprimfeedauth.h
     tasiafeedconnect.h
+    llgiphyclient.h
+    lltasia_welcome_client.h
+    lltasia_giphy_key.h
     exogroupmutelist.h
     floatermedialists.h
     fsareasearch.h
@@ -1033,6 +1040,7 @@ set(viewer_HEADER_FILES
     lfsimfeaturehandler.h
     llflickrconnect.h
     llfloaterflickr.h
+    llfloatergiphypicker.h
     llfloatertasiafeed.h
     fsprimfeedconnect.h
     fsfloaterprimfeed.h
@@ -1794,6 +1802,31 @@ configure_file(
 )
 list(APPEND viewer_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/fsversionvalues.h)
 # </FS:TS>
+
+# <Tasia> Generate obfuscated GIPHY API key fallback files.
+set(TASIA_GIPHY_KEY_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/../../scripts/generate_tasia_giphy_key.py")
+set(TASIA_GIPHY_GENERATED_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/lltasia_giphy_key.generated.h")
+set(TASIA_GIPHY_GENERATED_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/lltasia_giphy_key.generated.cpp")
+
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} ${TASIA_GIPHY_KEY_GENERATOR}
+        --header ${TASIA_GIPHY_GENERATED_HEADER}
+        --source ${TASIA_GIPHY_GENERATED_SOURCE}
+    RESULT_VARIABLE TASIA_GIPHY_KEY_RESULT
+)
+if (NOT TASIA_GIPHY_KEY_RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to generate Tasia GIPHY key source files")
+endif()
+
+if ("$ENV{TASIA_GIPHY_API_KEY}" STREQUAL "")
+    message(STATUS "Tasia GIPHY build key: not configured")
+else()
+    message(STATUS "Tasia GIPHY build key: configured")
+endif()
+
+list(APPEND viewer_HEADER_FILES ${TASIA_GIPHY_GENERATED_HEADER})
+list(APPEND viewer_SOURCE_FILES ${TASIA_GIPHY_GENERATED_SOURCE})
+# </Tasia>
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)
 
@@ -3104,4 +3137,3 @@ if (LL_TESTS)
 endif (LL_TESTS)
 
 check_message_template(${VIEWER_BINARY_NAME})
-

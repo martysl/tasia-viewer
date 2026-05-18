@@ -11,6 +11,10 @@
 - `FMOD_DEPS_TOKEN`: GitHub PAT for private deps release downloads
   - Stored in GitHub Secrets
   - Currently full PAT (replace with fine-grained read-only token)
+- `TASIA_GIPHY_API_KEY`: GIPHY API key used only at configure time to generate obfuscated local fallback source files
+  - Stored in GitHub Secrets
+  - Never printed in logs
+  - Generated files must remain ignored and uncommitted
 - No tokens printed in logs
 - No token files committed to repo
 

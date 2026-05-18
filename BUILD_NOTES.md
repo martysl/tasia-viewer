@@ -23,6 +23,117 @@
 - Single platform per run
 - Build order: Linux → Windows → macOS
 
+## 2026-05-18: GIPHY/welcome/loading feature branch
+
+### Generated GIPHY key support
+- Branch: `feature/tasia-giphy-welcome-loading-linux`
+- Build-time environment variable: `TASIA_GIPHY_API_KEY`
+- Generator: `scripts/generate_tasia_giphy_key.py`
+- Generated ignored files:
+  - `indra/newview/lltasia_giphy_key.generated.h`
+  - `indra/newview/lltasia_giphy_key.generated.cpp`
+- Runtime accessor:
+  - `indra/newview/lltasia_giphy_key.h`
+  - `indra/newview/lltasia_giphy_key.cpp`
+
+### Runtime key priority
+1. `TasiaGiphyAPIKey` user setting
+2. Generated obfuscated build-time fallback
+3. Empty/not configured
+
+### Verification run
+- `env -u TASIA_GIPHY_API_KEY python3 scripts/generate_tasia_giphy_key.py --header indra/newview/lltasia_giphy_key.generated.h --source indra/newview/lltasia_giphy_key.generated.cpp`
+- Fake-key generator test under `/tmp/opencode`: passed, plaintext fake key not present in generated source.
+- `python3 -m py_compile scripts/generate_tasia_giphy_key.py`: passed.
+- XML parse of `indra/newview/app_settings/settings.xml`: passed.
+- `git diff --check`: passed.
+
+### Full build status
+- No full Linux build has been run yet after these feature edits.
+
+### Welcome text client
+- Files added:
+  - `indra/newview/lltasia_welcome_client.h`
+  - `indra/newview/lltasia_welcome_client.cpp`
+- `LLProgressView` now requests one random usable line during startup loading.
+- Fetch settings:
+  - `TasiaWelcomeURL`
+  - `TasiaWelcomeURLTimeout`
+  - `TasiaWelcomeMaxBytes`
+- Failure, timeout, empty body, or no valid line leaves the existing server/grid progress message unchanged.
+- Late responses after startup completion are ignored.
+
+### GIPHY API client
+- Files added:
+  - `indra/newview/llgiphyclient.h`
+  - `indra/newview/llgiphyclient.cpp`
+- Supports:
+  - search endpoint
+  - trending endpoint
+  - rating from `TasiaGiphyRating`
+  - result parsing for page URL, preview GIF, fixed-width GIF, downsized GIF, and original GIF
+  - `GIPHY is not configured.` fallback when no runtime or generated key is available
+- The client does not log request URLs, because those contain the API key query parameter.
+
+### GIPHY picker floater
+- Files added:
+  - `indra/newview/llfloatergiphypicker.h`
+  - `indra/newview/llfloatergiphypicker.cpp`
+  - `indra/newview/skins/default/xui/en/floater_giphy_picker.xml`
+- Registered floater name: `giphy_picker`
+- Current behavior:
+  - loads trending GIFs on open
+  - supports search button and trending button
+  - lists result title and normal GIPHY page URL
+  - `Use Selected` invokes an optional callback or copies the selected URL to clipboard
+  - includes `Powered by GIPHY` text
+- Nearby chat wiring:
+  - Added `GIF` button to `indra/newview/skins/default/xui/en/floater_fs_nearby_chat.xml`
+  - Button opens `LLFloaterGiphyPicker`
+  - Selected GIF sends the normal GIPHY page URL through `FSFloaterNearbyChat::sendChatFromViewer(...)`
+  - Current whisper/say/shout selection is respected
+
+### GIPHY chat previews
+- Implemented in `indra/newview/fschathistory.cpp`.
+- Controlled by `TasiaAnimatedGifChatPreview`.
+- Current preview is a safe local card:
+  - detects supported `giphy.com`, `media.giphy.com`, and `*.giphy.com` URL forms
+  - shows `GIF preview`, canonical GIPHY page URL, `Powered by GIPHY`, and an `Open GIF` button
+  - does not alter the sent chat payload
+  - skips plain-text chat history and loaded chat logs to avoid mass widget creation
+- Full inline animated thumbnail rendering is not implemented yet.
+- Direct image URL previews are also implemented in `FSChatHistory`.
+- Controlled by `TasiaImageChatPreview`.
+- Supported direct image extensions:
+  - `.png`
+  - `.jpg`
+  - `.jpeg`
+  - `.gif`
+  - `.webp`
+  - `.bmp`
+  - `.apng`
+- Active nearby chat and Firestorm IM both use `FSChatHistory`; legacy `LLChatHistory` is currently disabled by `#if 0`.
+- YouTube embeds are implemented in `FSChatHistory`.
+- Controlled by `TasiaYouTubeChatPreview` (default true).
+- Supported URL forms include `youtube.com/watch?v=...`, `youtube.com/embed/...`, `youtube.com/shorts/...`, `youtube.com/live/...`, and `youtu.be/...`.
+- Chat sends and stores the normal URL; Tasia Viewer renders the local embed card.
+
+### Loading panel branding / YouTube
+- `panel_progress.xml` now says `Tasia Viewer uses` and includes `Powered by GIPHY`.
+- Optional YouTube loading media is implemented in `LLProgressView`.
+- Controlled by:
+  - `TasiaLoadingYouTubeEnabled` (default false)
+  - `TasiaLoadingYouTubeURL` (default empty)
+- Accepted URL forms include `youtube.com/watch?v=...`, `youtube.com/embed/...`, `youtube.com/shorts/...`, `youtube.com/live/...`, and `youtu.be/...`.
+- The URL is converted to a muted autoplay embed URL locally; the configured URL is not logged.
+- Loading YouTube is not the default behavior; chat/IM YouTube embeds are the default behavior.
+
+### GitHub Actions readiness
+- Linux workflow `.github/workflows/build-tasia.yml` passes `secrets.TASIA_GIPHY_API_KEY` into configure.
+- Build should still configure if `TASIA_GIPHY_API_KEY` is missing; generated fallback key will be empty and runtime GIPHY picker will report `GIPHY is not configured.` unless `TasiaGiphyAPIKey` is set by the user.
+- Existing `FMOD_DEPS_TOKEN` secret remains required for FMOD dependency download.
+- Generated GIPHY files are ignored and must not be committed.
+
 ## 2026-05-17: TasiaFeed upload fixes
 
 ### Fix 1: Wrong HTTP method (postAndSuspend with string → implicit LLSD)
