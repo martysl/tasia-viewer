@@ -16,7 +16,10 @@
 13. ✅ Ran focused generator/XML/whitespace verification.
 14. ✅ Linux GitHub Actions build succeeded: `26061745761`.
 15. ✅ Linux prerelease published: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-50`.
-16. **Test Linux prerelease runtime. If good, port feature branch to Windows and run Windows build.** ← NOW
+16. ✅ Added focused IM GIF button/support using the existing shared GIPHY picker.
+17. ✅ Fixed pre-login `<USERNAME>` welcome replacement with typed/saved/friend fallback and raw-line re-rendering.
+18. ✅ Fixed YouTube chat/IM preview detection for common scheme-less YouTube links.
+19. **Review/commit the focused fixes, then trigger a new Linux GitHub Actions build with `publish_release=true`.** ← NOW
 
 ## Blockers
 - None currently.

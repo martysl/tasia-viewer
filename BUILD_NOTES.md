@@ -144,6 +144,24 @@
 - Release type: GitHub prerelease
 - Next: runtime test Linux package before porting to Windows.
 
+### 2026-05-18: Focused follow-up fixes after prerelease
+- Scope limited to:
+  - IM GIF button/support
+  - pre-login `<USERNAME>` replacement
+  - scheme-less YouTube URL detection in chat/IM previews
+- Files changed:
+  - `indra/newview/fsfloaterim.cpp`
+  - `indra/newview/fsfloaterim.h`
+  - `indra/newview/skins/default/xui/en/floater_fs_im_session.xml`
+  - `indra/newview/fspanellogin.cpp`
+  - `indra/newview/fspanellogin.h`
+  - `indra/newview/llprogressview.cpp`
+  - `indra/newview/llprogressview.h`
+- Focused checks passed:
+  - `git diff --check`
+  - XML parse for IM, nearby chat, GIPHY picker, and settings XUI/XML
+- No GitHub Actions build triggered yet for these latest fixes.
+
 ## 2026-05-17: TasiaFeed upload fixes
 
 ### Fix 1: Wrong HTTP method (postAndSuspend with string → implicit LLSD)

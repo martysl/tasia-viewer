@@ -21,6 +21,13 @@ Next work:
 ## 2026-05-18: GIPHY/welcome/loading branch status
 
 ### What is done
+- Focused follow-up fixes added after Linux prerelease:
+  - IM windows now have a `GIF` button wired to the existing shared `LLFloaterGiphyPicker`.
+  - Picker selection from IM sends the selected GIPHY URL to that IM session, not nearby chat.
+  - YouTube chat/IM preview detection now accepts common scheme-less links like `youtube.com/...`, `www.youtube.com/...`, and `youtu.be/...`.
+  - `welcome.txt` `<USERNAME>` replacement now keeps the raw chosen line and renders using best available name.
+  - Pre-login welcome name priority: typed login username, saved/remembered username, then `friend` fallback.
+  - After login/teleport, real avatar name is preferred when available.
 - Linux GitHub Actions build for the GIPHY/welcome/chat preview branch succeeded:
   - Run: `26061745761`
   - Commit: `d73371e429172ae53b943a81a10426c73949bafd`
@@ -66,6 +73,9 @@ Next work:
 - Linux build succeeded, but runtime testing of the released package is still needed.
 
 ### What was last attempted
+- Added only the requested focused fixes: IM GIF button/support and pre-login `<USERNAME>` replacement.
+- Added small YouTube detection fix for scheme-less YouTube URLs.
+- Ran focused XML/whitespace checks successfully; no GitHub Actions build was triggered for these latest uncommitted fixes.
 - Generated empty local fallback key files with no secret present.
 - Tested the generator with a fake key under `/tmp/opencode` and verified plaintext is not written.
 - Parsed `indra/newview/app_settings/settings.xml` successfully.
@@ -89,7 +99,7 @@ Next work:
 - Keep Linux feature work on `feature/tasia-giphy-welcome-loading-linux` until Linux build succeeds.
 
 ### Next exact action
-- Test Linux prerelease `v8.0.1-50` locally. If runtime is good, port the feature branch to Windows and run the Windows build.
+- Review/commit the focused IM GIF + pre-login username fixes, then trigger a new Linux GitHub Actions build.
 
 ## Build Status
 
