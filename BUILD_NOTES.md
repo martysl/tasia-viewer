@@ -63,3 +63,5 @@ correct fix is not changing Boost's ABI globally.
   and the parent build directory.
 - Run `26032071141` succeeded using restored Windows cache and uploaded
   `Tasia-Viewer-Windows-FMOD` (636,116,759 bytes).
+- Published prerelease `v8.0.1-15-windows` with
+  `Tasia-Viewer-Windows-FMOD.zip` (641,948,477 bytes as release asset).

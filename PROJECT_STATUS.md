@@ -49,6 +49,8 @@ Windows CI build is the active task on `windows-build-test` branch.
 - Dispatched cached run `26032071141` with `clean_build=false`, `probe_only=false`.
 - Result: ✅ success. Artifact `Tasia-Viewer-Windows-FMOD` uploaded
   (636,116,759 bytes).
+- Published GitHub prerelease `v8.0.1-15-windows` with asset
+  `Tasia-Viewer-Windows-FMOD.zip`.
 
 ### Root Cause (real one this time)
 **ABI mismatch**: prebuilt `libcollada14dom23-s.lib` was compiled against
@@ -169,10 +171,13 @@ can associate `sharedlibs/llwebrtc.dll` with the `llwebrtc` target.
   `./build_data.json`.
 - Build `26032071141`: ✅ success using cache after `fs_viewer_manifest.py`
   fallback path fix. ZIP artifact uploaded: `Tasia-Viewer-Windows-FMOD`.
+- Prerelease `v8.0.1-15-windows`: ✅ created from commit `09603eb7c1` with
+  `Tasia-Viewer-Windows-FMOD.zip` asset.
 
 ## Next Steps
 1-6. ✅ All Ninja/build fixes applied.
 7-11. ✅ All boost ABI attempts documented.
 12. ✅ **Build 26032071141** succeeded with Boost 1.86 + Windows ABI shim +
     Ninja build_data fallback.
-13. Next: download/test the Windows ZIP artifact.
+13. ✅ Windows prerelease published: `v8.0.1-15-windows`.
+14. Next: download/test the Windows ZIP artifact.

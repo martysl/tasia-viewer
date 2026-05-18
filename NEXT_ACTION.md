@@ -4,7 +4,8 @@
 1. ✅ Linux build works (v8.0.1-39 tagged).
 2. ✅ Grid lock implemented, version bumped to 8.0.1.
 3. ✅ **Windows CI build — final link fixed, ZIP artifact uploaded.**
-4. ⏳ macOS build or Windows artifact runtime test ← NEXT
+4. ⏳ Windows artifact runtime test ← NEXT
+5. ⏳ macOS build after Windows smoke test
 
 ## Windows blocker
 - **Real root cause**: `vswhere` is broken on GitHub Actions `windows-2022`
@@ -36,7 +37,9 @@
 - **Fix**: `indra/newview/fs_viewer_manifest.py` now falls back to destination
   and parent build paths for `build_data.json`.
 - **Build 26032071141**: ✅ success using restored Windows cache.
-- **Next**: Download/test `Tasia-Viewer-Windows-FMOD` artifact.
+- **Prerelease**: ✅ `v8.0.1-15-windows` created with
+  `Tasia-Viewer-Windows-FMOD.zip`.
+- **Next**: Download/test `Tasia-Viewer-Windows-FMOD.zip` from prerelease.
 
 ## Branch Rules (set in stone)
 - **Linux builds** → `linux` branch, `build-tasia.yml` with `target=linux`.
