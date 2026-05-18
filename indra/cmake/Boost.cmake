@@ -40,12 +40,20 @@ set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 # Boost's own sources will not compile cleanly with the viewer's strict warning
 # flags. Strip /WX (and /W4) for the duration of the FetchContent subbuild and
 # restore them afterwards so viewer code stays strict.
+# Also force /Zc:wchar_t- so that wchar_t == unsigned short, matching the
+# prebuilt colladadom library (libcollada14dom23-s.lib). This ensures the
+# mangled boost::filesystem::detail::path_traits::convert symbol matches.
 set(_ll_boost_saved_cxx_flags "${CMAKE_CXX_FLAGS}")
 set(_ll_boost_saved_c_flags   "${CMAKE_C_FLAGS}")
 if (MSVC)
   string(REGEX REPLACE "[/-]WX( |$)"   " "    CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   string(REGEX REPLACE "[/-]W[0-4]( |$)" "/W1 " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   string(REGEX REPLACE "[/-]WX( |$)"   " "    CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")
+  # Force wchar_t = unsigned short to match prebuilt colladadom ABI
+  string(REGEX REPLACE "[/-]Zc:wchar_t[ -]" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(REGEX REPLACE "[/-]Zc:wchar_t[ -]" " " CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:wchar_t-")
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /Zc:wchar_t-")
 else()
   string(REGEX REPLACE "(^| )-Werror( |$)" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   string(REGEX REPLACE "(^| )-Werror( |$)" " " CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")

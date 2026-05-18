@@ -255,6 +255,26 @@ jobs:
           find build-vc170-64/_deps/boost-build -maxdepth 2 -name "*.lib" -o -name "*.a" 2>/dev/null | head -20 || echo "(empty)"
           set -e
 
+      - name: Dump link response file before build
+        if: inputs.probe_only != 'true'
+        shell: bash
+        run: |
+          set +e
+          RSP="build-vc170-64/newview/CMakeFiles/firestorm-bin.rsp"
+          if [ -f "$RSP" ]; then
+            echo "=== firestorm-bin.rsp (boost/collada entries) ==="
+            grep -i "collada\|boost" "$RSP" || echo "(no matches)"
+            echo ""
+            echo "=== boost_filesystem.library resolved path ==="
+            echo "Checking CMakeCache..."
+            grep -i "boost_filesystem_LIBRARY\|boost_filesystem_location" build-vc170-64/CMakeCache.txt 2>/dev/null || true
+            echo ""
+            echo "=== Searching for boost_filesystem.lib ==="
+            find build-vc170-64/_deps -name "*boost_filesystem*" -type f 2>/dev/null | head -10
+          else
+            echo "RSP not found yet, will be generated during build"
+          fi
+
       - name: Build Windows with FMOD
         if: inputs.probe_only != 'true'
         shell: bash
