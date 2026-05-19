@@ -47,7 +47,7 @@ jobs:
       - name: Checkout viewer source
         uses: actions/checkout@v4
         with:
-          ref: windows-build-test
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
 
       - name: Setup Python 3.11
@@ -164,6 +164,8 @@ jobs:
 
       - name: Configure Windows with FMOD
         shell: bash
+        env:
+          TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
         run: |
           set -euo pipefail
 
