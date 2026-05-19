@@ -29,7 +29,10 @@
 26. ✅ Added hosted YouTube player wrapper support: `https://apps.easierit.org/igrid/youtube-player/?v=VIDEO_ID`.
 27. ✅ Uploaded wrapper page to the HTTPS domain and verified it loads.
 28. ✅ Changed YouTube chat card to open the hosted wrapper in `LLFloaterWebContent` when user clicks `Play in Viewer`.
-29. **Commit/push these preview/player fixes and trigger Linux GitHub Actions build with `publish_release=true`.** ← NOW
+29. ✅ Ported approved feature commits to Windows feature branch `feature/tasia-giphy-welcome-loading-windows`.
+30. ✅ Updated Windows workflow to checkout the dispatched ref and pass `TASIA_GIPHY_API_KEY` during configure.
+31. ✅ Focused Windows-branch checks passed.
+32. **Push Windows feature branch, trigger Windows GitHub Actions build, then publish Windows prerelease if successful.** ← NOW
 
 ## Blockers
 - None currently.

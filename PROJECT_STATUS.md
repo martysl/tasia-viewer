@@ -4,9 +4,9 @@
 
 Linux viewer builds and runs with FMOD.
 
-Current branch: `feature/tasia-giphy-welcome-loading-linux`.
+Current branch: `feature/tasia-giphy-welcome-loading-windows`.
 
-Current feature work: GIPHY/welcome/loading improvements are being implemented on Linux first, then ported to Windows after Linux success.
+Current feature work: Linux GIPHY/welcome/chat preview work succeeded and was ported to a Windows feature branch for validation/release.
 
 Next work:
 1. **Grid lock**: remove/block Second Life and add I-Grid Beta.
@@ -21,6 +21,13 @@ Next work:
 ## 2026-05-18: GIPHY/welcome/loading branch status
 
 ### What is done
+- Windows feature branch port is prepared:
+  - Branch: `feature/tasia-giphy-welcome-loading-windows`
+  - Base: `github/windows-build-test`
+  - Cherry-picked approved feature commits from Linux branch.
+  - Windows workflow now checks out `${{ github.ref_name }}` so dispatched feature-branch builds use the Windows feature branch.
+  - Windows configure step passes `TASIA_GIPHY_API_KEY` from GitHub Secrets.
+  - Focused checks passed on the Windows feature branch.
 - Mom runtime report before sleep:
   - `welcome.txt` welcome message works well.
   - GIPHY picker/window opens.
@@ -94,12 +101,16 @@ Next work:
 - Added optional loading YouTube embed behavior in `LLProgressView`, gated by `TasiaLoadingYouTubeEnabled` and `TasiaLoadingYouTubeURL`; loading media is disabled by default.
 
 ### What is broken
+- Windows build/release for this feature branch has not been run yet.
 - Latest GIPHY direct GIF preview fix is not built/runtime-tested yet.
 - YouTube embed panel renders, but playback may still fail with YouTube error 153 if the viewer media browser cannot satisfy YouTube embed requirements.
 - Hosted YouTube wrapper playback is not runtime-tested in the viewer yet.
 - Linux build succeeded, but runtime testing of the released package is still needed.
 
 ### What was last attempted
+- Ported current approved Linux feature commits to `feature/tasia-giphy-welcome-loading-windows`.
+- Updated `.github/workflows/build-windows.yml` to build the dispatched ref and pass `TASIA_GIPHY_API_KEY`.
+- Focused checks passed on Windows feature branch: whitespace, Python generator compile, XUI/settings XML parse, wrapper HTML smoke, and conflict-marker scan.
 - Added only the requested focused fixes: IM GIF button/support and pre-login `<USERNAME>` replacement.
 - Added small YouTube detection fix for scheme-less YouTube URLs.
 - Ran focused XML/whitespace checks successfully.
@@ -135,7 +146,7 @@ Next work:
 - Keep Linux feature work on `feature/tasia-giphy-welcome-loading-linux` until Linux build succeeds.
 
 ### Next exact action
-- Commit/push hosted YouTube wrapper + direct GIPHY GIF preview fix, trigger Linux GitHub Actions build with `publish_release=true`, then runtime-test GIPHY preview and YouTube wrapper playback.
+- Commit/push Windows workflow ref fix and memory update, trigger Windows GitHub Actions build from `feature/tasia-giphy-welcome-loading-windows`, then publish a Windows prerelease from the artifact if the build succeeds.
 
 ## Build Status
 

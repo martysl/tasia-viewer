@@ -205,6 +205,25 @@
   - HTML parse smoke for `web/youtube-player/index.html`.
 - Needs runtime validation after GitHub build.
 
+### 2026-05-19: Windows feature branch port
+- Branch: `feature/tasia-giphy-welcome-loading-windows`
+- Base: `github/windows-build-test`
+- Ported commits:
+  - `70f5906d0c Add Tasia GIPHY welcome chat previews`
+  - `a37e373645 Fix IM GIPHY and welcome username handling`
+  - `9f2c5e5c87 Render GIPHY previews with direct GIF media`
+  - `cad8a16097 Add hosted YouTube player wrapper support`
+- Windows workflow update:
+  - `actions/checkout` now uses `ref: ${{ github.ref_name }}`.
+  - Configure step passes `TASIA_GIPHY_API_KEY` from GitHub Secrets.
+- Focused checks passed:
+  - `git diff --check`
+  - `python3 -m py_compile scripts/generate_tasia_giphy_key.py`
+  - XML parse for settings, nearby chat, IM, GIPHY picker, and progress panel.
+  - HTML parse smoke for `web/youtube-player/index.html`.
+  - Conflict-marker scan of memory files.
+- Next: push branch and trigger Windows build.
+
 ## 2026-05-17: TasiaFeed upload fixes
 
 ### Fix 1: Wrong HTTP method (postAndSuspend with string → implicit LLSD)
