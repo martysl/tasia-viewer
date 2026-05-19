@@ -104,6 +104,7 @@ struct TasiaGiphyPreview
 {
     std::string id;
     std::string page_url;
+    std::string media_url;
 };
 
 struct TasiaImagePreview
@@ -293,6 +294,7 @@ bool tasiaExtractGiphyPreviewFromURL(std::string url, TasiaGiphyPreview& preview
 
     preview.id = id;
     preview.page_url = "https://giphy.com/gifs/" + id;
+    preview.media_url = "https://media.giphy.com/media/" + id + "/giphy.gif";
     return true;
 }
 
@@ -370,7 +372,7 @@ bool tasiaExtractYouTubePreviewFromURL(std::string url, TasiaYouTubePreview& pre
 
     preview.video_id = video_id;
     preview.page_url = "https://www.youtube.com/watch?v=" + video_id;
-    preview.embed_url = "https://www.youtube.com/embed/" + video_id + "?rel=0";
+    preview.embed_url = "https://www.youtube-nocookie.com/embed/" + video_id + "?rel=0&playsinline=1&modestbranding=1";
     return true;
 }
 
@@ -671,17 +673,22 @@ public:
     TasiaGiphyPreviewPanel(const TasiaGiphyPreview& preview)
         : LLPanel(makeParams())
         , mURL(preview.page_url)
+        , mMediaURL(preview.media_url)
     {
-        LLTextBox::Params title_params;
-        title_params.name = "tasia_giphy_preview_title";
-        title_params.rect = LLRect(10, 60, 260, 40);
-        title_params.initial_value = LLSD("GIF preview");
-        mTitle = LLUICtrlFactory::create<LLTextBox>(title_params);
-        addChild(mTitle);
+        LLMediaCtrl::Params media_params;
+        media_params.name = "tasia_giphy_preview_media";
+        media_params.rect = LLRect(10, 178, 330, 28);
+        media_params.start_url = mMediaURL;
+        media_params.border_visible = true;
+        media_params.focus_on_click = false;
+        media_params.trusted_content = false;
+        mMedia = LLUICtrlFactory::create<LLMediaCtrl>(media_params);
+        mMedia->setTakeFocusOnClick(false);
+        addChild(mMedia);
 
         LLTextBox::Params url_params;
         url_params.name = "tasia_giphy_preview_url";
-        url_params.rect = LLRect(10, 39, 260, 21);
+        url_params.rect = LLRect(10, 24, 330, 6);
         url_params.initial_value = LLSD(mURL);
         url_params.use_ellipses = true;
         mURLText = LLUICtrlFactory::create<LLTextBox>(url_params);
@@ -689,7 +696,7 @@ public:
 
         LLTextBox::Params powered_params;
         powered_params.name = "tasia_giphy_powered";
-        powered_params.rect = LLRect(10, 20, 180, 4);
+        powered_params.rect = LLRect(340, 60, 440, 42);
         powered_params.initial_value = LLSD("Powered by GIPHY");
         mPoweredBy = LLUICtrlFactory::create<LLTextBox>(powered_params);
         addChild(mPoweredBy);
@@ -697,7 +704,7 @@ public:
         LLButton::Params open_params;
         open_params.name = "tasia_giphy_open";
         open_params.label = "Open GIF";
-        open_params.rect = LLRect(270, 42, 360, 18);
+        open_params.rect = LLRect(340, 98, 440, 74);
         mOpenButton = LLUICtrlFactory::create<LLButton>(open_params);
         mOpenButton->setClickedCallback([this](LLUICtrl*, const LLSD&) { openURL(); });
         addChild(mOpenButton);
@@ -706,21 +713,21 @@ public:
     void reshape(S32 width, S32 height, bool called_from_parent = true) override
     {
         LLPanel::reshape(width, height, called_from_parent);
-        if (mTitle)
+        if (mMedia)
         {
-            mTitle->setRect(LLRect(10, height - 6, width - 110, height - 26));
+            mMedia->setRect(LLRect(10, height - 10, llmax(120, width - 120), 28));
         }
         if (mURLText)
         {
-            mURLText->setRect(LLRect(10, height - 27, width - 110, height - 45));
+            mURLText->setRect(LLRect(10, 24, llmax(120, width - 120), 6));
         }
         if (mPoweredBy)
         {
-            mPoweredBy->setRect(LLRect(10, height - 46, width - 110, height - 62));
+            mPoweredBy->setRect(LLRect(width - 110, 60, width - 10, 42));
         }
         if (mOpenButton)
         {
-            mOpenButton->setRect(LLRect(width - 100, height - 18, width - 10, height - 42));
+            mOpenButton->setRect(LLRect(width - 110, 98, width - 10, 74));
         }
     }
 
@@ -729,7 +736,7 @@ private:
     {
         LLPanel::Params params;
         params.name = "tasia_giphy_preview";
-        params.rect = LLRect(0, 66, 360, 0);
+        params.rect = LLRect(0, 188, 440, 0);
         params.mouse_opaque = true;
         params.background_visible = true;
         params.has_border = true;
@@ -742,7 +749,8 @@ private:
     }
 
     std::string mURL;
-    LLTextBox* mTitle = nullptr;
+    std::string mMediaURL;
+    LLMediaCtrl* mMedia = nullptr;
     LLTextBox* mURLText = nullptr;
     LLTextBox* mPoweredBy = nullptr;
     LLButton* mOpenButton = nullptr;
@@ -2556,7 +2564,7 @@ void FSChatHistory::appendMessage(const LLChat& chat, const LLSD &args, const LL
         setContentTrusted(is_trusted);
         setPlainText(use_plain_text_chat_history);
 
-        if (!use_plain_text_chat_history && !message_from_log)
+        if (!message_from_log)
         {
             bool preview_added = false;
 

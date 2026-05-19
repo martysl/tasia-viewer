@@ -21,6 +21,26 @@ Next work:
 ## 2026-05-18: GIPHY/welcome/loading branch status
 
 ### What is done
+- Mom runtime report before sleep:
+  - `welcome.txt` welcome message works well.
+  - GIPHY picker/window opens.
+  - GIPHY search works.
+  - GIF/image results display in picker window.
+  - Selecting GIF works.
+  - Nearby chat GIF button works.
+  - IM windows now also have the GIF button/support.
+- Mom correction after runtime testing:
+  - GIPHY chat preview did **not** show the actual GIF/image; it only showed a card/link.
+  - YouTube preview panel appeared, but playback failed with YouTube player error 153.
+- Current follow-up fix attempt:
+  - GIPHY chat preview now derives `https://media.giphy.com/media/<id>/giphy.gif` from normal GIPHY page URLs and renders that direct GIF in the chat preview panel.
+  - Preview insertion no longer depends on `PlainTextChatHistory`, so compact/old chat style can attempt previews too.
+  - YouTube embed URL uses `www.youtube-nocookie.com/embed/...` with safer embed parameters, but this still needs runtime testing.
+- Latest Linux GitHub Actions build with autopublish succeeded:
+  - Run: `26067438313`
+  - Commit: `670d58e7ceb4ac0429cfd31e47d2e5897445df07`
+  - Release: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-51`
+  - Asset: `Phoenix-FirestormOSTasia-Releasex64_LEGACY-8-0-1-78266.tar.xz`
 - Focused follow-up fixes added after Linux prerelease:
   - IM windows now have a `GIF` button wired to the existing shared `LLFloaterGiphyPicker`.
   - Picker selection from IM sends the selected GIPHY URL to that IM session, not nearby chat.
@@ -68,14 +88,20 @@ Next work:
 - Added optional loading YouTube embed behavior in `LLProgressView`, gated by `TasiaLoadingYouTubeEnabled` and `TasiaLoadingYouTubeURL`; loading media is disabled by default.
 
 ### What is broken
-- No known breakage from the current edits.
-- Full animated thumbnail rendering inside chat is still not implemented; current chat preview is a safe local GIPHY card with an external open button.
+- Latest GIPHY direct GIF preview fix is not built/runtime-tested yet.
+- YouTube embed panel renders, but playback may still fail with YouTube error 153 if the viewer media browser cannot satisfy YouTube embed requirements.
 - Linux build succeeded, but runtime testing of the released package is still needed.
 
 ### What was last attempted
 - Added only the requested focused fixes: IM GIF button/support and pre-login `<USERNAME>` replacement.
 - Added small YouTube detection fix for scheme-less YouTube URLs.
-- Ran focused XML/whitespace checks successfully; no GitHub Actions build was triggered for these latest uncommitted fixes.
+- Ran focused XML/whitespace checks successfully.
+- Committed focused fixes as `670d58e7ce Fix IM GIPHY and welcome username handling`.
+- Pushed branch and triggered GitHub Actions Linux build with `publish_release=true`: run `26067438313`.
+- Run `26067438313` completed successfully and autopublished prerelease `v8.0.1-51`.
+- Mom reported runtime progress: welcome message works well; GIPHY button/support now exists in IMs; embedding display does not work yet.
+- Mom corrected status: GIPHY did not preview the actual GIF/image. Implemented direct GIPHY GIF media preview attempt in `FSChatHistory`.
+- Focused checks passed after the direct GIF preview change.
 - Generated empty local fallback key files with no secret present.
 - Tested the generator with a fake key under `/tmp/opencode` and verified plaintext is not written.
 - Parsed `indra/newview/app_settings/settings.xml` successfully.
@@ -99,7 +125,7 @@ Next work:
 - Keep Linux feature work on `feature/tasia-giphy-welcome-loading-linux` until Linux build succeeds.
 
 ### Next exact action
-- Review/commit the focused IM GIF + pre-login username fixes, then trigger a new Linux GitHub Actions build.
+- Commit/push direct GIPHY GIF preview fix, trigger Linux GitHub Actions build with `publish_release=true`, then runtime-test GIPHY preview and YouTube error 153 behavior.
 
 ## Build Status
 
