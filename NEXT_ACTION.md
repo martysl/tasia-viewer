@@ -24,9 +24,12 @@
 21. ✅ Mom runtime report saved: welcome message works well; GIPHY picker/search/select works; nearby chat and IM GIF buttons exist; embedding display does not work yet.
 22. ✅ Run `26067438313` succeeded and autopublished prerelease `v8.0.1-51`.
 23. ✅ Mom corrected status: GIPHY preview did not show the actual GIF/image; it only showed a card/link.
-24. ✅ Implemented direct GIPHY GIF media preview attempt using `https://media.giphy.com/media/<id>/giphy.gif`.
-25. ✅ Kept compact/old chat style preview insertion enabled and switched YouTube embed to `youtube-nocookie` URL.
-26. **Commit/push these preview fixes and trigger Linux GitHub Actions build with `publish_release=true`.** ← NOW
+24. ✅ Implemented direct GIPHY GIF media preview attempt using `https://i.giphy.com/media/<id>/giphy.gif`.
+25. ✅ Kept compact/old chat style preview insertion enabled.
+26. ✅ Added hosted YouTube player wrapper support: `https://apps.easierit.org/igrid/youtube-player/?v=VIDEO_ID`.
+27. ✅ Uploaded wrapper page to the HTTPS domain and verified it loads.
+28. ✅ Changed YouTube chat card to open the hosted wrapper in `LLFloaterWebContent` when user clicks `Play in Viewer`.
+29. **Commit/push these preview/player fixes and trigger Linux GitHub Actions build with `publish_release=true`.** ← NOW
 
 ## Blockers
 - None currently.
