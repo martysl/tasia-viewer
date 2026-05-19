@@ -21,6 +21,12 @@ Next work:
 ## 2026-05-18: GIPHY/welcome/loading branch status
 
 ### What is done
+- Voice-disabled microphone detection hotfix candidate added:
+  - `LLVoiceClient::refreshDeviceLists()` now skips device refresh when `EnableVoiceChat=false`.
+  - `LLVoiceClient::setCaptureDevice()` and `LLVoiceClient::setMicGain()` now skip capture/mic operations when voice is disabled.
+  - `LLWebRTCVoiceClient::init()` no longer refreshes devices at startup when voice is disabled.
+  - `LLWebRTCVoiceClient::updateSettings()`, `OnDevicesChangedImpl()`, and `refreshDeviceLists()` skip capture/mic/device work while voice is disabled.
+  - `LLVivoxVoiceClient::updateSettings()` and `refreshDeviceLists()` skip capture/mic/device work while voice is disabled.
 - Windows feature branch port is prepared:
   - Branch: `feature/tasia-giphy-welcome-loading-windows`
   - Base: `github/windows-build-test`
@@ -109,6 +115,10 @@ Next work:
 - Added optional loading YouTube embed behavior in `LLProgressView`, gated by `TasiaLoadingYouTubeEnabled` and `TasiaLoadingYouTubeURL`; loading media is disabled by default.
 
 ### What is broken
+- Voice-disabled microphone detection hotfix is not built/runtime-tested yet.
+- Voice disabled should not trigger Windows microphone detection, but Mom reports released viewer does while official viewer does not.
+- FMOD test with `LL_BAD_FMODSTUDIO_DRIVER=1` still triggered microphone detection, so FMOD is likely not the cause.
+- Likely next investigation: voice/WebRTC/Vivox startup initializes or enumerates capture devices before respecting `EnableVoiceChat=false`.
 - Windows feature prerelease is published, but runtime testing is still needed.
 - Latest GIPHY direct GIF preview fix is not built/runtime-tested yet.
 - YouTube embed panel renders, but playback may still fail with YouTube error 153 if the viewer media browser cannot satisfy YouTube embed requirements.
@@ -116,6 +126,12 @@ Next work:
 - Linux build succeeded, but runtime testing of the released package is still needed.
 
 ### What was last attempted
+- Added focused voice privacy hotfix candidate to avoid capture device refresh/selection/mic gain while `EnableVoiceChat=false`.
+- Focused checks passed: `git diff --check` and memory conflict-marker scan.
+- Mom identified next-build goals:
+  - optional user-selectable rendering path: current PBR renderer plus old pre-PBR renderer/engine from an older viewer line;
+  - pre-PBR viewer source reference: `https://gitlab.com/lostorm/lostorm/-/tree/lostorm-13?ref_type=heads`;
+  - voice/microphone detection fix is a separate issue, not sourced from that Lostorm link.
 - Ported current approved Linux feature commits to `feature/tasia-giphy-welcome-loading-windows`.
 - Updated `.github/workflows/build-windows.yml` to build the dispatched ref and pass `TASIA_GIPHY_API_KEY`.
 - Focused checks passed on Windows feature branch: whitespace, Python generator compile, XUI/settings XML parse, wrapper HTML smoke, and conflict-marker scan.
@@ -157,7 +173,8 @@ Next work:
 - Keep Linux feature work on `feature/tasia-giphy-welcome-loading-linux` until Linux build succeeds.
 
 ### Next exact action
-- Runtime-test Windows prerelease `v8.0.1-16-windows`, especially welcome text, GIPHY picker in nearby/IM, image/GIPHY previews, and hosted YouTube player wrapper.
+- Commit/push the voice-disabled microphone detection hotfix candidate, then trigger a focused Windows build when Mom approves.
+- After runtime test confirms the microphone indicator no longer triggers with voice disabled, plan the optional dual renderer/PBR vs pre-PBR work as a separate large feature branch.
 
 ## Build Status
 

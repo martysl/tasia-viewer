@@ -272,7 +272,15 @@ void LLWebRTCVoiceClient::init(LLPumpIO* pump)
     mWebRTCDeviceInterface = llwebrtc::getDeviceInterface();
     mWebRTCDeviceInterface->setDevicesObserver(this);
     mMainQueue = LL::WorkQueue::getInstance("mainloop");
-    refreshDeviceLists();
+
+    if (LLVoiceClient::getInstance()->voiceEnabled(true))
+    {
+        refreshDeviceLists();
+    }
+    else
+    {
+        LL_INFOS("Voice") << "Voice disabled; delaying WebRTC device refresh." << LL_ENDL;
+    }
 }
 
 void LLWebRTCVoiceClient::terminate()
@@ -335,9 +343,17 @@ void LLWebRTCVoiceClient::updateSettings()
 {
     LL_PROFILE_ZONE_SCOPED_CATEGORY_VOICE;
 
-    setVoiceEnabled(LLVoiceClient::getInstance()->voiceEnabled());
+    const bool voice_enabled = LLVoiceClient::getInstance()->voiceEnabled(true);
+    setVoiceEnabled(voice_enabled);
+
     static LLCachedControl<S32> sVoiceEarLocation(gSavedSettings, "VoiceEarLocation");
     setEarLocation(sVoiceEarLocation);
+
+    if (!voice_enabled)
+    {
+        LL_INFOS("Voice") << "Voice disabled; skipping WebRTC capture device and mic settings." << LL_ENDL;
+        return;
+    }
 
     static LLCachedControl<std::string> sInputDevice(gSavedSettings, "VoiceInputAudioDevice");
     setCaptureDevice(sInputDevice);
@@ -687,6 +703,15 @@ void LLWebRTCVoiceClient::OnDevicesChangedImpl(const llwebrtc::LLWebRTCVoiceDevi
     {
         return;
     }
+    if (!LLVoiceClient::getInstance()->voiceEnabled(true))
+    {
+        LL_INFOS("Voice") << "Voice disabled; ignoring WebRTC device change notification." << LL_ENDL;
+        clearCaptureDevices();
+        clearRenderDevices();
+        setDevicesListUpdated(true);
+        return;
+    }
+
     LL_PROFILE_ZONE_SCOPED_CATEGORY_VOICE;
     std::string inputDevice = gSavedSettings.getString("VoiceInputAudioDevice");
     std::string outputDevice = gSavedSettings.getString("VoiceOutputAudioDevice");
@@ -811,6 +836,12 @@ void LLWebRTCVoiceClient::refreshDeviceLists(bool clearCurrentList)
         clearCaptureDevices();
         clearRenderDevices();
     }
+    if (!LLVoiceClient::getInstance()->voiceEnabled(true))
+    {
+        LL_INFOS("Voice") << "Voice disabled; skipping WebRTC device refresh." << LL_ENDL;
+        return;
+    }
+
     mWebRTCDeviceInterface->refreshDevices();
 }
 
@@ -1571,6 +1602,7 @@ void LLWebRTCVoiceClient::setVoiceEnabled(bool enabled)
         if (enabled)
         {
             LL_DEBUGS("Voice") << "enabling" << LL_ENDL;
+            refreshDeviceLists();
             LLVoiceChannel::getCurrentVoiceChannel()->activate();
             status = LLVoiceClientStatusObserver::STATUS_VOICE_ENABLED;
             mSpatialCoordsDirty = true;

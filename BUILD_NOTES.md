@@ -236,6 +236,35 @@
   - Release type: GitHub prerelease
   - Target commit: `ab1dd99400a63adb46061b2597dba8252984140f`
 
+### 2026-05-19: Next-build scope notes
+- Voice/microphone issue:
+  - Mom reports Windows microphone detection triggers immediately after app start even when voice chat is disabled.
+  - Test with `LL_BAD_FMODSTUDIO_DRIVER=1` still triggered microphone detection, so FMOD is likely not responsible.
+  - Official viewer reportedly does not show this behavior with voice disabled.
+  - Likely suspect: viewer voice/WebRTC/Vivox startup initializes/enumerates capture devices before honoring `EnableVoiceChat=false`.
+  - Desired behavior: if `EnableVoiceChat=false`, do not start voice backend or enumerate/query capture devices.
+- Voice-disabled microphone detection hotfix candidate:
+  - Files changed:
+    - `indra/newview/llvoiceclient.cpp`
+    - `indra/newview/llvoicewebrtc.cpp`
+    - `indra/newview/llvoicevivox.cpp`
+  - Behavior changed:
+    - device refresh is skipped while `EnableVoiceChat=false`;
+    - capture device selection is skipped while `EnableVoiceChat=false`;
+    - mic gain/audio config setup is skipped while `EnableVoiceChat=false`;
+    - WebRTC startup delays device refresh until voice is enabled.
+  - Focused checks passed:
+    - `git diff --check`
+    - memory conflict-marker scan.
+  - Needs Windows runtime test: launch with voice disabled and verify Windows microphone recent activity/indicator does not trigger.
+- Renderer/engine future work:
+  - Mom wants user-selectable rendering paths in viewer:
+    - current PBR renderer/engine;
+    - old pre-PBR renderer/engine from an older viewer line.
+  - Pre-PBR source reference: `https://gitlab.com/lostorm/lostorm/-/tree/lostorm-13?ref_type=heads`.
+  - This is a large feature and should be isolated in its own branch after the voice-disabled microphone issue is fixed.
+  - Do not mix dual-renderer port with small hotfixes.
+
 ## 2026-05-17: TasiaFeed upload fixes
 
 ### Fix 1: Wrong HTTP method (postAndSuspend with string → implicit LLSD)

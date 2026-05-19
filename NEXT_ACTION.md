@@ -35,7 +35,12 @@
 32. ✅ Pushed Windows feature branch and triggered Windows build `26098421990` with `clean_build=false`, `probe_only=false`.
 33. ✅ Windows build `26098421990` succeeded.
 34. ✅ Windows prerelease published: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-16-windows`.
-35. **Runtime-test Windows prerelease `v8.0.1-16-windows`.** ← NOW
+35. ✅ Mom reported microphone detection triggers on app start even with voice disabled; FMOD-disabled launch still triggers it, so FMOD is likely not the cause.
+36. ✅ Mom provided Lostorm pre-PBR viewer source reference: `https://gitlab.com/lostorm/lostorm/-/tree/lostorm-13?ref_type=heads`.
+37. ✅ Mom requested next-build planning for user-selectable renderer paths: current PBR and old pre-PBR engine.
+38. ✅ Added focused voice-disabled microphone detection hotfix candidate.
+39. ✅ Focused checks passed.
+40. **Commit/push voice hotfix candidate; trigger focused Windows build only when Mom approves.** ← NOW
 
 ## Blockers
 - None currently.

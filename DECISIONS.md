@@ -20,3 +20,5 @@
 | 2026-05-18 | YouTube embeds are chat/IM previews by default, not loading-screen media | Matches expected behavior when someone sends a YouTube URL |
 | 2026-05-18 | Loading YouTube media stays optional/off by default | Prevents unexpected remote media during startup |
 | 2026-05-18 | Direct image previews are implemented in active `FSChatHistory` only | Nearby chat and Firestorm IM use this path; legacy `LLChatHistory` is disabled by `#if 0` |
+| 2026-05-19 | Fix voice-disabled microphone detection before dual-renderer work | Privacy issue is smaller and more urgent than renderer architecture |
+| 2026-05-19 | Dual renderer/PBR vs pre-PBR must be a separate feature branch | Renderer architecture is high-risk and must not mix with hotfixes |
