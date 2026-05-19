@@ -19,7 +19,14 @@
 16. ✅ Added focused IM GIF button/support using the existing shared GIPHY picker.
 17. ✅ Fixed pre-login `<USERNAME>` welcome replacement with typed/saved/friend fallback and raw-line re-rendering.
 18. ✅ Fixed YouTube chat/IM preview detection for common scheme-less YouTube links.
-19. **Review/commit the focused fixes, then trigger a new Linux GitHub Actions build with `publish_release=true`.** ← NOW
+19. ✅ Committed and pushed focused fixes: `670d58e7ce Fix IM GIPHY and welcome username handling`.
+20. ✅ Triggered Linux GitHub Actions build with `publish_release=true`: `26067438313`.
+21. ✅ Mom runtime report saved: welcome message works well; GIPHY picker/search/select works; nearby chat and IM GIF buttons exist; embedding display does not work yet.
+22. ✅ Run `26067438313` succeeded and autopublished prerelease `v8.0.1-51`.
+23. ✅ Mom corrected status: GIPHY preview did not show the actual GIF/image; it only showed a card/link.
+24. ✅ Implemented direct GIPHY GIF media preview attempt using `https://media.giphy.com/media/<id>/giphy.gif`.
+25. ✅ Kept compact/old chat style preview insertion enabled and switched YouTube embed to `youtube-nocookie` URL.
+26. **Commit/push these preview fixes and trigger Linux GitHub Actions build with `publish_release=true`.** ← NOW
 
 ## Blockers
 - None currently.

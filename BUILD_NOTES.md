@@ -160,7 +160,41 @@
 - Focused checks passed:
   - `git diff --check`
   - XML parse for IM, nearby chat, GIPHY picker, and settings XUI/XML
-- No GitHub Actions build triggered yet for these latest fixes.
+- Commit: `670d58e7ce Fix IM GIPHY and welcome username handling`
+- GitHub Actions Linux build with `publish_release=true`: `26067438313`
+- Result: success
+- Release: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-51`
+- Asset: `Phoenix-FirestormOSTasia-Releasex64_LEGACY-8-0-1-78266.tar.xz`
+
+### 2026-05-19: Mom runtime checkpoint before sleep
+- Working:
+  - `welcome.txt` welcome message works well.
+  - GIPHY picker/window opens.
+  - GIPHY search works.
+  - GIF/image results display in picker window.
+  - Selecting GIF works.
+  - GIF button exists in nearby chat.
+  - GIF button/support now exists in IM windows.
+- Not working yet:
+  - Chat/IM embedding display does not work; likely needs a different implementation approach.
+- Next:
+  - Check GitHub Actions run `26067438313` and any autopublished release.
+  - Fix embed display using another approach, without expanding unrelated scope.
+
+### 2026-05-19: GIPHY preview correction
+- Mom corrected status:
+  - GIPHY chat preview did not show the actual GIF/image; it only showed a card/link.
+  - YouTube panel rendered but playback failed with YouTube player error 153.
+- Follow-up implementation:
+  - `TasiaGiphyPreview` now includes a direct GIF media URL.
+  - `tasiaExtractGiphyPreviewFromURL()` derives `https://media.giphy.com/media/<id>/giphy.gif` from normal GIPHY page URLs.
+  - `TasiaGiphyPreviewPanel` now uses `LLMediaCtrl` to render the direct GIF URL instead of only showing text.
+  - Preview insertion no longer requires `!use_plain_text_chat_history`, so compact/old chat style can attempt previews.
+  - YouTube embed URL changed to `https://www.youtube-nocookie.com/embed/<id>?rel=0&playsinline=1&modestbranding=1`.
+- Focused checks passed:
+  - `git diff --check`
+  - XML parse for IM, nearby chat, GIPHY picker, and settings XML.
+- Needs runtime validation after GitHub build.
 
 ## 2026-05-17: TasiaFeed upload fixes
 
