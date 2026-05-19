@@ -394,23 +394,11 @@ bool LLVoiceClient::deviceSettingsUpdated()
 
 void LLVoiceClient::refreshDeviceLists(bool clearCurrentList)
 {
-    if (!voiceEnabled(true))
-    {
-        LL_INFOS("Voice") << "Voice disabled; skipping audio capture device refresh." << LL_ENDL;
-        return;
-    }
-
     LLWebRTCVoiceClient::getInstance()->refreshDeviceLists(clearCurrentList);
 }
 
 void LLVoiceClient::setCaptureDevice(const std::string& name)
 {
-    if (!voiceEnabled(true))
-    {
-        LL_INFOS("Voice") << "Voice disabled; ignoring capture device change." << LL_ENDL;
-        return;
-    }
-
     LLVivoxVoiceClient::getInstance()->setCaptureDevice(name);
     LLWebRTCVoiceClient::getInstance()->setCaptureDevice(name);
 }
@@ -591,11 +579,6 @@ void LLVoiceClient::setVoiceVolume(F32 volume)
 
 void LLVoiceClient::setMicGain(F32 gain)
 {
-    if (!voiceEnabled(true))
-    {
-        return;
-    }
-
     LLWebRTCVoiceClient::getInstance()->setMicGain(gain);
     LLVivoxVoiceClient::getInstance()->setMicGain(gain);
 }
