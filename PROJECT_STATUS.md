@@ -33,9 +33,15 @@ Next work:
   - GIPHY chat preview did **not** show the actual GIF/image; it only showed a card/link.
   - YouTube preview panel appeared, but playback failed with YouTube player error 153.
 - Current follow-up fix attempt:
-  - GIPHY chat preview now derives `https://media.giphy.com/media/<id>/giphy.gif` from normal GIPHY page URLs and renders that direct GIF in the chat preview panel.
+  - GIPHY chat preview now derives `https://i.giphy.com/media/<id>/giphy.gif` from normal GIPHY page URLs and renders that direct GIF in the chat preview panel.
   - Preview insertion no longer depends on `PlainTextChatHistory`, so compact/old chat style can attempt previews too.
-  - YouTube embed URL uses `www.youtube-nocookie.com/embed/...` with safer embed parameters, but this still needs runtime testing.
+- Hosted YouTube player wrapper support added as a separate checkpoint:
+  - Wrapper source: `web/youtube-player/index.html`
+  - Hosted URL: `https://apps.easierit.org/igrid/youtube-player/?v=VIDEO_ID`
+  - Viewer YouTube chat card no longer injects an iframe locally.
+  - User clicks `Play in Viewer`, then the viewer opens the hosted wrapper in `LLFloaterWebContent`.
+  - The hosted wrapper uses the official YouTube IFrame API with `/embed/VIDEO_ID`, real HTTPS origin, no autoplay with sound, visible controls/branding, and Open on YouTube fallback.
+  - Wrapper was uploaded by FTP and verified over HTTPS.
 - Latest Linux GitHub Actions build with autopublish succeeded:
   - Run: `26067438313`
   - Commit: `670d58e7ceb4ac0429cfd31e47d2e5897445df07`
@@ -90,6 +96,7 @@ Next work:
 ### What is broken
 - Latest GIPHY direct GIF preview fix is not built/runtime-tested yet.
 - YouTube embed panel renders, but playback may still fail with YouTube error 153 if the viewer media browser cannot satisfy YouTube embed requirements.
+- Hosted YouTube wrapper playback is not runtime-tested in the viewer yet.
 - Linux build succeeded, but runtime testing of the released package is still needed.
 
 ### What was last attempted
@@ -102,6 +109,9 @@ Next work:
 - Mom reported runtime progress: welcome message works well; GIPHY button/support now exists in IMs; embedding display does not work yet.
 - Mom corrected status: GIPHY did not preview the actual GIF/image. Implemented direct GIPHY GIF media preview attempt in `FSChatHistory`.
 - Focused checks passed after the direct GIF preview change.
+- Added hosted YouTube player wrapper support and uploaded `web/youtube-player/index.html` to `https://apps.easierit.org/igrid/youtube-player/`.
+- Changed YouTube chat card to open the hosted player wrapper in a web-content floater via `Play in Viewer`.
+- Focused XML/HTML/whitespace checks passed.
 - Generated empty local fallback key files with no secret present.
 - Tested the generator with a fake key under `/tmp/opencode` and verified plaintext is not written.
 - Parsed `indra/newview/app_settings/settings.xml` successfully.
@@ -125,7 +135,7 @@ Next work:
 - Keep Linux feature work on `feature/tasia-giphy-welcome-loading-linux` until Linux build succeeds.
 
 ### Next exact action
-- Commit/push direct GIPHY GIF preview fix, trigger Linux GitHub Actions build with `publish_release=true`, then runtime-test GIPHY preview and YouTube error 153 behavior.
+- Commit/push hosted YouTube wrapper + direct GIPHY GIF preview fix, trigger Linux GitHub Actions build with `publish_release=true`, then runtime-test GIPHY preview and YouTube wrapper playback.
 
 ## Build Status
 

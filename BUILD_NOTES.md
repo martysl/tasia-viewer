@@ -187,13 +187,22 @@
   - YouTube panel rendered but playback failed with YouTube player error 153.
 - Follow-up implementation:
   - `TasiaGiphyPreview` now includes a direct GIF media URL.
-  - `tasiaExtractGiphyPreviewFromURL()` derives `https://media.giphy.com/media/<id>/giphy.gif` from normal GIPHY page URLs.
-  - `TasiaGiphyPreviewPanel` now uses `LLMediaCtrl` to render the direct GIF URL instead of only showing text.
+  - `tasiaExtractGiphyPreviewFromURL()` derives `https://i.giphy.com/media/<id>/giphy.gif` from normal GIPHY page URLs.
+  - `TasiaGiphyPreviewPanel` now uses `LLMediaCtrl` to render the direct GIF URL wrapped in a tiny local image page instead of only showing text.
   - Preview insertion no longer requires `!use_plain_text_chat_history`, so compact/old chat style can attempt previews.
-  - YouTube embed URL changed to `https://www.youtube-nocookie.com/embed/<id>?rel=0&playsinline=1&modestbranding=1`.
+- YouTube correction:
+  - Do not inject/load YouTube iframe directly from viewer-local/internal HTML.
+  - Added hosted wrapper source: `web/youtube-player/index.html`.
+  - Uploaded wrapper to `https://apps.easierit.org/igrid/youtube-player/`.
+  - Viewer opens `https://apps.easierit.org/igrid/youtube-player/?v=VIDEO_ID` in `LLFloaterWebContent` when user clicks `Play in Viewer`.
+  - Wrapper uses official YouTube IFrame API and `/embed/VIDEO_ID` from real HTTPS origin.
+  - No autoplay with sound; user clicks play.
+  - YouTube branding/controls remain visible.
+  - Errors 101/150/153 show fallback text and Open on YouTube.
 - Focused checks passed:
   - `git diff --check`
   - XML parse for IM, nearby chat, GIPHY picker, and settings XML.
+  - HTML parse smoke for `web/youtube-player/index.html`.
 - Needs runtime validation after GitHub build.
 
 ## 2026-05-17: TasiaFeed upload fixes
