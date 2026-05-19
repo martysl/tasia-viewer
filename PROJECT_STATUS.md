@@ -21,6 +21,12 @@ Next work:
 ## 2026-05-18: GIPHY/welcome/loading branch status
 
 ### What is done
+- Linux voice-disabled microphone detection hotfix candidate ported from Windows branch:
+  - `LLVoiceClient::refreshDeviceLists()` skips device refresh when `EnableVoiceChat=false`.
+  - `LLVoiceClient::setCaptureDevice()` and `LLVoiceClient::setMicGain()` skip capture/mic operations when voice is disabled.
+  - `LLWebRTCVoiceClient::init()` no longer refreshes devices at startup when voice is disabled.
+  - `LLWebRTCVoiceClient::updateSettings()`, `OnDevicesChangedImpl()`, and `refreshDeviceLists()` skip capture/mic/device work while voice is disabled.
+  - `LLVivoxVoiceClient::updateSettings()` and `refreshDeviceLists()` skip capture/mic/device work while voice is disabled.
 - Mom runtime report before sleep:
   - `welcome.txt` welcome message works well.
   - GIPHY picker/window opens.
@@ -94,12 +100,14 @@ Next work:
 - Added optional loading YouTube embed behavior in `LLProgressView`, gated by `TasiaLoadingYouTubeEnabled` and `TasiaLoadingYouTubeURL`; loading media is disabled by default.
 
 ### What is broken
+- Linux voice-disabled microphone detection hotfix is not built/runtime-tested yet.
 - Latest GIPHY direct GIF preview fix is not built/runtime-tested yet.
 - YouTube embed panel renders, but playback may still fail with YouTube error 153 if the viewer media browser cannot satisfy YouTube embed requirements.
 - Hosted YouTube wrapper playback is not runtime-tested in the viewer yet.
 - Linux build succeeded, but runtime testing of the released package is still needed.
 
 ### What was last attempted
+- Cherry-picked Windows voice-disabled microphone detection hotfix candidate onto Linux feature branch.
 - Added only the requested focused fixes: IM GIF button/support and pre-login `<USERNAME>` replacement.
 - Added small YouTube detection fix for scheme-less YouTube URLs.
 - Ran focused XML/whitespace checks successfully.
@@ -135,7 +143,7 @@ Next work:
 - Keep Linux feature work on `feature/tasia-giphy-welcome-loading-linux` until Linux build succeeds.
 
 ### Next exact action
-- Commit/push hosted YouTube wrapper + direct GIPHY GIF preview fix, trigger Linux GitHub Actions build with `publish_release=true`, then runtime-test GIPHY preview and YouTube wrapper playback.
+- Finish/push Linux voice-disabled microphone detection hotfix, then trigger Linux build only if Mom asks.
 
 ## Build Status
 

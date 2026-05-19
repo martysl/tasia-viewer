@@ -205,6 +205,19 @@
   - HTML parse smoke for `web/youtube-player/index.html`.
 - Needs runtime validation after GitHub build.
 
+### 2026-05-19: Linux voice-disabled microphone detection hotfix
+- Ported from Windows feature branch commit `660ea5fc99`.
+- Files changed:
+  - `indra/newview/llvoiceclient.cpp`
+  - `indra/newview/llvoicewebrtc.cpp`
+  - `indra/newview/llvoicevivox.cpp`
+- Behavior changed:
+  - device refresh is skipped while `EnableVoiceChat=false`;
+  - capture device selection is skipped while `EnableVoiceChat=false`;
+  - mic gain/audio config setup is skipped while `EnableVoiceChat=false`;
+  - WebRTC startup delays device refresh until voice is enabled.
+- Needs Linux build/runtime validation if Mom wants a Linux hotfix release.
+
 ## 2026-05-17: TasiaFeed upload fixes
 
 ### Fix 1: Wrong HTTP method (postAndSuspend with string → implicit LLSD)

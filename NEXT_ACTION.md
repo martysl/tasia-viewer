@@ -29,7 +29,8 @@
 26. ✅ Added hosted YouTube player wrapper support: `https://apps.easierit.org/igrid/youtube-player/?v=VIDEO_ID`.
 27. ✅ Uploaded wrapper page to the HTTPS domain and verified it loads.
 28. ✅ Changed YouTube chat card to open the hosted wrapper in `LLFloaterWebContent` when user clicks `Play in Viewer`.
-29. **Commit/push these preview/player fixes and trigger Linux GitHub Actions build with `publish_release=true`.** ← NOW
+29. ✅ Ported voice-disabled microphone detection hotfix candidate to Linux branch.
+30. **Push Linux voice hotfix; trigger Linux build only if Mom asks.** ← NOW
 
 ## Blockers
 - None currently.
