@@ -156,9 +156,6 @@ void LLCoros::cleanupSingleton()
     // Some of the coroutines (like voice) will depend onto
     // origin singletons, so clean coros before deleting those
 
-    if (!LLVoiceClient::isInitialized()) {
-    LL_INFOS("LLCoros") << "Skipping voice-related cleanup as voice chat is disabled or uninitialized." << LL_ENDL;
-} else {
     printActiveCoroutines("at entry to ~LLCoros()");
     // Other LLApp status-change listeners do things like close
     // work queues and inject the Stop exception into pending
@@ -179,8 +176,6 @@ void LLCoros::cleanupSingleton()
         boost::this_fiber::yield();
     }
     printActiveCoroutines("after pumping");
-}
-
 }
 
 std::string LLCoros::generateDistinctName(const std::string& prefix) const
