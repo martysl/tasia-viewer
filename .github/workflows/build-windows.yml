@@ -21,7 +21,7 @@ name: Build Tasia Viewer Windows
           - "true"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -328,3 +328,40 @@ jobs:
           name: Tasia-Viewer-Windows-FMOD
           if-no-files-found: error
           path: Tasia-Viewer-Windows-FMOD.zip
+
+      - name: Publish GitHub prerelease - Windows
+        if: inputs.probe_only != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          TAG="v8.0.1-${GITHUB_RUN_NUMBER}-windows"
+          TITLE="Tasia Viewer 8.0.1.${GITHUB_RUN_NUMBER} Windows Beta"
+          NOTES="release-notes-windows.md"
+
+          cat > "$NOTES" <<EOF
+          Tasia Viewer Windows beta build.
+
+          Version: 8.0.1.${GITHUB_RUN_NUMBER}
+          Commit: ${GITHUB_SHA:0:7}
+          Channel: Tasia-Releasex64
+          FMOD: enabled
+          KDU: removed
+
+          Includes Tasia welcome loading text, GIPHY picker in nearby chat and IM, direct image/GIPHY previews, hosted YouTube player wrapper support, and voice-disabled microphone gating candidate.
+
+          This is a beta/pre-release build. Mom must test before stable release.
+          EOF
+
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" Tasia-Viewer-Windows-FMOD.zip --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" Tasia-Viewer-Windows-FMOD.zip \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "$TITLE" \
+              --notes-file "$NOTES" \
+              --prerelease
+          fi
