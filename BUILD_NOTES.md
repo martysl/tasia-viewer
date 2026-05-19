@@ -223,6 +223,18 @@
   - HTML parse smoke for `web/youtube-player/index.html`.
   - Conflict-marker scan of memory files.
 - Next: push branch and trigger Windows build.
+- Build triggered:
+  - Run: `26098421990`
+  - URL: `https://github.com/martysl/tasia-viewer/actions/runs/26098421990`
+  - Commit: `ab1dd99400a63adb46061b2597dba8252984140f`
+  - Inputs: `clean_build=false`, `probe_only=false`
+  - Result: success
+- Release status:
+  - Published: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-16-windows`
+  - Asset: `Tasia-Viewer-Windows-FMOD.zip`
+  - Asset size: 461141078 bytes
+  - Release type: GitHub prerelease
+  - Target commit: `ab1dd99400a63adb46061b2597dba8252984140f`
 
 ## 2026-05-17: TasiaFeed upload fixes
 

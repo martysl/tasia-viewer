@@ -32,7 +32,10 @@
 29. ✅ Ported approved feature commits to Windows feature branch `feature/tasia-giphy-welcome-loading-windows`.
 30. ✅ Updated Windows workflow to checkout the dispatched ref and pass `TASIA_GIPHY_API_KEY` during configure.
 31. ✅ Focused Windows-branch checks passed.
-32. **Push Windows feature branch, trigger Windows GitHub Actions build, then publish Windows prerelease if successful.** ← NOW
+32. ✅ Pushed Windows feature branch and triggered Windows build `26098421990` with `clean_build=false`, `probe_only=false`.
+33. ✅ Windows build `26098421990` succeeded.
+34. ✅ Windows prerelease published: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-16-windows`.
+35. **Runtime-test Windows prerelease `v8.0.1-16-windows`.** ← NOW
 
 ## Blockers
 - None currently.
