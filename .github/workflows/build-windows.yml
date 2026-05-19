@@ -150,18 +150,6 @@ jobs:
         run: |
           rm -rf build-vc170-64
 
-      - name: Restore Windows build cache
-        if: runner.os == 'Windows' && inputs.clean_build != 'true'
-        id: restore-windows-build-cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            build-vc170-64
-          key: windows-build-${{ github.ref_name }}-${{ github.sha }}
-          restore-keys: |
-            windows-build-${{ github.ref_name }}-
-            windows-build-
-
       - name: Configure Windows with FMOD
         shell: bash
         env:
@@ -340,11 +328,3 @@ jobs:
           name: Tasia-Viewer-Windows-FMOD
           if-no-files-found: error
           path: Tasia-Viewer-Windows-FMOD.zip
-
-      - name: Save Windows build cache
-        if: always() && runner.os == 'Windows'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            build-vc170-64
-          key: windows-build-${{ github.ref_name }}-${{ github.run_id }}
