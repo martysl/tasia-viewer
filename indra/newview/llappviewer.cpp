@@ -2597,6 +2597,9 @@ bool LLAppViewer::cleanup()
     LLViewerStatsRecorder::deleteSingleton();
     LLViewerEventRecorder::deleteSingleton();
     LLWorld::deleteSingleton();
+    // Clean up coroutines before deleting voice client,
+    // since voice coroutines depend on LLVoiceClient being alive.
+    LLCoros::deleteSingleton();
     LLVoiceClient::deleteSingleton();
     LLUI::deleteSingleton();
 
