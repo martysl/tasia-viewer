@@ -77,11 +77,6 @@ public:
     void init(LLPumpIO *pump) override;    // Call this once at application startup (creates connector)
     void terminate() override;    // Call this to clean up during shutdown
 
-    // Deferred WebRTC initialization — called from init() or lazily when voice is first enabled.
-    // This is separate because llwebrtc::init() probes audio devices (triggering Windows mic indicator),
-    // so we defer it until voice is actually turned on.
-    void initWebRTC();
-
     static bool isShuttingDown() { return sShuttingDown; }
 
     const LLVoiceVersionInfo& getVersion() override;
@@ -474,8 +469,6 @@ private:
     sessionStatePtr_t mNextSession;    // Session state for the session we're trying to join
 
     llwebrtc::LLWebRTCDeviceInterface *mWebRTCDeviceInterface;
-
-    bool mWebRTCInitialized = false;  // true after llwebrtc::init() has been called
 
     LLVoiceDeviceList mCaptureDevices;
     LLVoiceDeviceList mRenderDevices;
