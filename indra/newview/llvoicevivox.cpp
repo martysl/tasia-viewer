@@ -470,16 +470,9 @@ void LLVivoxVoiceClient::updateSettings()
 {
     // </FS:Ansariel> Bypass cached controls
     //setVoiceEnabled(LLVoiceClient::getInstance()->voiceEnabled());
-    const bool voice_enabled = LLVoiceClient::getInstance()->voiceEnabled(true);
-    setVoiceEnabled(voice_enabled);
+    setVoiceEnabled(LLVoiceClient::getInstance()->voiceEnabled(true));
     // </FS:Ansariel>
     setEarLocation(gSavedSettings.getS32("VoiceEarLocation"));
-
-    if (!voice_enabled)
-    {
-        LL_INFOS("Voice") << "Voice disabled; skipping Vivox capture device and mic settings." << LL_ENDL;
-        return;
-    }
 
     std::string inputDevice = gSavedSettings.getString("VoiceInputAudioDevice");
     setCaptureDevice(inputDevice);
@@ -3090,11 +3083,6 @@ bool LLVivoxVoiceClient::deviceSettingsUpdated()
 
 void LLVivoxVoiceClient::refreshDeviceLists(bool clearCurrentList)
 {
-    if (!LLVoiceClient::getInstance()->voiceEnabled(true))
-    {
-        LL_INFOS("Voice") << "Voice disabled; skipping Vivox device refresh." << LL_ENDL;
-        return;
-    }
     if(clearCurrentList)
     {
         clearCaptureDevices();
