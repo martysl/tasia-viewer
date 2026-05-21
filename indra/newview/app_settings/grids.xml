@@ -52,7 +52,7 @@
             <string>https://web.ai.let-us.cyou/jopensim-beta/</string>
             <key>loginuri</key>
             <array>
-                <string>http://i.let-us.cyou:8002/</string>
+                <string>https://i.let-us.cyou:8002/</string>
             </array>
             <key>name</key>
             <string>i.let-us.cyou:8002</string>
