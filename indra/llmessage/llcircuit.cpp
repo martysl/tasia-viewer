@@ -649,6 +649,16 @@ bool LLCircuit::drainNextQuicPacket(U8* dest, S32 dest_capacity, S32& out_size, 
         if (cd && cd->isQuic() && cd->getQuicConnection())
         {
             const auto& conn = cd->getQuicConnection();
+            // Mark circuit as QUIC-ready once the handshake completes.
+            // markQuicReadyAndFlush flushes any pending sends that were
+            // queued while the connection was still being established.
+            if (!cd->isQuicReady() && conn->getState() == LLQuicConnection::State::CONNECTED)
+            {
+                const size_t n = cd->markQuicReadyAndFlush();
+                LL_DEBUGS("Quic","Messaging") << "QUIC ready for " << cursor->first
+                                              << " flushed " << n << " pending sends"
+                                              << LL_ENDL;
+            }
             const char* transport = nullptr;
             if (conn->receiveDatagram(buf))
             {

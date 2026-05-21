@@ -375,7 +375,7 @@
       <combo_box.drop_down_button
         font="SansSerifLarge"/>
       <combo_box.item
-        label="Firestorm"
+        label="Tasia Viewer"
         name="Firestorm"
         value="settings_firestorm.xml" />
       <combo_box.item

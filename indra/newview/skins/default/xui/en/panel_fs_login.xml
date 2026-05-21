@@ -345,7 +345,7 @@
           name="mode_combo"
           width="110">
            <combo_box.item
-            label="Firestorm"
+            label="Tasia Viewer"
             name="Firestorm"
             value="settings_firestorm.xml" />
            <combo_box.item

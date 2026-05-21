@@ -2717,7 +2717,7 @@ void errorCallback(LLError::ELevel level, const std::string &error_string)
 
         if (error_display_string.find("MissingString(") != std::string::npos)
         {
-            error_display_string = "We are sorry, but Firestorm has crashed and needs to be closed. If you see this issue happening repeatedly, please contact our support team and submit the following message:\n\n[ERROR_DETAILS]";
+            error_display_string = "We are sorry, but Tasia Viewer has crashed and needs to be closed. If you see this issue happening repeatedly, please contact our support team and submit the following message:\n\n[ERROR_DETAILS]";
             LLStringUtil::format(error_display_string, map);
         }
         if (caption.find("MissingString(") != std::string::npos)
@@ -3049,15 +3049,15 @@ bool LLAppViewer::initConfiguration()
         if (gDirUtilp->fileExists(settings_file_list))
         {
             LL_ERRS() << "Cannot load default configuration file settings_files.xml. "
-                << "Please reinstall viewer from https://www.firestormviewer.org/choose-your-platform/ "
-                << "and contact https://www.firestormviewer.org/support if issue persists after reinstall."
+                << "Please reinstall viewer from https://i.let-us.cyou/ "
+                << "and contact support@easierit.org if issue persists after install."
                 << LL_ENDL;
         }
         else
         {
             LL_ERRS() << "Default configuration file settings_files.xml not found. "
-                << "Please reinstall viewer from https://www.firestormviewer.org/choose-your-platform/ "
-                << "and contact https://www.firestormviewer.org/support if issue persists after reinstall."
+                << "Please reinstall viewer from https://i.let-us.cyou/ "
+                << "and contact support@easierit.org if issue persists after install."
                 << LL_ENDL;
         }
     }
@@ -4335,7 +4335,7 @@ std::string LLAppViewer::getViewerInfoString(bool unfaked_string) const
 
     // Now build the various pieces
     if (unfaked_string)
-        support << "Freestorm " << LO_VERSION_MAJOR << '.' << LO_VERSION_MINOR << '\n';
+        support << "Tasia Viewer " << LO_VERSION_MAJOR << '.' << LO_VERSION_MINOR << '\n';
     support << LLTrans::getString("AboutHeader", args, default_string);
     //if (info.has("BUILD_CONFIG"))
     //{
@@ -5495,7 +5495,7 @@ void LLAppViewer::badNetworkHandler()
         "the issue. \n"
         " \n"
         "If the problem continues, see the Tech Support FAQ at: \n"
-        "www.firestormviewer.org/support";
+        "support@easierit.org";
     forceDisconnect(message.str());
 
     LLApp::instance()->writeMiniDump();
