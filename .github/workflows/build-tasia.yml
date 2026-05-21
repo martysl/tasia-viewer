@@ -42,7 +42,7 @@ jobs:
     name: Build Tasia Viewer - ${{ inputs.target }} - FMOD
     timeout-minutes: 240
 
-    runs-on: ${{ inputs.target == 'linux' && 'ubuntu-22.04' || inputs.target == 'windows' && 'windows-2022' || 'macos-14' }}
+    runs-on: ${{ inputs.target == 'linux' && 'ubuntu-22.04' || inputs.target == 'windows' && 'windows-2022' || 'macos-13' }}
 
     steps:
       - name: Checkout viewer source
