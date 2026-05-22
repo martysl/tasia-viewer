@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel
+ border="true"
+ follows="all"
+ height="440"
+ layout="topleft"
+ left="1"
+ top="1"
+ width="540"
+ label="Tasia"
+ name="tasia">
+
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="20"
+     top="15"
+     name="tasia_chat_label"
+     font="SansSerifBold"
+     font-size="12"
+     width="500">
+     Chat Preview Features
+    </text>
+
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="14"
+     layout="topleft"
+     left="35"
+     top_pad="5"
+     name="tasia_chat_desc"
+     font="SansSerif"
+     width="480">
+     Show inline previews when hovering supported URLs in chat history.
+    </text>
+
+    <check_box
+     control_name="TasiaYouTubeChatPreview"
+     follows="left|top"
+     height="16"
+     label="Enable YouTube chat previews"
+     layout="topleft"
+     left="35"
+     top_pad="10"
+     name="TasiaYouTubeChatPreview"
+     width="400" />
+
+    <check_box
+     control_name="TasiaImageChatPreview"
+     follows="left|top"
+     height="16"
+     label="Enable image chat previews"
+     layout="topleft"
+     left="35"
+     top_pad="5"
+     name="TasiaImageChatPreview"
+     width="400" />
+
+    <check_box
+     control_name="TasiaAnimatedGifChatPreview"
+     follows="left|top"
+     height="16"
+     label="Enable animated GIF (GIPHY) chat previews"
+     layout="topleft"
+     left="35"
+     top_pad="5"
+     name="TasiaAnimatedGifChatPreview"
+     width="400" />
+
+</panel>
