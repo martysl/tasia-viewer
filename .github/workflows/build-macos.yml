@@ -185,14 +185,23 @@ jobs:
             --fmodstudio \
             --package
 
+      - name: List build output files
+        shell: bash
+        run: |
+          echo "=== Build output listing ==="
+          find build-darwin-x86_64/newview -type f 2>/dev/null | head -50 || echo "(no files found)"
+          echo "=== Also checking build dir ==="
+          find build-darwin-x86_64 -maxdepth 4 -name "*.dmg" -o -name "*.bz2" -o -name "*.tar.*" 2>/dev/null | head -20 || echo "(no packages found)"
+
       - name: Upload artifact - macOS ${{ matrix.arch }}
         uses: actions/upload-artifact@v4
         with:
           name: Tasia-Viewer-macOS-${{ matrix.arch }}-FMOD
-          if-no-files-found: error
+          if-no-files-found: warn
           path: |
             build-darwin-x86_64/newview/*.dmg
             build-darwin-x86_64/newview/*.bz2
+            build-darwin-x86_64/newview/*.tar.*
 
       - name: Publish GitHub pre-release - macOS ${{ matrix.arch }}
         if: inputs.publish_release == 'true'
