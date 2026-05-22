@@ -1,17 +1,11 @@
-name: Build Tasia Viewer
+name: Build Tasia Viewer - Linux
 
-'on':
+on:
+  push:
+    branches:
+      - feature/tasia-giphy-welcome-loading-linux
   workflow_dispatch:
     inputs:
-      target:
-        description: "Which platform to build"
-        required: true
-        default: linux
-        type: choice
-        options:
-          - linux
-          - windows
-          - macos
       publish_release:
         description: "Publish GitHub pre-release"
         required: true
@@ -25,7 +19,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.target }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -39,10 +33,9 @@ env:
 
 jobs:
   build:
-    name: Build Tasia Viewer - ${{ inputs.target }} - FMOD
+    name: Build Tasia Viewer - Linux - FMOD
     timeout-minutes: 240
-
-    runs-on: ${{ inputs.target == 'linux' && 'ubuntu-22.04' || inputs.target == 'windows' && 'windows-2022' || 'macos-13' }}
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout viewer source
@@ -61,7 +54,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.AUTOBUILD_INSTALLABLE_CACHE }}
-          key: autobuild-${{ inputs.target }}-${{ hashFiles('autobuild.xml') }}
+          key: autobuild-linux-${{ hashFiles('autobuild.xml') }}
 
       - name: Install autobuild and Python deps
         run: pip install -r requirements.txt
@@ -93,20 +86,8 @@ jobs:
 
           mkdir -p private-deps
 
-          case "${{ inputs.target }}" in
-            linux)
-              FMOD_PLATFORM="linux64"
-              FMOD_PATTERN="*linux64*.tar.bz2"
-              ;;
-            windows)
-              FMOD_PLATFORM="windows64"
-              FMOD_PATTERN="*windows64*.tar.bz2"
-              ;;
-            macos)
-              FMOD_PLATFORM="darwin64"
-              FMOD_PATTERN="*darwin64*.tar.bz2"
-              ;;
-          esac
+          FMOD_PLATFORM="linux64"
+          FMOD_PATTERN="*linux64*.tar.bz2"
 
           echo "FMOD_PLATFORM=$FMOD_PLATFORM" >> "$GITHUB_ENV"
 
@@ -145,18 +126,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
-          echo "Updating autobuild installable 'fmodstudio' ..."
-          echo "  platform: $FMOD_PLATFORM"
-          echo "  url:      $FMOD_FILE_URL"
-          echo "  hash:     $FMOD_HASH"
-
           autobuild installables edit fmodstudio \
             platform="$FMOD_PLATFORM" \
             hash="$FMOD_HASH" \
             url="$FMOD_FILE_URL"
-
-          echo "autobuild installable 'fmodstudio' updated."
 
       - name: Load autobuild environment
         shell: bash
@@ -166,32 +139,7 @@ jobs:
           echo "LL_BUILD=$LL_BUILD" >> "$GITHUB_ENV"
           echo "LL_BUILD_RELEASE=$LL_BUILD_RELEASE" >> "$GITHUB_ENV"
 
-      - name: Set VSVER for Windows
-        if: runner.os == 'Windows'
-        shell: bash
-        run: echo "AUTOBUILD_VSVER=170" >> "$GITHUB_ENV"
-
-      - name: Setup MSVC dev environment
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-          vsversion: 2022
-
-      - name: Verify MSVC tools
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "PATH=$PATH"
-          where cl || true
-          where cmake || true
-          where msbuild || true
-          cl 2>&1 | head -20 || true
-          cmake --version
-
       - name: Install Linux system dependencies
-        if: runner.os == 'Linux'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq \
@@ -200,18 +148,6 @@ jobs:
             libfreetype6-dev libfontconfig1 ninja-build \
             libdbus-1-dev
           sudo apt-get clean
-
-      - name: Install Windows build prerequisites
-        if: runner.os == 'Windows'
-        run: |
-          choco install ninja --no-progress -y || true
-          echo "Ninja installed:"
-          ninja --version
-
-      - name: Install macOS build prerequisites
-        if: runner.os == 'macOS'
-        run: |
-          brew install bash gnu-sed ninja
 
       - name: Set Tasia build metadata
         shell: bash
@@ -223,90 +159,32 @@ jobs:
           echo "TASIA_DISPLAY_VERSION=8.0.1.${{ github.run_number }}" >> "$GITHUB_ENV"
           echo "TASIA_BUILD_NUMBER=${{ github.run_number }}" >> "$GITHUB_ENV"
 
-      - name: Configure Linux/macOS with FMOD
-        if: runner.os != 'Windows'
+      - name: Configure with FMOD
         shell: bash
         env:
           TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
         run: |
-          EXTRA_ARGS=()
-          if [ "${{ runner.os }}" = "Linux" ]; then
-            EXTRA_ARGS=("--ninja")
-          fi
           autobuild configure \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
             -- \
             --fmodstudio \
             --package \
-            "${EXTRA_ARGS[@]}"
-
-      - name: Configure Windows with FMOD
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          unset CC || true
-          unset CXX || true
-
-          # Use VS-bundled CMake if available (better VS 2022 compatibility)
-          VS_CMAKE="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
-          if [ -f "$VS_CMAKE" ]; then
-            VS_CMAKE_DIR="$(dirname "$VS_CMAKE")"
-            echo "Using VS-bundled CMake from: $VS_CMAKE_DIR"
-            export PATH="$VS_CMAKE_DIR:$PATH"
-          fi
-          cmake --version
-          LOCAL_DIST_DIR="$(pwd)/build-vc170-64/newview/unpacked"
-          mkdir -p "$LOCAL_DIST_DIR"
-
-          # Use Ninja generator to bypass broken vswhere on windows-2022 runners.
-          # Ninja + MSVC (cl.exe in PATH from msvc-dev-cmd) avoids the vswhere
-          # dependency entirely.
-          autobuild configure \
-            -c ReleaseFS_open \
-            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
-            -- \
-            --fmodstudio \
-            --no-package \
-            --ninja \
-            "-DLOCAL_DIST_DIR:PATH=$LOCAL_DIST_DIR"
+            --ninja
 
       - name: Build with FMOD
         shell: bash
         run: |
-          EXTRA_ARGS=()
-          if [ "${{ runner.os }}" = "Linux" ] || [ "${{ runner.os }}" = "Windows" ]; then
-            EXTRA_ARGS=("--ninja")
-          fi
           autobuild build \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
             --no-configure \
             -- \
             --fmodstudio \
-            ${{ runner.os == 'Windows' && '--no-package' || '--package' }} \
-            "${EXTRA_ARGS[@]}"
+            --package \
+            --ninja
 
-      - name: Create Windows ZIP artifact
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import shutil
-          from pathlib import Path
-
-          dist = Path('build-vc170-64/newview/unpacked')
-          if not dist.is_dir():
-              raise SystemExit(f'Missing unpacked Windows dist: {dist}')
-          archive = shutil.make_archive('Tasia-Viewer-Windows-FMOD', 'zip', dist)
-          print(f'Created {archive}')
-          PY
-
-      - name: Upload artifact - Linux
-        if: runner.os == 'Linux'
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Tasia-Viewer-Linux-FMOD
@@ -316,7 +194,7 @@ jobs:
             build-linux-x86_64/newview/*.bz2
 
       - name: Publish GitHub pre-release
-        if: runner.os == 'Linux' && inputs.publish_release == 'true'
+        if: inputs.publish_release == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -356,20 +234,32 @@ jobs:
               --prerelease
           fi
 
-      - name: Upload artifact - macOS
-        if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Tasia-Viewer-macOS-FMOD
-          if-no-files-found: error
-          path: |
-            build-darwin-x86_64/newview/*.dmg
-            build-darwin-x86_64/newview/*.bz2
-
-      - name: Upload artifact - Windows
-        if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Tasia-Viewer-Windows-FMOD
-          if-no-files-found: error
-          path: Tasia-Viewer-Windows-FMOD.zip
+      - name: Post to Discord
+        if: inputs.publish_release == 'true'
+        shell: bash
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          VERSION="8.0.1.${GITHUB_RUN_NUMBER}"
+          RELEASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/v${GITHUB_RUN_NUMBER}"
+          curl -X POST -H "Content-Type: application/json" \
+            -d "$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "🐧 Tasia Viewer ${VERSION} — Linux Beta",
+              "description": "Linux beta build ready for testing.",
+              "url": "${RELEASE_URL}",
+              "color": 5814783,
+              "fields": [
+                {"name": "Version", "value": "${VERSION}", "inline": true},
+                {"name": "Platform", "value": "Linux (x86_64)", "inline": true},
+                {"name": "Channel", "value": "Tasia-Releasex64", "inline": true},
+                {"name": "FMOD", "value": "enabled", "inline": true},
+                {"name": "Commit", "value": "${GITHUB_SHA::7}", "inline": true}
+              ],
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            }]
+          }
+          EOF
+          )" "$DISCORD_WEBHOOK_URL"

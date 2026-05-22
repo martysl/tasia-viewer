@@ -1,0 +1,386 @@
+name: Release Tasia Viewer
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., 8.0.1.42)"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  AUTOBUILD_ADDRSIZE: 64
+  AUTOBUILD_BUILD_ID: ${{ github.run_id }}
+  AUTOBUILD_INSTALLABLE_CACHE: ${{ github.workspace }}/.autobuild-installables
+  AUTOBUILD_VARIABLES_FILE: ${{ github.workspace }}/.build-variables/variables
+  AUTOBUILD_VCS_INFO: "true"
+  LL_SKIP_REQUIRE_SYSROOT: 1
+  XZ_DEFAULTS: -T0
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            runner: ubuntu-22.04
+            ref: feature/tasia-giphy-welcome-loading-linux
+            fmod_platform: linux64
+            fmod_pattern: "*linux64*.tar.bz2"
+            build_dir: build-linux-x86_64
+            package_flag: --package
+            ninja_flag: --ninja
+            artifact_name: Tasia-Viewer-Linux-FMOD
+            artifact_glob: |
+              build-linux-x86_64/newview/*.tar.xz
+              build-linux-x86_64/newview/*.bz2
+
+          - platform: windows
+            runner: windows-2022
+            ref: feature/tasia-giphy-welcome-loading-windows
+            fmod_platform: windows64
+            fmod_pattern: "*windows64*.tar.bz2"
+            build_dir: build-vc170-64
+            package_flag: --no-package
+            ninja_flag: --ninja
+            artifact_name: Tasia-Viewer-Windows-FMOD
+            artifact_glob: Tasia-Viewer-Windows-FMOD.zip
+
+          - platform: macos-intel
+            runner: macos-13
+            ref: feature/tasia-giphy-welcome-loading-macos
+            fmod_platform: darwin64
+            fmod_pattern: "*darwin64*.tar.bz2"
+            build_dir: build-darwin-x86_64
+            package_flag: --package
+            ninja_flag: ""
+            artifact_name: Tasia-Viewer-macOS-Intel-FMOD
+            artifact_glob: |
+              build-darwin-x86_64/newview/*.dmg
+              build-darwin-x86_64/newview/*.bz2
+            cmake_arch_flag: ""
+
+          - platform: macos-arm
+            runner: macos-14
+            ref: feature/tasia-giphy-welcome-loading-macos
+            fmod_platform: darwin64
+            fmod_pattern: "*darwin64*.tar.bz2"
+            build_dir: build-darwin-x86_64
+            package_flag: --package
+            ninja_flag: ""
+            artifact_name: Tasia-Viewer-macOS-ARM-FMOD
+            artifact_glob: |
+              build-darwin-x86_64/newview/*.dmg
+              build-darwin-x86_64/newview/*.bz2
+            cmake_arch_flag: -DCMAKE_OSX_ARCHITECTURES=arm64
+
+    runs-on: ${{ matrix.runner }}
+    continue-on-error: ${{ matrix.platform == 'macos-arm' }}
+
+    steps:
+      - name: Checkout viewer source (${{ matrix.platform }})
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.ref }}
+          fetch-depth: 0
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Restore autobuild installables cache
+        id: cache-autobuild
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.AUTOBUILD_INSTALLABLE_CACHE }}
+          key: autobuild-${{ matrix.platform }}-${{ hashFiles('autobuild.xml') }}
+
+      - name: Install autobuild and Python deps
+        run: pip install -r requirements.txt
+
+      - name: Checkout build variables
+        uses: actions/checkout@v4
+        with:
+          repository: FirestormViewer/fs-build-variables
+          path: .build-variables
+
+      - name: Remove KDU
+        shell: bash
+        run: |
+          autobuild installables remove kdu || true
+          echo "KDU installable removed."
+
+      - name: Download private FMOD autobuild package
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.FMOD_DEPS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::FMOD_DEPS_TOKEN secret is missing."
+            exit 1
+          fi
+
+          mkdir -p private-deps
+          echo "FMOD_PLATFORM=${{ matrix.fmod_platform }}" >> "$GITHUB_ENV"
+
+          gh release download fmod-20307 \
+            --repo martysl/tasia-private-deps \
+            --pattern "${{ matrix.fmod_pattern }}" \
+            --dir private-deps
+
+          FMOD_PACKAGE="$(find private-deps -type f -name '*.tar.bz2' | head -n 1)"
+          if [ -z "$FMOD_PACKAGE" ]; then
+            echo "::error::FMOD package not downloaded for ${{ matrix.platform }}."
+            exit 1
+          fi
+
+          FMOD_HASH=$(python3 -c "import hashlib,sys; print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$FMOD_PACKAGE")
+          FMOD_FILE_URL=$(python3 -c "import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_uri())" "$FMOD_PACKAGE")
+
+          echo "FMOD_PACKAGE=$FMOD_PACKAGE" >> "$GITHUB_ENV"
+          echo "FMOD_HASH=$FMOD_HASH" >> "$GITHUB_ENV"
+          echo "FMOD_FILE_URL=$FMOD_FILE_URL" >> "$GITHUB_ENV"
+
+      - name: Point autobuild to private FMOD package
+        shell: bash
+        run: |
+          autobuild installables edit fmodstudio \
+            platform="$FMOD_PLATFORM" \
+            hash="$FMOD_HASH" \
+            url="$FMOD_FILE_URL"
+
+      - name: Load autobuild environment
+        shell: bash
+        run: |
+          autobuild source_environment > .source_env
+          . .source_env
+          echo "LL_BUILD=$LL_BUILD" >> "$GITHUB_ENV"
+          echo "LL_BUILD_RELEASE=$LL_BUILD_RELEASE" >> "$GITHUB_ENV"
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            mesa-common-dev libgl1-mesa-dev libxinerama-dev \
+            libxrandr-dev libpulse-dev libglu1-mesa-dev \
+            libfreetype6-dev libfontconfig1 ninja-build \
+            libdbus-1-dev
+          sudo apt-get clean
+
+      - name: Install Windows build prerequisites
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          choco install ninja --no-progress -y || true
+          ninja --version
+
+      - name: Setup MSVC dev environment (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          vsversion: 2022
+
+      - name: Install macOS build prerequisites
+        if: runner.os == 'macOS'
+        run: |
+          brew install bash gnu-sed ninja
+
+      - name: Set Tasia build metadata
+        shell: bash
+        run: |
+          echo "revision=${{ github.run_number }}" >> "$GITHUB_ENV"
+          echo "VIEWER_VERSION_GITHASH=${{ github.sha }}" >> "$GITHUB_ENV"
+          echo "TASIA_SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          echo "TASIA_DISPLAY_VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
+          echo "TASIA_BUILD_NUMBER=${{ github.run_number }}" >> "$GITHUB_ENV"
+
+      - name: Configure ${{ matrix.platform }}
+        shell: bash
+        env:
+          TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          CMAKE_EXTRA=()
+
+          # Platform-specific configure flags
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            unset CC || true
+            unset CXX || true
+
+            VS_CMAKE="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
+            if [ -f "$VS_CMAKE" ]; then
+              VS_CMAKE_DIR="$(dirname "$VS_CMAKE")"
+              export PATH="$VS_CMAKE_DIR:$PATH"
+            fi
+
+            LOCAL_DIST_DIR="$(pwd)/${{ matrix.build_dir }}/newview/unpacked"
+            mkdir -p "$LOCAL_DIST_DIR"
+            CMAKE_EXTRA+=("-DLOCAL_DIST_DIR:PATH=$LOCAL_DIST_DIR")
+          fi
+
+          # Architecture flag for macOS ARM
+          if [ -n "${{ matrix.cmake_arch_flag }}" ]; then
+            CMAKE_EXTRA+=("${{ matrix.cmake_arch_flag }}")
+          fi
+
+          autobuild configure \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            -- \
+            --fmodstudio \
+            ${{ matrix.package_flag }} \
+            ${{ matrix.ninja_flag }} \
+            "${CMAKE_EXTRA[@]}"
+
+      - name: Build ${{ matrix.platform }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          NINJA_FLAG="${{ matrix.ninja_flag }}"
+
+          autobuild build \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            --no-configure \
+            -- \
+            --fmodstudio \
+            ${{ matrix.package_flag }} \
+            ${NINJA_FLAG}
+
+      - name: Create Windows ZIP artifact
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import shutil
+          from pathlib import Path
+
+          dist = Path('${{ matrix.build_dir }}/newview/unpacked')
+          if not dist.is_dir():
+              raise SystemExit(f'Missing unpacked Windows dist: {dist}')
+          archive = shutil.make_archive('Tasia-Viewer-Windows-FMOD', 'zip', dist)
+          print(f'Created {archive}')
+          PY
+
+      - name: Upload artifact - ${{ matrix.platform }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          if-no-files-found: error
+          path: ${{ matrix.artifact_glob }}
+
+  create-release:
+    name: Create GitHub Release
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          VERSION="${{ inputs.version }}"
+          TAG="v${VERSION}"
+
+          # Gather release artifacts
+          ARTIFACTS=()
+          while IFS= read -r -d '' f; do
+            ARTIFACTS+=("$f")
+          done < <(find artifacts -type f -print0)
+
+          NOTES="$(mktemp)"
+          cat > "$NOTES" <<EOF
+          Tasia Viewer ${VERSION}
+
+          Release build for all platforms.
+
+          Commit: ${GITHUB_SHA::7}
+          Channel: Tasia-Releasex64
+          FMOD: enabled
+          KDU: removed
+          EOF
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists, uploading artifacts..."
+            for f in "${ARTIFACTS[@]}"; do
+              gh release upload "$TAG" "$f" --clobber
+            done
+          else
+            echo "Creating release $TAG..."
+            gh release create "$TAG" "${ARTIFACTS[@]}" \
+              --title "Tasia Viewer ${VERSION}" \
+              --notes-file "$NOTES" \
+              --prerelease
+          fi
+
+      - name: Post to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION="${{ inputs.version }}"
+          RELEASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/v${VERSION}"
+
+          # Check which platforms succeeded
+          PLATFORMS_BUILT=""
+          for p in linux windows macos-intel macos-arm; do
+            if ls "artifacts/Tasia-Viewer-${p}"* 2>/dev/null | head -1 >/dev/null 2>&1; then
+              case "$p" in
+                linux)       PLATFORMS_BUILT="${PLATFORMS_BUILT}🐧 Linux (x86_64) ✅\n" ;;
+                windows)     PLATFORMS_BUILT="${PLATFORMS_BUILT}🪟 Windows (x86_64) ✅\n" ;;
+                macos-intel) PLATFORMS_BUILT="${PLATFORMS_BUILT}🍎 macOS (Intel) ✅\n" ;;
+                macos-arm)   PLATFORMS_BUILT="${PLATFORMS_BUILT}🍎 macOS (Apple Silicon) ✅\n" ;;
+              esac
+            else
+              case "$p" in
+                linux)       PLATFORMS_BUILT="${PLATFORMS_BUILT}🐧 Linux — ❌\n" ;;
+                windows)     PLATFORMS_BUILT="${PLATFORMS_BUILT}🪟 Windows — ❌\n" ;;
+                macos-intel) PLATFORMS_BUILT="${PLATFORMS_BUILT}🍎 macOS (Intel) — ❌\n" ;;
+                macos-arm)   PLATFORMS_BUILT="${PLATFORMS_BUILT}🍎 macOS (Apple Silicon) — ⚠️\n" ;;
+              esac
+            fi
+          done
+
+          PLATFORMS_BUILT="$(echo -e "$PLATFORMS_BUILT")"
+
+          curl -X POST -H "Content-Type: application/json" \
+            -d "$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "🎉 Tasia Viewer ${VERSION} Released!",
+              "description": "New multi-platform release is here!",
+              "url": "${RELEASE_URL}",
+              "color": 16761856,
+              "fields": [
+                {"name": "Version", "value": "${VERSION}", "inline": true},
+                {"name": "Release", "value": "[Download](${RELEASE_URL})", "inline": true},
+                {"name": "Build Status", "value": "${PLATFORMS_BUILT}", "inline": false}
+              ],
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            }]
+          }
+          EOF
+          )" "$DISCORD_WEBHOOK_URL"
