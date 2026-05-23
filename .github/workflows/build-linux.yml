@@ -241,25 +241,36 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           set -euo pipefail
-          VERSION="8.0.1.${GITHUB_RUN_NUMBER}"
-          RELEASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/v${GITHUB_RUN_NUMBER}"
-          curl -X POST -H "Content-Type: application/json" \
-            -d "$(cat <<EOF
-          {
-            "embeds": [{
-              "title": "🐧 Tasia Viewer ${VERSION} — Linux Beta",
-              "description": "Linux beta build ready for testing.",
-              "url": "${RELEASE_URL}",
-              "color": 5814783,
-              "fields": [
-                {"name": "Version", "value": "${VERSION}", "inline": true},
-                {"name": "Platform", "value": "Linux (x86_64)", "inline": true},
-                {"name": "Channel", "value": "Tasia-Releasex64", "inline": true},
-                {"name": "FMOD", "value": "enabled", "inline": true},
-                {"name": "Commit", "value": "${GITHUB_SHA::7}", "inline": true}
-              ],
-              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            }]
-          }
-          EOF
-          )" "$DISCORD_WEBHOOK_URL"
+          python3 - "${{ github.repository }}" "${{ github.sha }}" "${{ github.run_number }}" <<'PYEOF'
+import json, os, sys, urllib.request
+
+repo = sys.argv[1]
+sha = sys.argv[2][:7]
+run = sys.argv[3]
+version = f"8.0.1.{run}"
+tag = f"v8.0.1-{run}"
+release_url = f"https://github.com/{repo}/releases/tag/{tag}"
+
+payload = {
+    "embeds": [{
+        "title": f"Tasia Viewer {version} — Linux Beta",
+        "description": "Linux build ready!",
+        "url": release_url,
+        "color": 3066993,
+        "fields": [
+            {"name": "Version", "value": version, "inline": True},
+            {"name": "Platform", "value": "Linux (x86_64)", "inline": True},
+            {"name": "Commit", "value": sha, "inline": True},
+        ],
+        "footer": {"text": "💚 Tasia Release"}
+    }]
+}
+
+req = urllib.request.Request(
+    os.environ["DISCORD_WEBHOOK_URL"],
+    data=json.dumps(payload).encode(),
+    headers={"Content-Type": "application/json"},
+    method="POST"
+)
+urllib.request.urlopen(req)
+PYEOF
