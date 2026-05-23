@@ -340,47 +340,54 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 - "${{ inputs.version }}" "${{ github.repository }}" "${{ github.sha }}" <<'PYEOF'
+import json, os, sys, urllib.request
 
-          VERSION="${{ inputs.version }}"
-          RELEASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/v${VERSION}"
+version = sys.argv[1]
+repo = sys.argv[2]
+sha = sys.argv[3][:7]
+tag = f"v{version}"
+release_url = f"https://github.com/{repo}/releases/tag/{tag}"
 
-          # Check which platforms succeeded
-          PLATFORMS_BUILT=""
-          for p in linux windows macos-intel macos-arm; do
-            if ls "artifacts/Tasia-Viewer-${p}"* 2>/dev/null | head -1 >/dev/null 2>&1; then
-              case "$p" in
-                linux)       PLATFORMS_BUILT="${PLATFORMS_BUILT}🐧 Linux (x86_64) ✅\n" ;;
-                windows)     PLATFORMS_BUILT="${PLATFORMS_BUILT}🪟 Windows (x86_64) ✅\n" ;;
-                macos-intel) PLATFORMS_BUILT="${PLATFORMS_BUILT}🍎 macOS (Intel) ✅\n" ;;
-                macos-arm)   PLATFORMS_BUILT="${PLATFORMS_BUILT}🍎 macOS (Apple Silicon) ✅\n" ;;
-              esac
-            else
-              case "$p" in
-                linux)       PLATFORMS_BUILT="${PLATFORMS_BUILT}🐧 Linux — ❌\n" ;;
-                windows)     PLATFORMS_BUILT="${PLATFORMS_BUILT}🪟 Windows — ❌\n" ;;
-                macos-intel) PLATFORMS_BUILT="${PLATFORMS_BUILT}🍎 macOS (Intel) — ❌\n" ;;
-                macos-arm)   PLATFORMS_BUILT="${PLATFORMS_BUILT}🍎 macOS (Apple Silicon) — ⚠️\n" ;;
-              esac
-            fi
-          done
+# Each artifact upload creates a subdirectory under artifacts/
+platforms_info = [
+    ("Tasia-Viewer-Linux-FMOD",    "🐧 Linux (x86_64)"),
+    ("Tasia-Viewer-Windows-FMOD",  "🪟 Windows (x86_64)"),
+    ("Tasia-Viewer-macOS-Intel-FMOD", "🍎 macOS (Intel)"),
+    ("Tasia-Viewer-macOS-ARM-FMOD",   "🍎 macOS (Apple Silicon)"),
+]
 
-          PLATFORMS_BUILT="$(echo -e "$PLATFORMS_BUILT")"
+lines = []
+for dirname, label in platforms_info:
+    full_path = os.path.join("artifacts", dirname)
+    if os.path.isdir(full_path) and os.listdir(full_path):
+        lines.append(f"{label} ✅")
+    else:
+        warn = "⚠️" if "ARM" in dirname else "❌"
+        lines.append(f"{label} {warn}")
 
-          curl -X POST -H "Content-Type: application/json" \
-            -d "$(cat <<EOF
-          {
-            "embeds": [{
-              "title": "🎉 Tasia Viewer ${VERSION} Released!",
-              "description": "New multi-platform release is here!",
-              "url": "${RELEASE_URL}",
-              "color": 16761856,
-              "fields": [
-                {"name": "Version", "value": "${VERSION}", "inline": true},
-                {"name": "Release", "value": "[Download](${RELEASE_URL})", "inline": true},
-                {"name": "Build Status", "value": "${PLATFORMS_BUILT}", "inline": false}
-              ],
-              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            }]
-          }
-          EOF
-          )" "$DISCORD_WEBHOOK_URL"
+build_status = "\n".join(lines)
+
+payload = {
+    "embeds": [{
+        "title": f"🎉 Tasia Viewer {version} Released!",
+        "description": "Multi-platform release is here!",
+        "url": release_url,
+        "color": 16761856,
+        "fields": [
+            {"name": "Version", "value": version, "inline": True},
+            {"name": "Release", "value": f"[Download]({release_url})", "inline": True},
+            {"name": "Build Status", "value": build_status, "inline": False},
+        ],
+        "footer": {"text": "💚 Tasia Release"}
+    }]
+}
+
+req = urllib.request.Request(
+    os.environ["DISCORD_WEBHOOK_URL"],
+    data=json.dumps(payload).encode(),
+    headers={"Content-Type": "application/json"},
+    method="POST"
+)
+urllib.request.urlopen(req)
+PYEOF
