@@ -341,53 +341,52 @@ jobs:
         run: |
           set -euo pipefail
           python3 - "${{ inputs.version }}" "${{ github.repository }}" "${{ github.sha }}" <<'PYEOF'
-import json, os, sys, urllib.request
+          import json, os, sys, urllib.request
 
-version = sys.argv[1]
-repo = sys.argv[2]
-sha = sys.argv[3][:7]
-tag = f"v{version}"
-release_url = f"https://github.com/{repo}/releases/tag/{tag}"
+          version = sys.argv[1]
+          repo = sys.argv[2]
+          sha = sys.argv[3][:7]
+          tag = f"v{version}"
+          release_url = f"https://github.com/{repo}/releases/tag/{tag}"
 
-# Each artifact upload creates a subdirectory under artifacts/
-platforms_info = [
-    ("Tasia-Viewer-Linux-FMOD",    "🐧 Linux (x86_64)"),
-    ("Tasia-Viewer-Windows-FMOD",  "🪟 Windows (x86_64)"),
-    ("Tasia-Viewer-macOS-Intel-FMOD", "🍎 macOS (Intel)"),
-    ("Tasia-Viewer-macOS-ARM-FMOD",   "🍎 macOS (Apple Silicon)"),
-]
+          # Each artifact upload creates a subdirectory under artifacts/
+          platforms_info = [
+              ("Tasia-Viewer-Linux-FMOD",    "🐧 Linux (x86_64)"),
+              ("Tasia-Viewer-Windows-FMOD",  "🪟 Windows (x86_64)"),
+              ("Tasia-Viewer-macOS-Intel-FMOD", "🍎 macOS (Intel)"),
+              ("Tasia-Viewer-macOS-ARM-FMOD",   "🍎 macOS (Apple Silicon)"),
+          ]
 
-lines = []
-for dirname, label in platforms_info:
-    full_path = os.path.join("artifacts", dirname)
-    if os.path.isdir(full_path) and os.listdir(full_path):
-        lines.append(f"{label} ✅")
-    else:
-        warn = "⚠️" if "ARM" in dirname else "❌"
-        lines.append(f"{label} {warn}")
+          lines = []
+          for dirname, label in platforms_info:
+              full_path = os.path.join("artifacts", dirname)
+              if os.path.isdir(full_path) and os.listdir(full_path):
+                  lines.append(f"{label} ✅")
+              else:
+                  warn = "⚠️" if "ARM" in dirname else "❌"
+                  lines.append(f"{label} {warn}")
 
-build_status = "\n".join(lines)
+          build_status = "\n".join(lines)
 
-payload = {
-    "embeds": [{
-        "title": f"🎉 Tasia Viewer {version} Released!",
-        "description": "Multi-platform release is here!",
-        "url": release_url,
-        "color": 16761856,
-        "fields": [
-            {"name": "Version", "value": version, "inline": True},
-            {"name": "Release", "value": f"[Download]({release_url})", "inline": True},
-            {"name": "Build Status", "value": build_status, "inline": False},
-        ],
-        "footer": {"text": "💚 Tasia Release"}
-    }]
-}
+          payload = {
+              "embeds": [{
+                  "title": f"🎉 Tasia Viewer {version} Released!",
+                  "description": "Multi-platform release is here!",
+                  "url": release_url,
+                  "color": 16761856,
+                  "fields": [
+                      {"name": "Version", "value": version, "inline": True},
+                      {"name": "Release", "value": f"[Download]({release_url})", "inline": True},
+                      {"name": "Build Status", "value": build_status, "inline": False},
+                  ],
+                  "footer": {"text": "💚 Tasia Release"}
+              }]
+          }
 
-req = urllib.request.Request(
-    os.environ["DISCORD_WEBHOOK_URL"],
-    data=json.dumps(payload).encode(),
-    headers={"Content-Type": "application/json"},
-    method="POST"
-)
-urllib.request.urlopen(req)
-PYEOF
+          req = urllib.request.Request(
+              os.environ["DISCORD_WEBHOOK_URL"],
+              data=json.dumps(payload).encode(),
+              headers={"Content-Type": "application/json"},
+          )
+          urllib.request.urlopen(req)
+          PYEOF

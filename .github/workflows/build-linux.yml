@@ -242,35 +242,35 @@ jobs:
         run: |
           set -euo pipefail
           python3 - "${{ github.repository }}" "${{ github.sha }}" "${{ github.run_number }}" <<'PYEOF'
-import json, os, sys, urllib.request
+          import json, os, sys, urllib.request
 
-repo = sys.argv[1]
-sha = sys.argv[2][:7]
-run = sys.argv[3]
-version = f"8.0.1.{run}"
-tag = f"v8.0.1-{run}"
-release_url = f"https://github.com/{repo}/releases/tag/{tag}"
+          repo = sys.argv[1]
+          sha = sys.argv[2][:7]
+          run = sys.argv[3]
+          version = f"8.0.1.{run}"
+          tag = f"v8.0.1-{run}"
+          release_url = f"https://github.com/{repo}/releases/tag/{tag}"
 
-payload = {
-    "embeds": [{
-        "title": f"Tasia Viewer {version} — Linux Beta",
-        "description": "Linux build ready!",
-        "url": release_url,
-        "color": 3066993,
-        "fields": [
-            {"name": "Version", "value": version, "inline": True},
-            {"name": "Platform", "value": "Linux (x86_64)", "inline": True},
-            {"name": "Commit", "value": sha, "inline": True},
-        ],
-        "footer": {"text": "💚 Tasia Release"}
-    }]
-}
+          payload = {
+              "embeds": [{
+                  "title": f"Tasia Viewer {version} — Linux Beta",
+                  "description": "Linux build ready!",
+                  "url": release_url,
+                  "color": 3066993,
+                  "fields": [
+                      {"name": "Version", "value": version, "inline": True},
+                      {"name": "Platform", "value": "Linux (x86_64)", "inline": True},
+                      {"name": "Commit", "value": sha, "inline": True},
+                  ],
+                  "footer": {"text": "💚 Tasia Release"}
+              }]
+          }
 
-req = urllib.request.Request(
-    os.environ["DISCORD_WEBHOOK_URL"],
-    data=json.dumps(payload).encode(),
-    headers={"Content-Type": "application/json"},
-    method="POST"
-)
-urllib.request.urlopen(req)
-PYEOF
+          req = urllib.request.Request(
+              os.environ["DISCORD_WEBHOOK_URL"],
+              data=json.dumps(payload).encode(),
+              headers={"Content-Type": "application/json"},
+              method="POST"
+          )
+          urllib.request.urlopen(req)
+          PYEOF
