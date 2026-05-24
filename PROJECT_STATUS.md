@@ -1,5 +1,31 @@
 # PROJECT STATUS
 
+## 2026-05-24 Remote Tasia user config feature
+
+## What is done
+- Created isolated local branch/worktree: `feature/tasia-remote-user-config` at `/tmp/opencode/tasia-user-config`.
+- Added non-blocking one-shot startup fetch for `https://i.let-us.cyou/hg/config.json`.
+- Added UUID-keyed custom user data for nametag title/color and profile badge text/tooltip.
+- Changed welcome default URL to `https://i.let-us.cyou/welcome.php` and made welcome fetch use the first usable line instead of randomizing lines.
+- Welcome fetch now resets per visible progress screen, so it can run for login and teleport loading screens.
+
+## What is broken
+- `https://i.let-us.cyou/hg/config.json` currently returns HTTP 404, so viewer-side code will fail gracefully but cannot display badges until the server file exists.
+- Full viewer build not run yet.
+
+## What was last attempted
+- Focused local implementation and verification on `feature/tasia-remote-user-config`.
+
+## Exact last failing step
+- Remote config URL smoke test returned HTTP 404.
+
+## What must not be changed
+- Do not touch Mom's existing dirty main worktree changes.
+- Do not push/build until Mom approves.
+
+## Next exact action
+- If Mom approves: commit, push `feature/tasia-remote-user-config`, and trigger Linux/Windows builds.
+
 ## What is done
 - GIPHY key obfuscation, welcome text client, GIPHY picker, YouTube/image previews — all working in prior clean builds
 - Previous clean builds (26135635543 Linux, 26135636272 Windows) completed successfully

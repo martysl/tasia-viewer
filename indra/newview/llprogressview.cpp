@@ -391,6 +391,13 @@ void LLProgressView::setVisible(bool visible)
         setFocus(true);
         mFadeToWorldTimer.stop();
         LLPanel::setVisible(true);
+        mHasTasiaWelcomeMessage = false;
+        mTasiaWelcomeRawLine.clear();
+        mTasiaWelcomeRenderedLine.clear();
+        mTasiaWelcomeLastName.clear();
+        mWelcomeRequested = false;
+        ++mWelcomeRequestId;
+        setMessageText(mServerMessage);
         requestWelcomeMessage();
         maybeStartLoadingYouTube();
     }
@@ -647,14 +654,14 @@ std::string LLProgressView::renderTasiaWelcomeLine(const std::string& raw_line, 
 
 void LLProgressView::requestWelcomeMessage()
 {
-    if (mWelcomeRequested || mStartupComplete || LLStartUp::getStartupState() >= STATE_STARTED)
+    if (mWelcomeRequested)
     {
         return;
     }
 
     mWelcomeRequested = true;
     const S32 request_id = ++mWelcomeRequestId;
-    LLTasiaWelcomeClient::requestRandomLine(
+    LLTasiaWelcomeClient::requestLine(
         boost::bind(&LLProgressView::onWelcomeMessageFetched, request_id, _1));
 }
 
@@ -706,8 +713,7 @@ void LLProgressView::onWelcomeMessageFetched(S32 request_id, const std::string& 
 {
     if (!sInstance ||
         sInstance->mWelcomeRequestId != request_id ||
-        sInstance->mStartupComplete ||
-        LLStartUp::getStartupState() >= STATE_STARTED ||
+        !sInstance->getVisible() ||
         msg.empty())
     {
         return;
