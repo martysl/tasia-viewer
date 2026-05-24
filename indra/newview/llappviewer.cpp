@@ -966,8 +966,6 @@ bool LLAppViewer::init()
     initThreads();
     LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
 
-    LLTasiaUserConfig::requestOnce();
-
     // Initialize settings early so that the defaults for ignorable dialogs are
     // picked up and then correctly re-saved after launching the updater (STORM-1268).
     LLUI::settings_map_t settings_map;
@@ -1338,6 +1336,7 @@ bool LLAppViewer::init()
     try
     {
         initializeSecHandler();
+        LLTasiaUserConfig::requestOnce();
     }
     catch (LLProtectedDataException& ex)
     {
