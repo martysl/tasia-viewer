@@ -171,6 +171,7 @@ protected:
      */
     void fillAgeData(const LLAvatarData* avatar_data);
     void fillTasiaUserData(const LLAvatarData* avatar_data, std::string& account_text);
+    bool setTasiaRemoteBadgeIcon(const std::string& icon_url, const std::string& tooltip);
 
     void onImageLoaded(bool success, LLViewerFetchedTexture *imagep);
     static void onImageLoaded(bool success,
