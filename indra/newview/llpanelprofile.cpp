@@ -78,6 +78,7 @@
 #include "llviewercontrol.h"
 #include "llviewermenu.h" //is_agent_mappable
 #include "llviewermenufile.h"
+#include "llviewertexture.h"
 #include "llviewertexturelist.h"
 #include "llvoiceclient.h"
 #include "llweb.h"
@@ -1068,6 +1069,8 @@ void LLPanelProfileSecondLife::resetData()
     childSetVisible("badge_layout", false);
     childSetVisible("top_badge_layout", false);
     childSetVisible("bottom_badge_layout", false);
+    childSetVisible("tasia_badge_layout", false);
+    getChild<LLIconCtrl>("tasia_badge_icon")->setImage(LLPointer<LLUIImage>());
     getChild<LLUICtrl>("account_info")->setToolTip(std::string());
     // <FS:Zi> Always show the online status text, just set it to "offline" when a friend is hiding
     // mStatusText->setVisible(false);
@@ -1587,7 +1590,38 @@ void LLPanelProfileSecondLife::fillTasiaUserData(const LLAvatarData* avatar_data
         account_info->setToolTip(tooltip);
     }
 
-    setBadgeRawTooltip("Profile_Badge_Team", tooltip.empty() ? line : tooltip, BadgeLocation::top);
+    if (!setTasiaRemoteBadgeIcon(tasia_user.badge_icon, tooltip.empty() ? line : tooltip))
+    {
+        setBadgeRawTooltip("Profile_Badge_Team", tooltip.empty() ? line : tooltip, BadgeLocation::top);
+    }
+}
+
+bool LLPanelProfileSecondLife::setTasiaRemoteBadgeIcon(const std::string& icon_url, const std::string& tooltip)
+{
+    if (icon_url.empty())
+    {
+        return false;
+    }
+
+    LLIconCtrl* icon_ctrl = getChild<LLIconCtrl>("tasia_badge_icon");
+    LLViewerFetchedTexture* imagep = LLViewerTextureManager::getFetchedTextureFromUrl(
+        icon_url,
+        FTT_DEFAULT,
+        false,
+        LLGLTexture::BOOST_UI,
+        LLViewerTexture::LOD_TEXTURE);
+
+    if (!imagep)
+    {
+        return false;
+    }
+
+    imagep->setKnownDrawSize(icon_ctrl->getRect().getWidth(), icon_ctrl->getRect().getHeight());
+    LLPointer<LLUIImage> ui_image = new LLUIImage(icon_url, imagep);
+    icon_ctrl->setImage(ui_image);
+    icon_ctrl->setToolTip(tooltip);
+    childSetVisible("tasia_badge_layout", true);
+    return true;
 }
 
 // <FS:Ansariel> Fix LL UI/UX design accident
