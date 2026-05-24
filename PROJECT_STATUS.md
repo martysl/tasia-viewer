@@ -1,5 +1,32 @@
 # Project Status
 
+## 2026-05-24 Remote Tasia user config feature
+
+## What is done
+- Created isolated local branch/worktree: `feature/tasia-remote-user-config` at `/tmp/opencode/tasia-user-config`.
+- Added non-blocking one-shot startup fetch for `https://i.let-us.cyou/hg/config.json`.
+- Added UUID-keyed custom user data for nametag title/color and profile badge text/tooltip.
+- Changed welcome default URL to `https://i.let-us.cyou/welcome.php` and made welcome fetch use the first usable line instead of randomizing lines.
+- Welcome fetch now resets per visible progress screen, so it can run for login and teleport loading screens.
+- Linux branch was pushed and Linux build started: `26367560133`.
+- Windows branch cherry-pick is in progress.
+
+## What is broken
+- `https://i.let-us.cyou/hg/config.json` currently returns HTTP 404, so viewer-side code will fail gracefully but cannot display badges until the server file exists.
+- Full viewer build not run yet.
+
+## What was last attempted
+- Focused local implementation and verification on `feature/tasia-remote-user-config`.
+
+## Exact last failing step
+- Remote config URL smoke test returned HTTP 404.
+
+## What must not be changed
+- Do not touch Mom's existing dirty main worktree changes.
+
+## Next exact action
+- Resolve Windows branch memory-file conflicts, push, and start Windows build.
+
 ## Current Phase
 
 Linux viewer builds and runs with FMOD.
