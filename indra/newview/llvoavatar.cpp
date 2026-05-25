@@ -3997,6 +3997,14 @@ void LLVOAvatar::idleUpdateNameTagText(bool new_name)
         name_tag_color = mClientTagData["color"];
     }
 
+    LLTasiaUserConfig::User tasia_user;
+    const bool has_tasia_user = LLTasiaUserConfig::getUser(getID(), tasia_user);
+    if (has_tasia_user && tasia_user.has_tag_color)
+    {
+        name_tag_color = tasia_user.tag_color;
+        distance_color = tasia_user.tag_color;
+    }
+
     // <FS:Ansariel> Color name tags based on distance
     static LLCachedControl<bool> show_distance_color_tag(gSavedSettings, "FSTagShowDistanceColors");
     static LLCachedControl<bool> show_distance_in_tag(gSavedSettings, "FSTagShowDistance");
@@ -4261,14 +4269,12 @@ void LLVOAvatar::idleUpdateNameTagText(bool new_name)
 
         if ((fRlvShowAvName || isSelf()))
         {
-            LLTasiaUserConfig::User tasia_user;
-            if (LLTasiaUserConfig::getUser(getID(), tasia_user))
+            if (has_tasia_user)
             {
                 std::string tasia_title = tasia_user.getNametagTitle();
                 if (!tasia_title.empty())
                 {
-                    LLColor4 title_color = tasia_user.has_tag_color ? tasia_user.tag_color : name_tag_color;
-                    addNameTagLine(tasia_title, title_color, LLFontGL::BOLD,
+                    addNameTagLine(tasia_title, name_tag_color, LLFontGL::BOLD,
                         LLFontGL::getFontSansSerifSmall(), true);
                 }
             }
