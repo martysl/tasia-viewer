@@ -135,11 +135,31 @@ jobs:
             --package \
             --ninja
 
+      - name: Collect Linux package artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          PACKAGE="$(find build-* -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' -o -name '*.bz2' \) | head -n 1)"
+          if [ -z "$PACKAGE" ]; then
+            echo "ERROR: No Linux package artifact found under build-*"
+            find build-* -maxdepth 4 -type f | sed -n '1,200p'
+            exit 1
+          fi
+
+          EXT="${PACKAGE##*.}"
+          if [[ "$PACKAGE" == *.tar.bz2 ]]; then
+            EXT="tar.bz2"
+          elif [[ "$PACKAGE" == *.tar.xz ]]; then
+            EXT="tar.xz"
+          fi
+
+          cp "$PACKAGE" "Tasia-Legacy-Viewer-Linux-FMOD.$EXT"
+          echo "Collected package: Tasia-Legacy-Viewer-Linux-FMOD.$EXT"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Tasia-Legacy-Viewer-Linux-FMOD
           if-no-files-found: error
           path: |
-            build-*/newview/*.tar.xz
-            build-*/newview/*.bz2
+            Tasia-Legacy-Viewer-Linux-FMOD.*
