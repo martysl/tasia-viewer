@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel
  name="panel_profile"
  label="Profile"
@@ -77,7 +77,12 @@
      value="None"
     />
     <string
-     name="age_format"
+     name="age_format_short"
+    >
+        [REG_DATE]
+    </string>
+    <string
+     name="age_format_full"
     >
         [REG_DATE]
 ([AGE])
@@ -466,6 +471,25 @@
              layout="topleft"
              orientation="horizontal">
                 <layout_panel
+                 name="tasia_badge_layout"
+                 follows="all"
+                 layout="topleft"
+                 width="1"
+                 visible="false"
+                 auto_resize="false"
+                 user_resize="false">
+                    <thumbnail
+                     name="tasia_badge_icon"
+                     tool_tip="Tasia custom badge"
+                     layout="topleft"
+                     follows="left|top"
+                     show_loading="true"
+                     top="2"
+                     left="2"
+                     height="1"
+                     width="1"/>
+                </layout_panel>
+                <layout_panel
                  name="badge_layout"
                  follows="all"
                  layout="topleft"
@@ -473,16 +497,55 @@
                  visible="false"
                  auto_resize="false"
                  user_resize="false">
-                    <icon
-                     name="badge_icon"
-                     image_name="Profile_Badge_Linden"
-                     tool_tip="Linden Lab Employee"
+                    <layout_stack
+                     name="badge_stacker"
+                     animate="false"
+                     top="0"
+                     left="0"
+                     width="22"
+                     height="44"
+                     follows="top|left|right"
                      layout="topleft"
-                     follows="left|top"
-                     top="4"
-                     left="4"
-                     height="18"
-                     width="18"/>
+                     orientation="vertical">
+                        <layout_panel
+                         name="top_badge_layout"
+                         follows="all"
+                         layout="topleft"
+                         width="22"
+                         visible="false"
+                         auto_resize="true"
+                         user_resize="false">
+                            <icon
+                             name="top_badge_icon"
+                             image_name="Profile_Badge_Linden"
+                             tool_tip="Linden Lab Employee"
+                             layout="topleft"
+                             follows="left|top"
+                             top="2"
+                             left="4"
+                             height="18"
+                             width="18"/>
+                        </layout_panel>
+                        <layout_panel
+                         name="bottom_badge_layout"
+                         follows="all"
+                         layout="topleft"
+                         width="22"
+                         visible="false"
+                         auto_resize="true"
+                         user_resize="false">
+                            <icon
+                             name="bottom_badge_icon"
+                             image_name="Profile_Badge_Linden"
+                             tool_tip="Linden Lab Employee"
+                             layout="topleft"
+                             follows="left|top"
+                             top="2"
+                             left="4"
+                             height="18"
+                             width="18"/>
+                        </layout_panel>
+                    </layout_stack>
                 </layout_panel>
                 <layout_panel
                  name="accountinfo_layout"
@@ -557,8 +620,22 @@
      follows="left|top"
      layout="topleft"
      halign="right"/>
+<!-- [AS:chanayane] Preview button -->
+    <button
+     name="btn_preview"
+     tool_tip="Toggle preview of your profile 'about' section"
+     top_delta="20"
+     left="35"
+     height="20"
+     width="20"
+     follows="left|top"
+     layout="topleft"
+     image_overlay="Profile_Group_Visibility_On"
+     is_toggle="true"
+     enabled="false"
+     visible="false"/>
     <view_border
-     top_delta="-4"
+     top_delta="-24"
      left="59"
      right="-5"
      height="103"
@@ -566,6 +643,7 @@
      follows="all"
      name="info_border_sl_description_edit"
      bevel_style="in"/>
+<!-- [/AS:chanayane] -->
     <text_editor
      name="sl_description_edit"
      trusted_content="false"
@@ -778,6 +856,18 @@
      enabled="false"
      bottom="-28"
      left="55"
+     height="16"
+     width="130"
+     follows="left|bottom"
+     layout="topleft"
+     visible="false"/>
+    <check_box
+     name="hide_sl_age"
+     label="Show full birthdate"
+     tool_tip="Let people see your SL age"
+     enabled="false"
+     bottom="-28"
+     left="230"
      height="16"
      width="130"
      follows="left|bottom"

@@ -20,7 +20,6 @@ include(FMODSTUDIO)
 include(GLOD) # <FS:Beq/> restore GLOD
 include(Hunspell)
 include(JPEGEncoderBasic)
-include(JsonCpp)
 include(LLAppearance)
 include(LLAudio)
 include(LLCA)
@@ -36,24 +35,27 @@ include(NVAPI)
 include(OPENAL)
 include(OpenGL)
 include(OpenSSL)
+include(OpenXR)
 include(PNG)
 include(TemplateCheck)
+include(TinyEXR)
 include(ThreeJS)
 include(Tracy)
 include(UI)
 include(ViewerMiscLibs)
 #include(ViewerManager) # <FS:Ansariel> Remove VMP
 include(VisualLeakDetector)
+include(VulkanGltf)
 include(ZLIBNG)
-include(URIPARSER)
 include(LLPrimitive)
 include(Growl)
 include(ColladaDom)
 include(jemalloc)
 include(Discord)
+include(MsQuic)
 
 # <FS:ND> if using ndPhysicsstub this variable will be unset, we don't need to build any stub code viewer side in that case
-if( LLPHYSICSEXTENSIONS_SRC_DIR )
+if (LLPHYSICSEXTENSIONS_SRC_DIR)
 # </FS:ND>
 
 if (NOT HAVOK_TPV)
@@ -80,7 +82,7 @@ if (NOT HAVOK_TPV)
 endif (NOT HAVOK_TPV)
 
 # <FS:ND>
-endif( LLPHYSICSEXTENSIONS_SRC_DIR )
+endif (LLPHYSICSEXTENSIONS_SRC_DIR)
 # </FS:ND>
 
 set(viewer_SOURCE_FILES
@@ -95,8 +97,13 @@ set(viewer_SOURCE_FILES
     dialogstack.cpp
     exoflickr.cpp
     exoflickrauth.cpp
+    fsprimfeedauth.cpp
+    tasiafeedconnect.cpp
+    llgiphyclient.cpp
+    lltasia_user_config.cpp
+    lltasia_welcome_client.cpp
+    lltasia_giphy_key.cpp
     exogroupmutelist.cpp
-    exopostprocess.cpp
     floatermedialists.cpp
     fsareasearch.cpp
     fsareasearchmenu.cpp
@@ -127,6 +134,7 @@ set(viewer_SOURCE_FILES
     fsfloaternearbychat.cpp
     fsfloaterpartialinventory.cpp
     fsfloaterplacedetails.cpp
+    fsfloaterposer.cpp
     fsfloaterposestand.cpp
     fsfloaterprotectedfolders.cpp
     fsfloaterradar.cpp
@@ -138,11 +146,14 @@ set(viewer_SOURCE_FILES
     fsfloatervolumecontrols.cpp
     fsfloatervramusage.cpp
     fsfloaterwearablefavorites.cpp
+    fsfloaterwhitelisthelper.cpp
+    fsjointpose.cpp
     fskeywords.cpp
     fslslbridge.cpp
     fslslbridgerequest.cpp
     fslslpreproc.cpp
     fslslpreprocviewer.cpp
+    fsmaniprotatejoint.cpp
     fsmoneytracker.cpp
     fsnamelistavatarmenu.cpp
     fsnearbychatbarlistener.cpp
@@ -151,12 +162,16 @@ set(viewer_SOURCE_FILES
     fsnearbychatvoicemonitor.cpp
     fspanelblocklist.cpp
     fspanelcontactsets.cpp
+    fspanelface.cpp
     fspanelimcontrolpanel.cpp
     fspanellogin.cpp
     fspanelprefs.cpp
     fspanelradar.cpp
     fsparticipantlist.cpp
     fspose.cpp
+    fsposeranimator.cpp
+    fsposingmotion.cpp
+    fsprimfeedauth.cpp
     fsradar.cpp
     fsradarentry.cpp
     fsradarlistctrl.cpp
@@ -165,7 +180,8 @@ set(viewer_SOURCE_FILES
     fsscriptlibrary.cpp
     fsscrolllistctrl.cpp
     fsslurlcommand.cpp
-    groupchatlistener.cpp
+    fsvirtualtrackpad.cpp
+    fsworldmapmessage.cpp
     lggbeamcolormapfloater.cpp
     lggbeammapfloater.cpp
     lggbeammaps.cpp
@@ -174,15 +190,25 @@ set(viewer_SOURCE_FILES
     lfsimfeaturehandler.cpp
     llflickrconnect.cpp
     llfloaterflickr.cpp
+    llfloatergiphypicker.cpp
+    llfloatertasiafeed.cpp
+    fsprimfeedconnect.cpp
+    fsfloaterprimfeed.cpp
     llpanelopenregionsettings.cpp
     # <FS:Ansariel> [Legacy Bake]
     llagentwearablesfetch.cpp
-
-    # local mesh
     vjlocalmesh.cpp
     vjfloaterlocalmesh.cpp
     vjlocalmeshimportdae.cpp
 
+    gltfscenemanager.cpp
+    # <FS:Ansariel> Group GLTF files into their subfolders
+    #gltf/asset.cpp
+    #gltf/accessor.cpp
+    #gltf/primitive.cpp
+    #gltf/animation.cpp
+    # </FS:Ansariel> Group GLTF files into their subfolders
+    groupchatlistener.cpp
     llaccountingcostmanager.cpp
     llaisapi.cpp
     llagent.cpp
@@ -214,7 +240,6 @@ set(viewer_SOURCE_FILES
     llblockedlistitem.cpp
     llblocklist.cpp
     llbox.cpp
-    #llbreadcrumbview.cpp #<FS:Ansariel> Unused
     llbrowsernotification.cpp
     llbuycurrencyhtml.cpp
     llcallingcard.cpp
@@ -255,14 +280,15 @@ set(viewer_SOURCE_FILES
     lldrawpoolalpha.cpp
     lldrawpoolavatar.cpp
     lldrawpoolbump.cpp
-    lldrawpoolground.cpp
     lldrawpoolmaterials.cpp
+    lldrawpoolpbropaque.cpp
     lldrawpoolsimple.cpp
     lldrawpoolsky.cpp
     lldrawpoolterrain.cpp
     lldrawpooltree.cpp
     lldrawpoolwater.cpp
     lldrawpoolwlsky.cpp
+    lldrawpoolwaterexclusion.cpp
     lldynamictexture.cpp
     llemote.cpp
     llenvironment.cpp
@@ -276,6 +302,7 @@ set(viewer_SOURCE_FILES
     llfasttimerview.cpp
     llfavoritesbar.cpp
     llfeaturemanager.cpp
+    llfetchedgltfmaterial.cpp
     llfilepicker.cpp
     llfilteredwearablelist.cpp
     llfirstuse.cpp
@@ -295,6 +322,7 @@ set(viewer_SOURCE_FILES
     llfloaterbigpreview.cpp
     llfloaterbuildoptions.cpp
     llfloaterbulkpermission.cpp
+    llfloaterbulkupload.cpp
     llfloaterbump.cpp
     llfloaterbuy.cpp
     llfloaterbuycontents.cpp
@@ -315,6 +343,7 @@ set(viewer_SOURCE_FILES
     llfloaterdisplayname.cpp
     llfloatereditenvironmentbase.cpp
     llfloatereditextdaycycle.cpp
+    llfloateremojipicker.cpp
     llfloaterenvironmentadjust.cpp
     llfloaterevent.cpp
     llfloaterexperiencepicker.cpp
@@ -324,6 +353,7 @@ set(viewer_SOURCE_FILES
     llfloaterfonttest.cpp
     llfloaterforgetuser.cpp
     llfloatergesture.cpp
+    llfloatergltfasseteditor.cpp
     llfloatergodtools.cpp
     llfloatergotoline.cpp
     llfloatergridstatus.cpp
@@ -341,6 +371,7 @@ set(viewer_SOURCE_FILES
     llfloaterimcontainer.cpp
     llfloaterinspect.cpp
     llfloaterinventorysettings.cpp
+    llfloaterinventorythumbnailshelper.cpp
     llfloaterjoystick.cpp
     llfloaterlagmeter.cpp
     llfloaterland.cpp
@@ -382,6 +413,7 @@ set(viewer_SOURCE_FILES
     llfloaterregioninfo.cpp
     llfloaterreporter.cpp
     llfloaterregionrestarting.cpp
+    llfloaterregionrestartschedule.cpp
     llfloatersavecamerapreset.cpp
     llfloatersaveprefpreset.cpp
     llfloatersceneloadstats.cpp
@@ -392,15 +424,16 @@ set(viewer_SOURCE_FILES
     llfloatersearch.cpp
     llfloatersearchreplace.cpp
     llfloatersellland.cpp
+    llfloatersettingscolor.cpp
     llfloatersettingsdebug.cpp
     llfloatersidepanelcontainer.cpp
+    llfloaterslapptest.cpp
     llfloatersnapshot.cpp
     llfloatersounddevices.cpp
     llfloaterspellchecksettings.cpp
     llfloatertelehub.cpp
     llfloatertestinspectors.cpp
     llfloatertestlistview.cpp
-    llfloatertexturefetchdebugger.cpp
     llfloatertools.cpp
     llfloatertopobjects.cpp
     llfloatertos.cpp
@@ -422,6 +455,10 @@ set(viewer_SOURCE_FILES
     llgesturemgr.cpp
     llgiveinventory.cpp
     llglsandbox.cpp
+    llgltffolderitem.cpp
+    llgltffoldermodel.cpp
+    llgltfmateriallist.cpp
+    llgltfmaterialpreviewmgr.cpp
     llgroupactions.cpp
     llgroupiconctrl.cpp
     llgrouplist.cpp
@@ -470,10 +507,10 @@ set(viewer_SOURCE_FILES
     lllandmarkactions.cpp
     lllandmarklist.cpp
     lllegacyatmospherics.cpp
-    #lllistbrowser.cpp #<FS:Ansariel> Unused
     lllistcontextmenu.cpp
     lllistview.cpp
     lllocalbitmaps.cpp
+    lllocalgltfmaterials.cpp
     lllocationhistory.cpp
     lllocationinputctrl.cpp
     lllogchat.cpp
@@ -486,6 +523,7 @@ set(viewer_SOURCE_FILES
     llmaniptranslate.cpp
     llmarketplacefunctions.cpp
     llmarketplacenotifications.cpp
+    llmaterialeditor.cpp
     llmaterialmgr.cpp
     llmediactrl.cpp
     llmediadataclient.cpp
@@ -528,6 +566,7 @@ set(viewer_SOURCE_FILES
     llpaneleditsky.cpp
     llpaneleditwater.cpp
     llpaneleditwearable.cpp
+    llpanelemojicomplete.cpp
     llpanelenvironment.cpp
     llpanelexperiencelisteditor.cpp
     llpanelexperiencelog.cpp
@@ -607,6 +646,7 @@ set(viewer_SOURCE_FILES
     llpathfindingobject.cpp
     llpathfindingobjectlist.cpp
     llpathfindingpathtool.cpp
+    llpbrterrainfeatures.cpp
     llpersistentnotificationstorage.cpp
     llphysicsmotion.cpp
     llphysicsshapebuilderutil.cpp
@@ -627,10 +667,13 @@ set(viewer_SOURCE_FILES
     llproductinforequest.cpp
     llprogressview.cpp
     llrecentpeople.cpp
+    llreflectionmap.cpp
+    llreflectionmapmanager.cpp
+    llheroprobemanager.cpp
     llregioninfomodel.cpp
     llregionposition.cpp
     llremoteparcelrequest.cpp
-    #llsavedsettingsglue.cpp #<FS:Ansariel> Unused
+    llsaveoutfitcombobtn.cpp
     #llsaveoutfitcombobtn.cpp #<FS:Ansariel> Unused
     llscenemonitor.cpp
     llsceneview.cpp
@@ -676,6 +719,7 @@ set(viewer_SOURCE_FILES
     llsyswellwindow.cpp
     llteleporthistory.cpp
     llteleporthistorystorage.cpp
+    llterrainpaintmap.cpp
     lltexturecache.cpp
     lltexturectrl.cpp
     lltexturefetch.cpp
@@ -684,6 +728,7 @@ set(viewer_SOURCE_FILES
     lltexturestats.cpp
     lltextureview.cpp
     llthumbnailctrl.cpp
+    lltinygltfhelper.cpp
     lltoast.cpp
     lltoastalertpanel.cpp
     lltoastgroupnotifypanel.cpp
@@ -726,7 +771,6 @@ set(viewer_SOURCE_FILES
     llurlhistory.cpp
     llurllineeditorctrl.cpp
     llurlwhitelist.cpp
-    #llvectorperfoptions.cpp #<FS:Ansariel> Unused
     llversioninfo.cpp
     llviewchildren.cpp
     llviewerassetstats.cpp
@@ -792,12 +836,12 @@ set(viewer_SOURCE_FILES
     llvoavatarself.cpp
     llvocache.cpp
     llvograss.cpp
-    llvoground.cpp
     llvoicecallhandler.cpp
     llvoicechannel.cpp
     llvoiceclient.cpp
     llvoicevisualizer.cpp
     llvoicevivox.cpp
+    llvoicewebrtc.cpp
     llvoinventorylistener.cpp
     llvopartgroup.cpp
     llvosky.cpp
@@ -826,6 +870,7 @@ set(viewer_SOURCE_FILES
     noise.cpp
     particleeditor.cpp
     permissionstracker.cpp
+    pieautohide.cpp
     piemenu.cpp
     pieseparator.cpp
     pieslice.cpp
@@ -849,6 +894,27 @@ set(viewer_SOURCE_FILES
     NACLantispam.cpp
     NACLfloaterexploresounds.cpp
     )
+
+# <FS:Ansariel> Group GLTF files into their subfolders
+set(viewer_GLTF_SOURCE_FILES
+    gltf/asset.cpp
+    gltf/accessor.cpp
+    gltf/primitive.cpp
+    gltf/animation.cpp
+    )
+
+source_group("Source Files\\GLTF" FILES ${viewer_GLTF_SOURCE_FILES})
+list(APPEND viewer_SOURCE_FILES ${viewer_GLTF_SOURCE_FILES})
+# </FS:Ansariel> Group GLTF files into their subfolders
+
+if (LINUX)
+   list(APPEND viewer_SOURCE_FILES
+           llfilepicker_portal.cpp
+   )
+   list(APPEND viewer_HEADER_FILES
+           llfilepicker_portal.h
+   )
+endif()
 
 if (OPENSIM)
     list(APPEND viewer_SOURCE_FILES
@@ -880,8 +946,13 @@ set(viewer_HEADER_FILES
     dialogstack.h
     exoflickr.h
     exoflickrauth.h
+    fsprimfeedauth.h
+    tasiafeedconnect.h
+    llgiphyclient.h
+    lltasia_user_config.h
+    lltasia_welcome_client.h
+    lltasia_giphy_key.h
     exogroupmutelist.h
-    exopostprocess.h
     floatermedialists.h
     fsareasearch.h
     fsareasearchmenu.h
@@ -913,6 +984,7 @@ set(viewer_HEADER_FILES
     fsfloaternearbychat.h
     fsfloaterpartialinventory.h
     fsfloaterplacedetails.h
+    fsfloaterposer.h
     fsfloaterposestand.h
     fsfloaterprotectedfolders.h
     fsfloaterradar.h
@@ -924,6 +996,8 @@ set(viewer_HEADER_FILES
     fsfloatervolumecontrols.h
     fsfloatervramusage.h
     fsfloaterwearablefavorites.h
+    fsfloaterwhitelisthelper.h
+	fsjointpose.h
     fsgridhandler.h
     fskeywords.h
     fslslbridge.h
@@ -931,6 +1005,7 @@ set(viewer_HEADER_FILES
     fslslpreproc.h
     fslslpreprocviewer.h
     fsmoneytracker.h
+    fsmaniprotatejoint.h
     fsnamelistavatarmenu.h
     fsnearbychatbarlistener.h
     fsnearbychatcontrol.h
@@ -938,12 +1013,16 @@ set(viewer_HEADER_FILES
     fsnearbychatvoicemonitor.h
     fspanelblocklist.h
     fspanelcontactsets.h
+    fspanelface.h
     fspanelimcontrolpanel.h
     fspanellogin.h
     fspanelprefs.h
     fspanelradar.h
     fsparticipantlist.h
     fspose.h
+    fsposeranimator.h
+    fsposingmotion.h
+    fsprimfeedauth.h
     fsradar.h
     fsradarentry.h
     fsradarlistctrl.h
@@ -953,8 +1032,8 @@ set(viewer_HEADER_FILES
     fsscrolllistctrl.h
     fsslurl.h
     fsslurlcommand.h
-    groupchatlistener.h
-    llaccountingcost.h
+    fsvirtualtrackpad.h
+    fsworldmapmessage.h
     lggbeamcolormapfloater.h
     lggbeammapfloater.h
     lggbeammaps.h
@@ -963,14 +1042,26 @@ set(viewer_HEADER_FILES
     lfsimfeaturehandler.h
     llflickrconnect.h
     llfloaterflickr.h
+    llfloatergiphypicker.h
+    llfloatertasiafeed.h
+    fsprimfeedconnect.h
+    fsfloaterprimfeed.h
     # <FS:Ansariel> [Legacy Bake]
     llagentwearablesfetch.h
-
-    # local mesh
     vjlocalmesh.h
     vjfloaterlocalmesh.h
     vjlocalmeshimportdae.h
 
+    gltfscenemanager.h
+    groupchatlistener.h
+    # <FS:Ansariel> Group GLTF files into their subfolders
+    #gltf/asset.h
+    #gltf/accessor.h
+    #gltf/buffer_util.h
+    #gltf/primitive.h
+    #gltf/animation.h
+    # </FS:Ansariel> Group GLTF files into their subfolders
+    llaccountingcost.h
     llaccountingcostmanager.h
     llaisapi.h
     llagent.h
@@ -1003,7 +1094,6 @@ set(viewer_HEADER_FILES
     llblockedlistitem.h
     llblocklist.h
     llbox.h
-    #llbreadcrumbview.h #<FS:Ansariel> Unused
     llbuycurrencyhtml.h
     llcallingcard.h
     llcapabilityprovider.h
@@ -1045,13 +1135,14 @@ set(viewer_HEADER_FILES
     lldrawpoolavatar.h
     lldrawpoolbump.h
     lldrawpoolmaterials.h
-    lldrawpoolground.h
+    lldrawpoolpbropaque.h
     lldrawpoolsimple.h
     lldrawpoolsky.h
     lldrawpoolterrain.h
     lldrawpooltree.h
     lldrawpoolwater.h
     lldrawpoolwlsky.h
+    lldrawpoolwaterexclusion.h
     lldynamictexture.h
     llemote.h
     llenvironment.h
@@ -1065,6 +1156,8 @@ set(viewer_HEADER_FILES
     llfasttimerview.h
     llfavoritesbar.h
     llfeaturemanager.h
+    llfetchedgltfmaterial.h
+    llfilepicker_etype.h
     llfilepicker.h
     llfilteredwearablelist.h
     llfirstuse.h
@@ -1084,6 +1177,7 @@ set(viewer_HEADER_FILES
     llfloaterbigpreview.h
     llfloaterbuildoptions.h
     llfloaterbulkpermission.h
+    llfloaterbulkupload.h
     llfloaterbump.h
     llfloaterbuy.h
     llfloaterbuycontents.h
@@ -1104,6 +1198,7 @@ set(viewer_HEADER_FILES
     llfloaterdisplayname.h
     llfloatereditenvironmentbase.h
     llfloatereditextdaycycle.h
+    llfloateremojipicker.h
     llfloaterenvironmentadjust.h
     llfloaterevent.h
     llfloaterexperiencepicker.h
@@ -1113,6 +1208,7 @@ set(viewer_HEADER_FILES
     llfloaterfonttest.h
     llfloaterforgetuser.h
     llfloatergesture.h
+    llfloatergltfasseteditor.h
     llfloatergodtools.h
     llfloatergotoline.h
     llfloatergridstatus.h
@@ -1133,6 +1229,7 @@ set(viewer_HEADER_FILES
     llfloaterimcontainer.h
     llfloaterinspect.h
     llfloaterinventorysettings.h
+    llfloaterinventorythumbnailshelper.h
     llfloaterjoystick.h
     llfloaterlagmeter.h
     llfloaterland.h
@@ -1174,6 +1271,7 @@ set(viewer_HEADER_FILES
     llfloaterregioninfo.h
     llfloaterreporter.h
     llfloaterregionrestarting.h
+    llfloaterregionrestartschedule.h
     llfloatersavecamerapreset.h
     llfloatersaveprefpreset.h
     llfloatersceneloadstats.h
@@ -1184,15 +1282,16 @@ set(viewer_HEADER_FILES
     llfloatersearch.h
     llfloatersearchreplace.h
     llfloatersellland.h
+    llfloatersettingscolor.h
     llfloatersettingsdebug.h
     llfloatersidepanelcontainer.h
+    llfloaterslapptest.h
     llfloatersnapshot.h
     llfloatersounddevices.h
     llfloaterspellchecksettings.h
     llfloatertelehub.h
     llfloatertestinspectors.h
     llfloatertestlistview.h
-    llfloatertexturefetchdebugger.h
     llfloatertools.h
     llfloatertopobjects.h
     llfloatertos.h
@@ -1213,6 +1312,10 @@ set(viewer_HEADER_FILES
     llgesturelistener.h
     llgesturemgr.h
     llgiveinventory.h
+    llgltffolderitem.h
+    llgltffoldermodel.h
+    llgltfmateriallist.h
+    llgltfmaterialpreviewmgr.h
     llgroupactions.h
     llgroupiconctrl.h
     llgrouplist.h
@@ -1260,10 +1363,10 @@ set(viewer_HEADER_FILES
     lllandmarkactions.h
     lllandmarklist.h
     lllightconstants.h
-    #lllistbrowser.h #<FS:Ansariel> Unused
     lllistcontextmenu.h
     lllistview.h
     lllocalbitmaps.h
+    lllocalgltfmaterials.h
     lllocationhistory.h
     lllocationinputctrl.h
     lllogchat.h
@@ -1276,6 +1379,7 @@ set(viewer_HEADER_FILES
     llmaniptranslate.h
     llmarketplacefunctions.h
     llmarketplacenotifications.h
+    llmaterialeditor.h
     llmaterialmgr.h
     llmediactrl.h
     llmediadataclient.h
@@ -1309,6 +1413,7 @@ set(viewer_HEADER_FILES
     llpaneleditsky.h
     llpaneleditwater.h
     llpaneleditwearable.h
+    llpanelemojicomplete.h
     llpanelenvironment.h
     llpanelexperiencelisteditor.h
     llpanelexperiencelog.h
@@ -1384,6 +1489,7 @@ set(viewer_HEADER_FILES
     llpathfindingobject.h
     llpathfindingobjectlist.h
     llpathfindingpathtool.h
+    llpbrterrainfeatures.h
     llpersistentnotificationstorage.h
     llphysicsmotion.h
     llphysicsshapebuilderutil.h
@@ -1404,13 +1510,15 @@ set(viewer_HEADER_FILES
     llproductinforequest.h
     llprogressview.h
     llrecentpeople.h
+    llreflectionmap.h
+    llreflectionmapmanager.h
+    llheroprobemanager.h
     llregioninfomodel.h
     llregionposition.h
     llremoteparcelrequest.h
     llresourcedata.h
     llrootview.h
     #llsavedsettingsglue.h #<FS:Ansariel> Unused
-    #llsaveoutfitcombobtn.h #<FS:Ansariel> Unused
     llscenemonitor.h
     llsceneview.h
     llscreenchannel.h
@@ -1457,6 +1565,7 @@ set(viewer_HEADER_FILES
     lltable.h
     llteleporthistory.h
     llteleporthistorystorage.h
+    llterrainpaintmap.h
     lltexturecache.h
     lltexturectrl.h
     lltexturefetch.h
@@ -1465,6 +1574,7 @@ set(viewer_HEADER_FILES
     lltexturestats.h
     lltextureview.h
     llthumbnailctrl.h
+    lltinygltfhelper.h
     lltoast.h
     lltoastalertpanel.h
     lltoastgroupnotifypanel.h
@@ -1509,7 +1619,6 @@ set(viewer_HEADER_FILES
     llurlhistory.h
     llurllineeditorctrl.h
     llurlwhitelist.h
-    #llvectorperfoptions.h #<FS:Ansariel> Unused
     llversioninfo.h
     llviewchildren.h
     llviewerassetstats.h
@@ -1575,11 +1684,11 @@ set(viewer_HEADER_FILES
     llvoavatarself.h
     llvocache.h
     llvograss.h
-    llvoground.h
     llvoicechannel.h
     llvoiceclient.h
     llvoicevisualizer.h
     llvoicevivox.h
+    llvoicewebrtc.h
     llvoinventorylistener.h
     llvopartgroup.h
     llvosky.h
@@ -1605,10 +1714,10 @@ set(viewer_HEADER_FILES
     llxmlrpctransaction.h
     lofloaterspoof.h
     lofloaterextras.h
-    macmain.h
     noise.h
     particleeditor.h
     permissionstracker.h
+    pieautohide.h
     piemenu.h
     pieseparator.h
     pieslice.h
@@ -1640,6 +1749,28 @@ set(viewer_HEADER_FILES
 
   list(APPEND viewer_SOURCE_FILES llperfstats.cpp)
   list(APPEND viewer_HEADER_FILES llperfstats.h)
+
+# <FS:Ansariel> Group GLTF files into their subfolders
+set(viewer_GLTF_HEADER_FILES
+    gltf/asset.h
+    gltf/accessor.h
+    gltf/buffer_util.h
+    gltf/primitive.h
+    gltf/animation.h
+    )
+
+source_group("Header Files\\GLTF" FILES ${viewer_GLTF_HEADER_FILES})
+list(APPEND viewer_HEADER_FILES ${viewer_GLTF_HEADER_FILES})
+# </FS:Ansariel> Group GLTF files into their subfolders
+
+if (USE_BUGSPLAT)
+    list(APPEND viewer_SOURCE_FILES
+                bugsplatattributes.cpp
+        )
+    list(APPEND viewer_HEADER_FILES
+                bugsplatattributes.h
+        )
+endif (USE_BUGSPLAT)
 
 # <FS:Ansariel> Flickr / Discord keys and fsversionvalues headers are generated in here
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
@@ -1674,6 +1805,31 @@ configure_file(
 list(APPEND viewer_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/fsversionvalues.h)
 # </FS:TS>
 
+# <Tasia> Generate obfuscated GIPHY API key fallback files.
+set(TASIA_GIPHY_KEY_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/../../scripts/generate_tasia_giphy_key.py")
+set(TASIA_GIPHY_GENERATED_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/lltasia_giphy_key.generated.h")
+set(TASIA_GIPHY_GENERATED_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/lltasia_giphy_key.generated.cpp")
+
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} ${TASIA_GIPHY_KEY_GENERATOR}
+        --header ${TASIA_GIPHY_GENERATED_HEADER}
+        --source ${TASIA_GIPHY_GENERATED_SOURCE}
+    RESULT_VARIABLE TASIA_GIPHY_KEY_RESULT
+)
+if (NOT TASIA_GIPHY_KEY_RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to generate Tasia GIPHY key source files")
+endif()
+
+if ("$ENV{TASIA_GIPHY_API_KEY}" STREQUAL "")
+    message(STATUS "Tasia GIPHY build key: not configured")
+else()
+    message(STATUS "Tasia GIPHY build key: configured")
+endif()
+
+list(APPEND viewer_HEADER_FILES ${TASIA_GIPHY_GENERATED_HEADER})
+list(APPEND viewer_SOURCE_FILES ${TASIA_GIPHY_GENERATED_SOURCE})
+# </Tasia>
+
 source_group("CMake Rules" FILES ViewerInstall.cmake)
 
 #build_data.json creation moved to viewer_manifest.py MAINT-6413
@@ -1698,11 +1854,24 @@ if (DARWIN)
   LIST(APPEND viewer_SOURCE_FILES llfilepicker_mac.mm)
   LIST(APPEND viewer_HEADER_FILES llfilepicker_mac.h)
 
+  set_source_files_properties(
+    llappviewermacosx-objc.mm
+    PROPERTIES
+    SKIP_PRECOMPILE_HEADERS TRUE
+  )
+
+  set_source_files_properties(
+    llfilepicker_mac.mm
+    PROPERTIES
+    SKIP_PRECOMPILE_HEADERS TRUE
+  )
+
   # This should be compiled with the viewer.
   LIST(APPEND viewer_SOURCE_FILES llappdelegate-objc.mm)
   set_source_files_properties(
     llappdelegate-objc.mm
     PROPERTIES
+    SKIP_PRECOMPILE_HEADERS TRUE
     COMPILE_DEFINITIONS "${VIEWER_CHANNEL_VERSION_DEFINES}"
     # BugsplatMac is a module, imported with @import. That language feature
     # demands these -f switches.
@@ -1728,7 +1897,6 @@ if (DARWIN)
   # Add resource files to the project.
   set(viewer_RESOURCE_FILES
     firestorm_icon.icns
-    macview.r
     Info-Firestorm.plist
     Firestorm.xib/
     # CMake doesn't seem to support Xcode language variants well just yet
@@ -1767,7 +1935,7 @@ if (LINUX)
       message( "Will generate ctags database during compilation" )
       set_source_files_properties( TAGS PROPERTIES GENERATED true)
       add_custom_command ( OUTPUT TAGS COMMAND ctags --extra=+q --fields=+aiS --c++-kinds=+p -e --recurse=yes .
-                           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} )
+                           WORKING_DIRECTORY ${ROOT_PROJECT_DIR} )
       list(APPEND viewer_SOURCE_FILES TAGS )
     endif( ND_CTAGS )
     # </FS:ND>
@@ -1803,6 +1971,7 @@ if (LINUX)
 endif (LINUX)
 
 if (WINDOWS)
+
     list(APPEND viewer_SOURCE_FILES
          growlmanager.cpp
          growlnotifierwin.cpp
@@ -1968,42 +2137,14 @@ endif (WINDOWS)
 
 # Add the xui files. This is handy for searching for xui elements
 # from within the IDE.
-# <FS:Ansariel> Make all XUI files accessible in Visual Studio
-#set(viewer_XUI_FILES
-#    skins/default/colors.xml
-#    skins/default/default_languages.xml
-#    skins/default/textures/textures.xml
-#    )
-#file(GLOB DEFAULT_XUI_FILE_GLOB_LIST
-#     ${CMAKE_CURRENT_SOURCE_DIR}/skins/*/xui/en/*.xml)
-#list(APPEND viewer_XUI_FILES ${DEFAULT_XUI_FILE_GLOB_LIST})
-
-#file(GLOB DEFAULT_WIDGET_FILE_GLOB_LIST
-#     ${CMAKE_CURRENT_SOURCE_DIR}/skins/*/xui/en/widgets/*.xml)
-#list(APPEND viewer_XUI_FILES ${DEFAULT_WIDGET_FILE_GLOB_LIST})
-
-## Cannot append empty lists in CMake, wait until we have files here.
-##file(GLOB SILVER_WIDGET_FILE_GLOB_LIST
-##     ${CMAKE_CURRENT_SOURCE_DIR}/skins/silver/xui/en-us/widgets/*.xml)
-##list(APPEND viewer_XUI_FILES ${SILVER_WIDGET_FILE_GLOB_LIST})
-
-#list(SORT viewer_XUI_FILES)
-
-#source_group("XUI Files" FILES ${viewer_XUI_FILES})
-
-#set_source_files_properties(${viewer_XUI_FILES}
-#                            PROPERTIES HEADER_FILE_ONLY TRUE)
-
-#list(APPEND viewer_SOURCE_FILES ${viewer_XUI_FILES})
-
 file(GLOB_RECURSE viewer_XUI_FILES LIST_DIRECTORIES FALSE
     ${CMAKE_CURRENT_SOURCE_DIR}/skins/*.xml)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/skins PREFIX "XUI Files" FILES ${viewer_XUI_FILES})
 set_source_files_properties(${viewer_XUI_FILES} 
                             PROPERTIES HEADER_FILE_ONLY TRUE)
 list(APPEND viewer_SOURCE_FILES ${viewer_XUI_FILES})
-# </FS:Ansariel>
 
+# Add the shader sources
 file(GLOB_RECURSE viewer_SHADER_FILES LIST_DIRECTORIES FALSE
     ${CMAKE_CURRENT_SOURCE_DIR}/app_settings/shaders/*.glsl)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/app_settings/shaders PREFIX "Shaders" FILES ${viewer_SHADER_FILES})
@@ -2019,19 +2160,17 @@ set(viewer_APPSETTINGS_FILES
     app_settings/cloud.xml
     app_settings/cmd_line.xml
     app_settings/commands.xml
+    app_settings/emoji_groups.xml
     app_settings/foldertypes.xml
     app_settings/graphic_preset_controls.xml
     app_settings/grass.xml
     app_settings/grids.xml
     app_settings/growl_notifications.xml
-    app_settings/high_graphics.xml
     app_settings/ignorable_dialogs.xml
     app_settings/key_bindings.xml
     app_settings/keywords.ini
     app_settings/keywords_lsl_default.xml
     app_settings/logcontrol.xml
-    app_settings/low_graphics.xml
-    app_settings/mid_graphics.xml
     app_settings/posestand.xml
     app_settings/quick_preferences.xml
     app_settings/scriptlibrary_aa.xml
@@ -2049,10 +2188,9 @@ set(viewer_APPSETTINGS_FILES
     app_settings/std_bump.ini
     #app_settings/toolbars.xml  FS:AO moved to skins
     app_settings/trees.xml
-    app_settings/ultra_graphics.xml
     app_settings/viewerart.xml
-    ${CMAKE_SOURCE_DIR}/../etc/message.xml
-    ${CMAKE_SOURCE_DIR}/../scripts/messages/message_template.msg
+    ${ROOT_PROJECT_DIR}/../etc/message.xml
+    ${ROOT_PROJECT_DIR}/../scripts/messages/message_template.msg
     packages-info.txt
     featuretable.txt
     featuretable_mac.txt
@@ -2096,7 +2234,21 @@ source_group("Firestorm Resources" FILES ${viewer_FS_RESOURCES})
 set_source_files_properties(${viewer_FS_RESOURCES}
                             PROPERTIES HEADER_FILE_ONLY TRUE)
 list(APPEND viewer_SOURCE_FILES ${viewer_FS_RESOURCES})
+
+file(GLOB viewer_PY_SCRIPTS *.py)
+source_group("Python Scripts" FILES ${viewer_PY_SCRIPTS})
+set_source_files_properties(${viewer_PY_SCRIPTS}
+                            PROPERTIES HEADER_FILE_ONLY TRUE)
+list(APPEND viewer_SOURCE_FILES ${viewer_PY_SCRIPTS})
 # </FS:Ansariel>
+
+# <FS:AR> Add Poser Presets
+file(GLOB viewer_POSER_PRESET_FILES poses/hand_presets/*.xml)
+source_group("Poser Presets" FILES ${viewer_POSER_PRESET_FILES})
+set_source_files_properties(${viewer_POSER_PRESET_FILES}
+                            PROPERTIES HEADER_FILE_ONLY TRUE)
+list(APPEND viewer_SOURCE_FILES ${viewer_POSER_PRESET_FILES})
+# </FS:AR> Poser presets
 
 if (WINDOWS)
   file(GLOB viewer_INSTALLER_FILES installers/windows/*.nsi)
@@ -2147,7 +2299,11 @@ list(APPEND EVENT_HOST_SCRIPTS ${EVENT_HOST_SCRIPT_GLOB_LIST})
 set(PACKAGE ON CACHE BOOL
     "Add a package target that builds an installer package.")
 
-if (OPENSIM )
+if(USE_PRECOMPILED_HEADERS)
+  target_precompile_headers( ${VIEWER_BINARY_NAME} PRIVATE llviewerprecompiledheaders.h )
+endif(USE_PRECOMPILED_HEADERS)
+
+if (OPENSIM)
   set(ND_VIEWER_FLAVOR "oss")
 else (OPENSIM)
   set(ND_VIEWER_FLAVOR "hvk")
@@ -2157,14 +2313,11 @@ if (WINDOWS)
     set_target_properties(${VIEWER_BINARY_NAME}
         PROPERTIES
         # *TODO -reenable this once we get server usage sorted out
-        LINK_FLAGS "/debug /NODEFAULTLIB:LIBCMT /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /LTCG"
-        LINK_FLAGS_DEBUG "/NODEFAULTLIB:\"LIBCMT;LIBCMTD;MSVCRT\" /INCREMENTAL:NO /LARGEADDRESSAWARE /LTCG"
-        LINK_FLAGS_RELEASE "/FORCE:MULTIPLE /MAP\"secondlife-bin.MAP\" /OPT:REF /LARGEADDRESSAWARE /LTCG"
+        LINK_FLAGS "/debug /NODEFAULTLIB:LIBCMT /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /NOEXP /NOIMPLIB"
+        LINK_FLAGS_DEBUG "/NODEFAULTLIB:\"LIBCMT;LIBCMTD;MSVCRT\" /INCREMENTAL:NO /LARGEADDRESSAWARE /NOEXP /NOIMPLIB"
+        LINK_FLAGS_RELEASE "/FORCE:MULTIPLE /MAP\"secondlife-bin.MAP\" /OPT:REF /LARGEADDRESSAWARE /NOEXP /NOIMPLIB"
         )
-
-    if(USE_PRECOMPILED_HEADERS)
-       target_precompile_headers( ${VIEWER_BINARY_NAME} PRIVATE llviewerprecompiledheaders.h )
-    endif(USE_PRECOMPILED_HEADERS)
+    target_compile_options(${VIEWER_BINARY_NAME} PRIVATE /bigobj)
 
     # If adding a file to viewer_manifest.py in the WindowsManifest.construct() method, be sure to add the dependency
     # here.
@@ -2180,11 +2333,10 @@ if (WINDOWS)
 
     set(COPY_INPUT_DEPENDENCIES
       # The following commented dependencies are determined at variably at build time. Can't do this here.
-      ${CMAKE_SOURCE_DIR}/../etc/message.xml
-      ${CMAKE_SOURCE_DIR}/../scripts/messages/message_template.msg
+      ${ROOT_PROJECT_DIR}/../etc/message.xml
+      ${ROOT_PROJECT_DIR}/../scripts/messages/message_template.msg
       #${SHARED_LIB_STAGING_DIR}/openjp2.dll # <FS:Ansariel> Only copy OpenJPEG dll if needed
-      ${SHARED_LIB_STAGING_DIR}/libhunspell.dll
-      ${SHARED_LIB_STAGING_DIR}/uriparser.dll
+      ${SHARED_LIB_STAGING_DIR}/llwebrtc.dll
       #${SHARED_LIB_STAGING_DIR}/${LL_INTDIR}/SLVoice.exe
       #${SHARED_LIB_STAGING_DIR}/${LL_INTDIR}/libsndfile-1.dll
       #${SHARED_LIB_STAGING_DIR}/${LL_INTDIR}/vivoxoal.dll
@@ -2212,22 +2364,18 @@ if (WINDOWS)
        list(APPEND COPY_INPUT_DEPENDENCIES
                ${SHARED_LIB_STAGING_DIR}/vivoxsdk_x64.dll
                ${SHARED_LIB_STAGING_DIR}/ortp_x64.dll
-               ${ARCH_PREBUILT_DIRS_RELEASE}/libcrypto-1_1-x64.dll
-               ${ARCH_PREBUILT_DIRS_RELEASE}/libssl-1_1-x64.dll
                )
     else (ADDRESS_SIZE EQUAL 64)
        list(APPEND COPY_INPUT_DEPENDENCIES
                ${SHARED_LIB_STAGING_DIR}/vivoxsdk.dll
                ${SHARED_LIB_STAGING_DIR}/ortp.dll
-               ${ARCH_PREBUILT_DIRS_RELEASE}/libcrypto-1_1.dll
-               ${ARCH_PREBUILT_DIRS_RELEASE}/libssl-1_1.dll
                )
     endif (ADDRESS_SIZE EQUAL 64)
 
     if (TARGET ll::fmodstudio)
       list(APPEND COPY_INPUT_DEPENDENCIES
            ${SHARED_LIB_STAGING_DIR}/fmod.dll
-           #${SHARED_LIB_STAGING_DIR}/Debug/fmodL.dll # <FS:Ansariel> Doesn't exist
+           #${SHARED_LIB_STAGING_DIR}/fmodL.dll # <FS:Ansariel> Doesn't exist
           )
     endif ()
 
@@ -2249,6 +2397,8 @@ if (WINDOWS)
         "--bugsplat=${BUGSPLAT_DB}"
         "--fmodstudio=${USE_FMODSTUDIO}"
         "--openal=${USE_OPENAL}"
+        "--tracy=${USE_TRACY}"
+        "--avx2=${USE_AVX2_OPTIMIZATION}"
         --build=${CMAKE_CURRENT_BINARY_DIR}
         --buildtype=$<CONFIG>
         "--channel=${VIEWER_CHANNEL}"
@@ -2262,17 +2412,62 @@ if (WINDOWS)
       DEPENDS
         ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
         stage_third_party_libs
+        llwebrtc
         ${COPY_INPUT_DEPENDENCIES}
       COMMENT "Performing viewer_manifest copy"
       )
 
     add_custom_target(copy_w_viewer_manifest ALL DEPENDS ${CMAKE_CFG_INTDIR}/copy_touched.bat)
 
-    add_dependencies(${VIEWER_BINARY_NAME} stage_third_party_libs llcommon copy_w_viewer_manifest)
+    add_dependencies(${VIEWER_BINARY_NAME} stage_third_party_libs llcommon llwebrtc copy_w_viewer_manifest)
 
-    if (EXISTS ${CMAKE_SOURCE_DIR}/copy_win_scripts)
+    # Useful for remote debugging or profiling if set to target a shared drive. for example, brad sets it to "dist/secondlife" to deploy under
+    # the build tree (and then I share that directory) or "f:/dist/secondlife" to deploy to a network mounted drive (although this can be slow).
+    # this will also create an "unpacked" tarball at build-<platform>/newview/unpacked_<platform>_7_1_11_<build num>.tar
+    set(LOCAL_DIST_DIR "" CACHE PATH "Path for 'local' unpacked copy of viewer distribution to be deployed to.")
+    set(product SecondLife-${ARCH}-${VIEWER_SHORT_VERSION}.${VIEWER_VERSION_REVISION})
+    if(IS_DIRECTORY ${LOCAL_DIST_DIR})
+        add_custom_command(
+            OUTPUT  ${LOCAL_DIST_DIR}/.${product}.copy_touched
+            COMMAND ${PYTHON_EXECUTABLE}
+            ARGS
+            ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+            "--actions=\"copy package unpacked\""
+            --arch=${ARCH}
+            --artwork=${ARTWORK_DIR}
+            "--bugsplat=${BUGSPLAT_DB}"
+            "--fmodstudio=${USE_FMODSTUDIO}"
+            "--openal=${USE_OPENAL}"
+            "--tracy=${USE_TRACY}"
+            "--avx2=${USE_AVX2_OPTIMIZATION}"
+            --build=${CMAKE_CURRENT_BINARY_DIR}
+            --buildtype=$<IF:$<BOOL:${LL_GENERATOR_IS_MULTI_CONFIG}>,$<CONFIG>,${CMAKE_BUILD_TYPE}>
+            "--channel=${VIEWER_CHANNEL}"
+            --configuration=$<CONFIG>
+            --dest=${LOCAL_DIST_DIR}
+            --grid=${GRID}
+            --source=${CMAKE_CURRENT_SOURCE_DIR}
+            --versionfile=${CMAKE_CURRENT_BINARY_DIR}/viewer_version.txt
+            --touch=${LOCAL_DIST_DIR}/.${product}.copy_touched
+            --viewer_flavor=${ND_VIEWER_FLAVOR}
+            DEPENDS
+            ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+            stage_third_party_libs
+            llwebrtc
+            ${CMAKE_CURRENT_BINARY_DIR}/viewer_version.txt
+            ${COPY_INPUT_DEPENDENCIES}
+            ${VIEWER_BINARY_NAME}
+            COMMENT "Performing viewer_manifest local dist copy"
+            )
+
+        add_custom_target(copy_local_dist_viewer_manifest ALL DEPENDS ${LOCAL_DIST_DIR}/.${product}.copy_touched)
+    elseif (NOT LOCAL_DIST_DIR STREQUAL "")
+        message(FATAL_ERROR "LOCAL_DIST_DIR ${LOCAL_DIST_DIR} specified but is not valid target directory to copy viewer distribution into.  Please create the directory and try again")
+    endif ()  # IS_DIRECTORY ${LOCAL_DIST_DIR}
+
+    if (EXISTS ${ROOT_PROJECT_DIR}/copy_win_scripts)
       add_dependencies(${VIEWER_BINARY_NAME} copy_win_scripts)
-    endif (EXISTS ${CMAKE_SOURCE_DIR}/copy_win_scripts)
+    endif (EXISTS ${ROOT_PROJECT_DIR}/copy_win_scripts)
 
     add_dependencies(${VIEWER_BINARY_NAME} SLPlugin)
 
@@ -2287,7 +2482,7 @@ if (WINDOWS)
 
     if (PACKAGE)
       add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/event_host.tar.bz2
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/event_host.tar.xz
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/event_host_manifest.py
@@ -2310,6 +2505,8 @@ if (WINDOWS)
               "--bugsplat=${BUGSPLAT_DB}"
               "--fmodstudio=${USE_FMODSTUDIO}"
               "--openal=${USE_OPENAL}"
+              "--tracy=${USE_TRACY}"
+              "--avx2=${USE_AVX2_OPTIMIZATION}"
               --build=${CMAKE_CURRENT_BINARY_DIR}
               --buildtype=$<CONFIG>
               "--channel=${VIEWER_CHANNEL}"
@@ -2332,7 +2529,7 @@ if (WINDOWS)
         )
         # temporarily disable packaging of event_host until hg subrepos get
         # sorted out on the parabuild cluster...
-        #${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/event_host.tar.bz2)
+        #${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/event_host.tar.xz)
 
     endif (PACKAGE)
 elseif (DARWIN)
@@ -2389,6 +2586,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
         llimage
         llinventory
         llmessage
+        llquic
         llplugin
         llprimitive
         llrender
@@ -2400,6 +2598,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
         llcorehttp
         llcommon
         llmeshoptimizer
+        llwebrtc
         ll::ndof
         lllogin
         llprimitive
@@ -2407,6 +2606,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
         ${LLPHYSICSEXTENSIONS_LIBRARIES}
         ll::bugsplat
         ll::tracy
+        ll::openxr
         fs::glod # <FS:Beq/> restore GLOD dependencies
         fs::discord # <FS:Ansariel> Discord  support
         )
@@ -2434,16 +2634,47 @@ endif()
 if (LINUX)
     # <FS:Zi> put these additional libraries in the viewer build target here as it didn't
     # work to put them in via their cmake/* files
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(DBUS REQUIRED dbus-1)
+    target_include_directories(${VIEWER_BINARY_NAME} PRIVATE ${DBUS_INCLUDE_DIRS})
+    target_link_directories(${VIEWER_BINARY_NAME} PRIVATE ${DBUS_LIBRARY_DIRS})
     target_link_libraries(${VIEWER_BINARY_NAME}
         "dl"
         # <FS:Zi> I wish I knew how to make this cleaner, this looks like a mess
         ll::vorbis
         ${GIO_LIBRARIES}
+        ${DBUS_LIBRARIES}
     )
 endif (LINUX)
 
 set(ARTWORK_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE PATH
     "Path to artwork files.")
+
+# <FS:Ansariel> Don't copy fonts into the source folder!
+#message("Copying fonts")
+#file(GLOB FONT_FILE_GLOB_LIST
+#  "${AUTOBUILD_INSTALL_DIR}/fonts/*"
+#)
+#file(COPY ${FONT_FILE_GLOB_LIST} DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/fonts")
+# </FS:Ansariel>
+
+# <FS:Ansariel> Don't copy emoji characters into source folder
+# Copy over the Emoji/shortcodes mapping XML files (and create dependency
+# if they are changed, CMake will run again and copy over new versions)
+#message("Copying Emoji/shortcode mappings")
+#set(emoji_mapping_src_folder ${AUTOBUILD_INSTALL_DIR}/xui)
+#set(emoji_mapping_dst_folder ${CMAKE_CURRENT_SOURCE_DIR}/skins/default/xui)
+#
+## Note Turkey is missing from this set (not available in Emoji package yet)
+#set(country_codes "da;de;en;es;fr;it;ja;pl;pt;ru;zh")
+#foreach(elem ${country_codes})
+#   set(emoji_mapping_src_file
+#      "${emoji_mapping_src_folder}/${elem}/emoji_characters.xml")
+#   set(emoji_mapping_dst_file
+#      "${emoji_mapping_dst_folder}/${elem}/emoji_characters.xml")      
+#   configure_file(${emoji_mapping_src_file} ${emoji_mapping_dst_file} COPYONLY)
+#endforeach()
+# </FS:Ansariel>
 
 if (LINUX)
   set(product Firestorm-${ARCH}-${VIEWER_SHORT_VERSION}.${VIEWER_VERSION_REVISION})
@@ -2461,7 +2692,7 @@ if (LINUX)
   add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_gstreamer10 media_plugin_cef linux-crash-logger)
   
   add_custom_command(
-      OUTPUT ${product}.tar.bz2
+      OUTPUT ${product}.tar.xz
       COMMAND ${PYTHON_EXECUTABLE}
       ARGS
         ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
@@ -2470,6 +2701,8 @@ if (LINUX)
         "--bugsplat=${BUGSPLAT_DB}"
         "--fmodstudio=${USE_FMODSTUDIO}"
         "--openal=${USE_OPENAL}"
+        "--tracy=${USE_TRACY}"
+        "--avx2=${USE_AVX2_OPTIMIZATION}"        
         --build=${CMAKE_CURRENT_BINARY_DIR}
         --buildtype=${CMAKE_BUILD_TYPE}
         "--channel=${VIEWER_CHANNEL}"
@@ -2496,6 +2729,8 @@ if (LINUX)
       "--bugsplat=${BUGSPLAT_DB}"
       "--fmodstudio=${USE_FMODSTUDIO}"
       "--openal=${USE_OPENAL}"
+      "--tracy=${USE_TRACY}"
+      "--avx2=${USE_AVX2_OPTIMIZATION}"      
       --build=${CMAKE_CURRENT_BINARY_DIR}
       --buildtype=${CMAKE_BUILD_TYPE}
       "--channel=${VIEWER_CHANNEL}"
@@ -2514,7 +2749,7 @@ if (LINUX)
   add_custom_target(copy_l_viewer_manifest ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${product}.copy_touched)
 
   if (PACKAGE)
-    add_custom_target(llpackage ALL DEPENDS ${product}.tar.bz2)
+    add_custom_target(llpackage ALL DEPENDS ${product}.tar.xz)
     # Make sure we don't run two instances of viewer_manifest.py at the same time.
     add_dependencies(llpackage copy_l_viewer_manifest)
     check_message_template(llpackage)
@@ -2547,7 +2782,7 @@ if (DARWIN)
   set(MACOSX_BUNDLE_BUNDLE_NAME "Firestorm")
   set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${VIEWER_SHORT_VERSION}.${VIEWER_VERSION_REVISION}")
   set(MACOSX_BUNDLE_BUNDLE_VERSION "${VIEWER_SHORT_VERSION}${VIEWER_MACOSX_PHASE}${VIEWER_REVISION}")
-  set(MACOSX_BUNDLE_COPYRIGHT "Copyright 2010-2023 The Phoenix Firestorm Project, Inc.")
+  set(MACOSX_BUNDLE_COPYRIGHT "Copyright 2010-2025 The Phoenix Firestorm Project, Inc.")
   set(MACOSX_BUNDLE_NSMAIN_NIB_FILE "Firestorm.nib")
   set(MACOSX_BUNDLE_NSPRINCIPAL_CLASS "LLApplication")
 
@@ -2590,6 +2825,8 @@ if (DARWIN)
       "--bugsplat=${BUGSPLAT_DB}"
       "--fmodstudio=${USE_FMODSTUDIO}"
       "--openal=${USE_OPENAL}"
+      "--tracy=${USE_TRACY}"
+      "--avx2=${USE_AVX2_OPTIMIZATION}"      
       --build=${CMAKE_CURRENT_BINARY_DIR}
       --buildtype=$<CONFIG>
       --bundleid=${MACOSX_BUNDLE_GUI_IDENTIFIER}
@@ -2626,6 +2863,8 @@ if (DARWIN)
           "--bugsplat=${BUGSPLAT_DB}"
           "--fmodstudio=${USE_FMODSTUDIO}"
           "--openal=${USE_OPENAL}"
+          "--tracy=${USE_TRACY}"
+          "--avx2=${USE_AVX2_OPTIMIZATION}"          
           --build=${CMAKE_CURRENT_BINARY_DIR}
           --buildtype=${CMAKE_BUILD_TYPE}
           "--channel=${VIEWER_CHANNEL}"
@@ -2647,37 +2886,29 @@ if (INSTALL)
   include(${CMAKE_CURRENT_SOURCE_DIR}/ViewerInstall.cmake)
 endif (INSTALL)
 
-# Note that the conventional VIEWER_SYMBOL_FILE is set by ../../build.sh
 if (PACKAGE AND (RELEASE_CRASH_REPORTING OR NON_RELEASE_CRASH_REPORTING) AND VIEWER_SYMBOL_FILE)
   if (USE_BUGSPLAT)
     # BugSplat symbol-file generation
     if (WINDOWS)
-	#<FS:ND> Comment this out, we do our own symbol package which also includes the exe and build_data.json 
-      # Just pack up a tarball containing only the .pdb file for the
-      # executable. Because we intend to use cygwin tar, we must render
-      # VIEWER_SYMBOL_FILE in cygwin path syntax.
-      # execute_process(COMMAND "cygpath" "-u" "${VIEWER_SYMBOL_FILE}"
-        # OUTPUT_VARIABLE VIEWER_SYMBOL_FILE_CYGWIN
-        # OUTPUT_STRIP_TRAILING_WHITESPACE)
-      # execute_process(COMMAND "cygpath" "-u" "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}"
-        # OUTPUT_VARIABLE PARENT_DIRECTORY_CYGWIN
-        # OUTPUT_STRIP_TRAILING_WHITESPACE)
-      # add_custom_command(OUTPUT "${VIEWER_SYMBOL_FILE}"
-        # # Use of 'tar ...j' here assumes VIEWER_SYMBOL_FILE endswith .tar.bz2;
-        # # testing a string suffix is painful enough in CMake language that
-        # # we'll continue assuming it until forced to generalize.
+      #<FS:ND> Comment this out, we do our own symbol package which also includes the exe and build_data.json 
+      # set(VIEWER_APP_SYMBOLS_ARCHIVE "${SYMBOLS_STAGING_DIR}.sym.tar.xz")
+      # set_target_properties( ${VIEWER_BINARY_NAME} PROPERTIES PDB_OUTPUT_DIRECTORY "${SYMBOLS_STAGING_DIR}")
+
+      # # Just pack up a tarball containing only the .pdb files for the
+      # # executables.
+      # add_custom_command(OUTPUT "${VIEWER_APP_SYMBOLS_ARCHIVE}"
         # COMMAND "tar"
         # ARGS
-          # "cjf"
-          # "${VIEWER_SYMBOL_FILE_CYGWIN}"
-          # "-C"
-          # "${PARENT_DIRECTORY_CYGWIN}"
-          # "firestorm-bin.pdb"
-        # DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/firestorm-bin.pdb"
-        # COMMENT "Packing viewer PDB into ${VIEWER_SYMBOL_FILE_CYGWIN}"
+          # "cJf"
+          # "${VIEWER_CHANNEL}.sym.tar.xz"
+          # "${VIEWER_CHANNEL}"
+        # DEPENDS "${VIEWER_BINARY_NAME}" llwebrtc
+        # WORKING_DIRECTORY "${SYMBOLS_STAGING_DIR}/.."
+        # COMMENT "Packing viewer PDBs into ${VIEWER_APP_SYMBOLS_ARCHIVE}"
         # )
-      # add_custom_target(generate_symbols DEPENDS "${VIEWER_SYMBOL_FILE}" ${VIEWER_BINARY_NAME})
-      # add_dependencies(generate_symbols ${VIEWER_BINARY_NAME})
+      # add_custom_target(generate_symbols DEPENDS "${VIEWER_APP_SYMBOLS_ARCHIVE}")
+      # add_dependencies(generate_symbols ${VIEWER_BINARY_NAME} llwebrtc)
+
     endif (WINDOWS)
     if (DARWIN)
       # Have to run dsymutil first, then pack up the resulting .dSYM directory
@@ -2754,6 +2985,7 @@ if (LL_TESTS)
 #    llremoteparcelrequest.cpp
     llviewerhelputil.cpp
     llversioninfo.cpp
+#    llvocache.cpp  
     llworldmap.cpp
     llworldmipmap.cpp
   )
@@ -2766,6 +2998,13 @@ if (LL_TESTS)
     tests/llviewertexture_stub.cpp
     #llviewertexturelist.cpp
   )
+
+#  set_source_files_properties(
+#    llvocache.cpp
+#    PROPERTIES
+#    LL_TEST_ADDITIONAL_SOURCE_FILES ../llmessage/lldatapacker.cpp
+#    LL_TEST_ADDITIONAL_PROJECTS "llprimitive"
+#  )
 
   set(test_libs
           llcommon
@@ -2794,7 +3033,6 @@ if (LL_TESTS)
     LL_TEST_ADDITIONAL_LIBRARIES "${test_libs}"
   )
 
-
   set_source_files_properties(
     llworldmap.cpp
     llworldmipmap.cpp
@@ -2814,6 +3052,7 @@ if (LL_TESTS)
     PROPERTIES
     LL_TEST_ADDITIONAL_SOURCE_FILES llversioninfo.cpp
   )
+
   set_property( SOURCE
           ${viewer_TEST_SOURCE_FILES}
           PROPERTY
@@ -2866,6 +3105,19 @@ if (LL_TESTS)
 #    "${test_libs}"
 #    )
 
+  set(llviewercontrollistener_test_sources
+    llviewercontrollistener.cpp
+    ../llxml/llcontrol.cpp
+    ../llxml/llxmltree.cpp
+    ../llxml/llxmlparser.cpp
+    ../llcommon/commoncontrol.cpp
+    )
+
+  LL_ADD_INTEGRATION_TEST(llviewercontrollistener
+    "${llviewercontrollistener_test_sources}"
+    "${test_libs}"
+    )
+
   LL_ADD_INTEGRATION_TEST(llviewernetwork
      llviewernetwork.cpp
     "${test_libs}"
@@ -2887,4 +3139,3 @@ if (LL_TESTS)
 endif (LL_TESTS)
 
 check_message_template(${VIEWER_BINARY_NAME})
-
