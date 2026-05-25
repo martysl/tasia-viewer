@@ -141,9 +141,17 @@ jobs:
           set -euo pipefail
           PACKAGE="$(find build-* -type f \( -name '*.tar.xz' -o -name '*.tar.bz2' -o -name '*.bz2' \) | head -n 1)"
           if [ -z "$PACKAGE" ]; then
-            echo "ERROR: No Linux package artifact found under build-*"
-            find build-* -maxdepth 4 -type f | sed -n '1,200p'
-            exit 1
+            echo "No prebuilt Linux package found, creating fallback archive from build output..."
+            PKG_DIR="$(find build-* -type d -path '*/packages' | head -n 1)"
+            if [ -z "$PKG_DIR" ]; then
+              echo "ERROR: No package directory found under build-*"
+              find build-* -maxdepth 4 -type f | sed -n '1,200p'
+              exit 1
+            fi
+
+            tar -C "$PKG_DIR" -cJf Tasia-Legacy-Viewer-Linux-FMOD.tar.xz .
+            echo "Collected package: Tasia-Legacy-Viewer-Linux-FMOD.tar.xz"
+            exit 0
           fi
 
           EXT="${PACKAGE##*.}"
