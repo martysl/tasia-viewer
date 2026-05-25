@@ -1071,6 +1071,8 @@ void LLPanelProfileSecondLife::resetData()
     childSetVisible("bottom_badge_layout", false);
     childSetVisible("tasia_badge_layout", false);
     getChild<LLThumbnailCtrl>("tasia_badge_icon")->clearTexture();
+    mTasiaBadgeFallbackName.clear();
+    mTasiaBadgeFallbackTooltip.clear();
     getChild<LLLayoutPanel>("tasia_badge_layout")->setTargetDim(1);
     getChild<LLLayoutPanel>("tasia_badge_layout")->setMinDim(1);
     getChild<LLUICtrl>("account_info")->setToolTip(std::string());
@@ -1592,15 +1594,16 @@ void LLPanelProfileSecondLife::fillTasiaUserData(const LLAvatarData* avatar_data
         account_info->setToolTip(tooltip);
     }
 
-    if (!setTasiaRemoteBadgeIcon(tasia_user.badge_icon, tooltip.empty() ? line : tooltip))
+    if (!setTasiaRemoteBadgeIcon(tasia_user.badge_icon, tooltip.empty() ? line : tooltip, tasia_user.badge_name))
     {
         setBadgeRawTooltip("Profile_Badge_Team", tooltip.empty() ? line : tooltip, BadgeLocation::top);
     }
 }
 
-bool LLPanelProfileSecondLife::setTasiaRemoteBadgeIcon(const std::string& icon_url, const std::string& tooltip)
+bool LLPanelProfileSecondLife::setTasiaRemoteBadgeIcon(const std::string& icon_url, const std::string& tooltip, const std::string& fallback_badge_name)
 {
-    if (icon_url.empty())
+    if (icon_url.empty() ||
+        (!LLStringUtil::startsWith(icon_url, "https://") && !LLStringUtil::startsWith(icon_url, "http://")))
     {
         return false;
     }
@@ -1614,6 +1617,8 @@ bool LLPanelProfileSecondLife::setTasiaRemoteBadgeIcon(const std::string& icon_u
 
     icon_ctrl->setToolTip(tooltip);
     childSetVisible("tasia_badge_layout", true);
+    mTasiaBadgeFallbackName = fallback_badge_name;
+    mTasiaBadgeFallbackTooltip = tooltip;
 
     if (imagep->getFullWidth() > 0 && imagep->getFullHeight() > 0)
     {
@@ -1679,9 +1684,19 @@ void LLPanelProfileSecondLife::onTasiaBadgeIconLoaded(bool success,
     if (!handle->isDead())
     {
         LLPanelProfileSecondLife* panel = static_cast<LLPanelProfileSecondLife*>(handle->get());
-        if (panel && success)
+        if (panel)
         {
-            panel->updateTasiaBadgeIconSize(src_vi);
+            if (success)
+            {
+                panel->updateTasiaBadgeIconSize(src_vi);
+            }
+            else
+            {
+                panel->childSetVisible("tasia_badge_layout", false);
+                panel->setBadgeRawTooltip("Profile_Badge_Team",
+                    panel->mTasiaBadgeFallbackTooltip.empty() ? panel->mTasiaBadgeFallbackName : panel->mTasiaBadgeFallbackTooltip,
+                    BadgeLocation::top);
+            }
         }
     }
 
