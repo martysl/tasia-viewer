@@ -57,6 +57,7 @@ LLThumbnailCtrl::LLThumbnailCtrl(const LLThumbnailCtrl::Params& p)
 ,   mFallbackImagep(p.fallback_image)
 ,   mInteractable(p.interactable())
 ,   mShowLoadingPlaceholder(p.show_loading())
+,   mDrawNaturalSize(false)
 ,   mInited(false)
 ,   mInitImmediately(true)
 {
@@ -103,15 +104,31 @@ void LLThumbnailCtrl::draw()
     const F32 alpha = getTransparencyType() == TT_ACTIVE ? 1.0f : getCurrentTransparency();
     if( mTexturep )
     {
+        LLRect image_rect = draw_rect;
+        if (mDrawNaturalSize)
+        {
+            S32 texture_width = mTexturep->getFullWidth();
+            S32 texture_height = mTexturep->getFullHeight();
+            if (texture_width > 0 && texture_height > 0)
+            {
+                if (getRect().getWidth() != texture_width || getRect().getHeight() != texture_height)
+                {
+                    reshape(texture_width, texture_height);
+                    draw_rect = getLocalRect();
+                }
+                image_rect = draw_rect;
+            }
+        }
+
         if( mTexturep->getComponents() == 4 )
         {
             const LLColor4 color(.098f, .098f, .098f);
-            gl_rect_2d( draw_rect, color, true);
+            gl_rect_2d( image_rect, color, true);
         }
 
-        gl_draw_scaled_image( draw_rect.mLeft, draw_rect.mBottom, draw_rect.getWidth(), draw_rect.getHeight(), mTexturep, UI_VERTEX_COLOR % alpha);
+        gl_draw_scaled_image( image_rect.mLeft, image_rect.mBottom, image_rect.getWidth(), image_rect.getHeight(), mTexturep, UI_VERTEX_COLOR % alpha);
 
-        mTexturep->setKnownDrawSize(draw_rect.getWidth(), draw_rect.getHeight());
+        mTexturep->setKnownDrawSize(image_rect.getWidth(), image_rect.getHeight());
     }
     else if( mImagep.notNull() )
     {
@@ -191,6 +208,35 @@ void LLThumbnailCtrl::clearTexture()
     mInited = true; // nothing to do
 }
 
+LLViewerFetchedTexture* LLThumbnailCtrl::setImageUrl(const std::string& url, bool draw_natural_size)
+{
+    LLUICtrl::setValue(LLSD(url));
+    unloadImage();
+    mDrawNaturalSize = draw_natural_size;
+
+    if (url.empty())
+    {
+        mInited = true;
+        return nullptr;
+    }
+
+    mInited = true;
+    mTexturep = LLViewerTextureManager::getFetchedTextureFromUrl(
+        url,
+        FTT_DEFAULT,
+        false,
+        LLGLTexture::BOOST_THUMBNAIL,
+        LLViewerTexture::LOD_TEXTURE);
+
+    if (mTexturep)
+    {
+        mTexturep->forceToSaveRawImage(0);
+        mTexturep->setKnownDrawSize(MAX_IMAGE_SIZE, MAX_IMAGE_SIZE);
+    }
+
+    return mTexturep;
+}
+
 // virtual
 // value might be a string or a UUID
 void LLThumbnailCtrl::setValue(const LLSD& value)
@@ -265,7 +311,6 @@ void LLThumbnailCtrl::unloadImage()
     mImageAssetID = LLUUID::null;
     mTexturep = nullptr;
     mImagep = nullptr;
+    mDrawNaturalSize = false;
     mInited = false;
 }
-
-

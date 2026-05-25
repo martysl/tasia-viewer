@@ -67,6 +67,7 @@ public:
     void setVisible(bool visible) override;
 
     virtual void setValue(const LLSD& value ) override;
+    LLViewerFetchedTexture* setImageUrl(const std::string& url, bool draw_natural_size = false);
     void setInitImmediately(bool val) { mInitImmediately = val; }
     void clearTexture();
 
@@ -80,6 +81,7 @@ private:
     bool mBorderVisible;
     bool mInteractable;
     bool mShowLoadingPlaceholder;
+    bool mDrawNaturalSize;
     bool mInited;
     bool mInitImmediately;
     std::string mLoadingPlaceholderString;

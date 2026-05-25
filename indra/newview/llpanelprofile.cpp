@@ -66,6 +66,7 @@
 #include "llfilepicker.h"
 #include "llfirstuse.h"
 #include "llgroupactions.h"
+#include "lllayoutstack.h"
 #include "lllogchat.h"
 #include "llmutelist.h"
 #include "llnotificationsutil.h"
@@ -78,7 +79,6 @@
 #include "llviewercontrol.h"
 #include "llviewermenu.h" //is_agent_mappable
 #include "llviewermenufile.h"
-#include "llviewertexture.h"
 #include "llviewertexturelist.h"
 #include "llvoiceclient.h"
 #include "llweb.h"
@@ -1070,7 +1070,9 @@ void LLPanelProfileSecondLife::resetData()
     childSetVisible("top_badge_layout", false);
     childSetVisible("bottom_badge_layout", false);
     childSetVisible("tasia_badge_layout", false);
-    getChild<LLIconCtrl>("tasia_badge_icon")->setImage(LLPointer<LLUIImage>());
+    getChild<LLThumbnailCtrl>("tasia_badge_icon")->clearTexture();
+    getChild<LLLayoutPanel>("tasia_badge_layout")->setTargetDim(1);
+    getChild<LLLayoutPanel>("tasia_badge_layout")->setMinDim(1);
     getChild<LLUICtrl>("account_info")->setToolTip(std::string());
     // <FS:Zi> Always show the online status text, just set it to "offline" when a friend is hiding
     // mStatusText->setVisible(false);
@@ -1603,25 +1605,90 @@ bool LLPanelProfileSecondLife::setTasiaRemoteBadgeIcon(const std::string& icon_u
         return false;
     }
 
-    LLIconCtrl* icon_ctrl = getChild<LLIconCtrl>("tasia_badge_icon");
-    LLViewerFetchedTexture* imagep = LLViewerTextureManager::getFetchedTextureFromUrl(
-        icon_url,
-        FTT_DEFAULT,
-        false,
-        LLGLTexture::BOOST_UI,
-        LLViewerTexture::LOD_TEXTURE);
-
+    LLThumbnailCtrl* icon_ctrl = getChild<LLThumbnailCtrl>("tasia_badge_icon");
+    LLViewerFetchedTexture* imagep = icon_ctrl->setImageUrl(icon_url, true);
     if (!imagep)
     {
         return false;
     }
 
-    imagep->setKnownDrawSize(icon_ctrl->getRect().getWidth(), icon_ctrl->getRect().getHeight());
-    LLPointer<LLUIImage> ui_image = new LLUIImage(icon_url, imagep);
-    icon_ctrl->setImage(ui_image);
     icon_ctrl->setToolTip(tooltip);
     childSetVisible("tasia_badge_layout", true);
+
+    if (imagep->getFullWidth() > 0 && imagep->getFullHeight() > 0)
+    {
+        updateTasiaBadgeIconSize(imagep);
+    }
+    else
+    {
+        imagep->setLoadedCallback(onTasiaBadgeIconLoaded,
+                                  MAX_DISCARD_LEVEL,
+                                  false,
+                                  false,
+                                  new LLHandle<LLPanel>(getHandle()),
+                                  NULL,
+                                  false);
+    }
+
     return true;
+}
+
+void LLPanelProfileSecondLife::updateTasiaBadgeIconSize(LLViewerFetchedTexture* imagep)
+{
+    if (!imagep || imagep->getFullWidth() <= 0 || imagep->getFullHeight() <= 0)
+    {
+        return;
+    }
+
+    const S32 image_width = imagep->getFullWidth();
+    const S32 image_height = imagep->getFullHeight();
+    const S32 panel_width = image_width + 4;
+    const S32 row_height = llmax(44, image_height + 4);
+
+    LLThumbnailCtrl* icon_ctrl = getChild<LLThumbnailCtrl>("tasia_badge_icon");
+    icon_ctrl->reshape(image_width, image_height);
+
+    LLLayoutPanel* badge_layout = getChild<LLLayoutPanel>("tasia_badge_layout");
+    badge_layout->setMinDim(panel_width);
+    badge_layout->setTargetDim(panel_width);
+    badge_layout->reshape(panel_width, row_height);
+
+    LLLayoutStack* badge_positioner = getChild<LLLayoutStack>("badgepositioner");
+    badge_positioner->reshape(badge_positioner->getRect().getWidth(), row_height);
+    badge_positioner->updateLayout();
+
+    getChild<LLUICtrl>("info_border_acc_status_text")->reshape(
+        getChild<LLUICtrl>("info_border_acc_status_text")->getRect().getWidth(),
+        row_height + 1);
+    getChild<LLUICtrl>("account_info")->reshape(
+        getChild<LLUICtrl>("account_info")->getRect().getWidth(),
+        row_height);
+}
+
+void LLPanelProfileSecondLife::onTasiaBadgeIconLoaded(bool success,
+                                                     LLViewerFetchedTexture *src_vi,
+                                                     LLImageRaw* src,
+                                                     LLImageRaw* aux_src,
+                                                     S32 discard_level,
+                                                     bool final,
+                                                     void* userdata)
+{
+    if (!userdata) return;
+
+    LLHandle<LLPanel>* handle = (LLHandle<LLPanel>*)userdata;
+    if (!handle->isDead())
+    {
+        LLPanelProfileSecondLife* panel = static_cast<LLPanelProfileSecondLife*>(handle->get());
+        if (panel && success)
+        {
+            panel->updateTasiaBadgeIconSize(src_vi);
+        }
+    }
+
+    if (final || !success)
+    {
+        delete handle;
+    }
 }
 
 // <FS:Ansariel> Fix LL UI/UX design accident

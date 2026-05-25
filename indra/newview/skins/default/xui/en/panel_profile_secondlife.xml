@@ -474,20 +474,20 @@
                  name="tasia_badge_layout"
                  follows="all"
                  layout="topleft"
-                 width="204"
+                 width="1"
                  visible="false"
                  auto_resize="false"
                  user_resize="false">
-                    <icon
+                    <thumbnail
                      name="tasia_badge_icon"
-                     image_name="Profile_Badge_Team"
                      tool_tip="Tasia custom badge"
                      layout="topleft"
                      follows="left|top"
+                     show_loading="true"
                      top="2"
                      left="2"
-                     height="40"
-                     width="200"/>
+                     height="1"
+                     width="1"/>
                 </layout_panel>
                 <layout_panel
                  name="badge_layout"
