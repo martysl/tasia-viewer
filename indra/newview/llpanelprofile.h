@@ -172,6 +172,7 @@ protected:
     void fillAgeData(const LLAvatarData* avatar_data);
     void fillTasiaUserData(const LLAvatarData* avatar_data, std::string& account_text);
     bool setTasiaRemoteBadgeIcon(const std::string& icon_url, const std::string& tooltip);
+    void updateTasiaBadgeIconSize(LLViewerFetchedTexture* imagep);
 
     void onImageLoaded(bool success, LLViewerFetchedTexture *imagep);
     static void onImageLoaded(bool success,
@@ -181,6 +182,13 @@ protected:
                               S32 discard_level,
                               bool final,
                               void* userdata);
+    static void onTasiaBadgeIconLoaded(bool success,
+                                      LLViewerFetchedTexture *src_vi,
+                                      LLImageRaw* src,
+                                      LLImageRaw* aux_src,
+                                      S32 discard_level,
+                                      bool final,
+                                      void* userdata);
 
     /**
      * Displays avatar's online status if possible.
