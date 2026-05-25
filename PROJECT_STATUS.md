@@ -222,3 +222,33 @@ Next work:
 - GCC -Wmaybe-uninitialized fixed (real fix, not suppression)
 - **Grid Lock added**: I-Grid Beta included, SL grids blocked programmatically at all entry points, startup purge of existing SL grids
 - **Version bumped to 8.0.1**: Display version 8.0.1.<GitHub run number>, commit SHA visible in About window
+
+## Next exact action
+- Wait for builds #26180447827 and #26180456294 to complete
+- Verify GIPHY picker, welcome text, YouTube/image previews still work
+- Test voice-disabled mic detection fix on Windows
+
+## 2026-05-25 Profile remote badge image loading
+
+## What is done
+- Moved Linux badge-fix worktree from `/tmp/opencode/tasia-fix` to persistent path `/mnt/a/2026/tasia-tag-badge-fix`.
+- Reworked remote profile badge icons to fetch HTTP image bytes directly and decode via `LLViewerTextureList::getImageFromMemory(...)`.
+- Added `LLThumbnailCtrl::setTexture(...)` for displaying decoded in-memory badge textures.
+- Added redirect following, 60-second timeout, no retries, and a 10 MiB/range-limited badge fetch guard.
+- Kept fallback behavior to `Profile_Badge_Team` if badge fetch or decode fails.
+
+## What is broken
+- Full viewer build has not been run for this badge image loading patch yet.
+
+## What was last attempted
+- Focused code review/static sanity pass on profile badge image loading patch.
+
+## Exact last failing step
+- None yet for this patch; no compile/build attempted after the edits.
+
+## What must not be changed
+- Existing GIPHY/welcome/chat preview behavior.
+- Existing remote config JSON schema and fallback badge behavior.
+
+## Next exact action
+- Commit the badge image loading patches, push branches `feature/tasia-tag-badge-fix` and `feature/tasia-tag-badge-fix-win`, and run focused Linux/Windows CI builds.

@@ -27,3 +27,9 @@ Example supported JSON fields per user:
 
 ## Blockers
 - None currently.
+
+## Now: profile badge image loading
+1. Commit local patches in `/mnt/a/2026/tasia-tag-badge-fix` and `/mnt/a/2026/tasia-tag-badge-fix-win`.
+2. Push branches `feature/tasia-tag-badge-fix` and `feature/tasia-tag-badge-fix-win`.
+3. Run Linux/Windows CI builds.
+4. Runtime-test `badge_icon` with PNG/JPG HTTPS URLs, redirecting URLs, invalid URL fallback, and profile reset/stale response handling.
