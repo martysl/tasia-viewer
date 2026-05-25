@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -o pipefail
+
 ###
 ### Constants
 ###
@@ -580,6 +582,15 @@ if [ $WANTS_CONFIG -eq $TRUE ] ; then
     cmake -G "$TARGET" $CMAKE_ARCH ../indra $CHANNEL ${GITHASH} $FMODSTUDIO $OPENAL $KDU $OPENSIM $SINGLEGRID $AVX_OPTIMIZATION $AVX2_OPTIMIZATION $TRACY_PROFILER $TESTBUILD $PACKAGE \
           $UNATTENDED -DLL_TESTS:BOOL=OFF -DADDRESS_SIZE:STRING=$AUTOBUILD_ADDRSIZE -DCMAKE_BUILD_TYPE:STRING=$BTYPE $CACHE_OPT \
           $CRASH_REPORTING -DVIEWER_SYMBOL_FILE:STRING="${VIEWER_SYMBOL_FILE:-}" $LL_ARGS_PASSTHRU ${VSCODE_FLAGS:-} | tee $LOG
+    if [ ${PIPESTATUS[0]} -ne 0 ]; then
+        echo "CMake configure failed for $TARGET_PLATFORM" | tee -a $LOG
+        exit 1
+    fi
+
+    if [ $WANTS_NINJA -eq $TRUE ] && [ ! -f build.ninja ]; then
+        echo "CMake configure did not produce build.ninja for $TARGET_PLATFORM" | tee -a $LOG
+        exit 1
+    fi
 
     if [ $TARGET_PLATFORM == "windows" -a $USE_VSTOOL -eq $TRUE ] ; then
         echo "Setting startup project via vstool"
@@ -602,8 +613,16 @@ if [ $WANTS_BUILD -eq $TRUE ] ; then
         fi
         if [ $WANTS_NINJA -eq $TRUE ] ; then
             ninja -j $JOBS | tee -a $LOG
+            if [ ${PIPESTATUS[0]} -ne 0 ]; then
+                echo "Ninja build failed for $TARGET_PLATFORM" | tee -a $LOG
+                exit 1
+            fi
         else
             make -j $JOBS | tee -a $LOG
+            if [ ${PIPESTATUS[0]} -ne 0 ]; then
+                echo "Make build failed for $TARGET_PLATFORM" | tee -a $LOG
+                exit 1
+            fi
         fi
     elif [ $TARGET_PLATFORM == "windows" ] ; then
         if [ "${AUTOBUILD_VSVER}" -ge 170 ] ; then
@@ -618,4 +637,3 @@ if [ $WANTS_BUILD -eq $TRUE ] ; then
     fi
 fi
 echo "finished"
-
