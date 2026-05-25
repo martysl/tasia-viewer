@@ -100,7 +100,6 @@
 #include "lltextutil.h"
 #include "lllogininstance.h"
 #include "llprogressview.h"
-#include "lltasia_user_config.h"
 #include "llvocache.h"
 #include "lldiskcache.h"
 #include "llvopartgroup.h"
@@ -1336,7 +1335,6 @@ bool LLAppViewer::init()
     try
     {
         initializeSecHandler();
-        LLTasiaUserConfig::requestOnce();
     }
     catch (LLProtectedDataException& ex)
     {
@@ -6972,3 +6970,4 @@ void LLAppViewer::metricsSend(bool enable_reporting)
     // resolution in time.
     gViewerAssetStats->restart();
 }
+

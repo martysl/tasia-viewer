@@ -54,6 +54,49 @@
 #include "lfsimfeaturehandler.h"	// <COLOSI opensim multi-currency support />
 #include "llmaterialtable.h" // <FS:Beq> FIRE-31628 for access to static var
 
+namespace
+{
+bool isSLToken(std::string value)
+{
+    LLStringUtil::toLower(value);
+    return value.find("secondlife") != std::string::npos ||
+           value.find("lindenlab") != std::string::npos ||
+           value.find("agni") != std::string::npos ||
+           value.find("aditi") != std::string::npos;
+}
+
+bool isSecondLifeGridData(const LLSD& grid_data)
+{
+    if (!grid_data.isMap())
+    {
+        return false;
+    }
+
+    if (grid_data.has(GRID_ID_VALUE) && isSLToken(grid_data[GRID_ID_VALUE].asString()))
+    {
+        return true;
+    }
+    if (grid_data.has(GRID_LABEL_VALUE) && isSLToken(grid_data[GRID_LABEL_VALUE].asString()))
+    {
+        return true;
+    }
+
+    if (grid_data.has(GRID_LOGIN_URI_VALUE) && grid_data[GRID_LOGIN_URI_VALUE].isArray())
+    {
+        const LLSD& uris = grid_data[GRID_LOGIN_URI_VALUE];
+        for (LLSD::array_const_iterator it = uris.beginArray(); it != uris.endArray(); ++it)
+        {
+            if (isSLToken(it->asString()))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+}
+
 void gridDownloadError( LLSD const &aData, LLGridManager* mOwner, GridEntry* mData, LLGridManager::AddState mState )
 {
     LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD( aData );
@@ -980,6 +1023,37 @@ std::string LLGridManager::getGridLabel(const std::string& grid)
 
 void LLGridManager::setGridChoice(const std::string& grid)
 {
+	static bool sApplyingForcedGrid = false;
+
+	auto pickAllowedFallbackGrid = [this]() -> std::string
+	{
+		if (!mGrid.empty() && mGridList.has(mGrid) && !isSecondLifeGridData(mGridList[mGrid]))
+		{
+			return mGrid;
+		}
+
+		std::string configured = gSavedSettings.getString("TasiaForcedGrid");
+		LLStringUtil::trim(configured);
+		if (!configured.empty())
+		{
+			std::string configured_name = getGrid(configured);
+			if (!configured_name.empty() && mGridList.has(configured_name) && !isSecondLifeGridData(mGridList[configured_name]))
+			{
+				return configured_name;
+			}
+		}
+
+		for (LLSD::map_const_iterator it = mGridList.beginMap(); it != mGridList.endMap(); ++it)
+		{
+			if (!isSecondLifeGridData(it->second))
+			{
+				return it->first;
+			}
+		}
+
+		return std::string();
+	};
+
 	if (grid.empty() || LLLoginInstance::getInstance()->authSuccess())
 	{
 		return;
@@ -1004,6 +1078,22 @@ void LLGridManager::setGridChoice(const std::string& grid)
 
 	mReadyToLogin = false;
 	std::string grid_name = grid;
+
+	const bool block_sl = gSavedSettings.getBOOL("TasiaBlockSecondLifeGrid");
+	if (block_sl && !sApplyingForcedGrid && isSLToken(grid))
+	{
+		std::string fallback_grid = pickAllowedFallbackGrid();
+		if (!fallback_grid.empty() && fallback_grid != grid)
+		{
+			LL_WARNS("GridManager") << "Blocked Second Life grid selection '" << grid
+				<< "', forcing grid '" << fallback_grid << "'" << LL_ENDL;
+			sApplyingForcedGrid = true;
+			setGridChoice(fallback_grid);
+			sApplyingForcedGrid = false;
+			return;
+		}
+	}
+
 	if (mGridList.has(grid_name))
 	{
 		LL_DEBUGS("GridManager") << "got grid from grid list: " << grid << LL_ENDL;
@@ -1046,6 +1136,25 @@ void LLGridManager::setGridChoice(const std::string& grid)
 	}
 	else
 	{
+		if (block_sl)
+		{
+			LLSD selected_grid;
+			getGridData(grid_name, selected_grid);
+			if (isSecondLifeGridData(selected_grid) && !sApplyingForcedGrid)
+			{
+				std::string fallback_grid = pickAllowedFallbackGrid();
+				if (!fallback_grid.empty() && fallback_grid != grid_name)
+				{
+					LL_WARNS("GridManager") << "Blocked resolved Second Life grid '" << grid_name
+						<< "', forcing grid '" << fallback_grid << "'" << LL_ENDL;
+					sApplyingForcedGrid = true;
+					setGridChoice(fallback_grid);
+					sApplyingForcedGrid = false;
+					return;
+				}
+			}
+		}
+
 		LL_DEBUGS("GridManager")<< "setting grid choice: " << grid << LL_ENDL;
 		mGrid = grid;// AW: don't set mGrid anywhere else
 		getGridData(mConnectedGrid);
