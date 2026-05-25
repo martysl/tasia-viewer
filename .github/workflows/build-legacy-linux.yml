@@ -1,0 +1,145 @@
+name: Build Legacy Viewer - Linux
+
+on:
+  push:
+    branches:
+      - tasia-legacy-port
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Publish GitHub pre-release"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AUTOBUILD_ADDRSIZE: 64
+  AUTOBUILD_BUILD_ID: ${{ github.run_id }}
+  AUTOBUILD_INSTALLABLE_CACHE: ${{ github.workspace }}/.autobuild-installables
+  AUTOBUILD_VARIABLES_FILE: ${{ github.workspace }}/.build-variables/variables
+  AUTOBUILD_VCS_INFO: "true"
+  LL_SKIP_REQUIRE_SYSROOT: 1
+  XZ_DEFAULTS: -T0
+
+jobs:
+  build:
+    name: Build Legacy Viewer - Linux - FMOD
+    timeout-minutes: 240
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout viewer source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Restore autobuild installables cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.AUTOBUILD_INSTALLABLE_CACHE }}
+          key: autobuild-legacy-linux-${{ hashFiles('autobuild.xml') }}
+
+      - name: Install autobuild and Python deps
+        run: pip install -r requirements.txt
+
+      - name: Checkout build variables
+        uses: actions/checkout@v4
+        with:
+          repository: FirestormViewer/fs-build-variables
+          path: .build-variables
+
+      - name: Remove KDU (proprietary, cannot use)
+        shell: bash
+        run: |
+          autobuild installables remove kdu || true
+
+      - name: Download private FMOD autobuild package
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.FMOD_DEPS_TOKEN }}
+        run: |
+          set -euo pipefail
+          [ -n "${GH_TOKEN:-}" ] || { echo "::error::FMOD_DEPS_TOKEN missing"; exit 1; }
+
+          mkdir -p private-deps
+          gh release download fmod-20307 \
+            --repo martysl/tasia-private-deps \
+            --pattern "*linux64*.tar.bz2" \
+            --dir private-deps
+
+          FMOD_PACKAGE="$(find private-deps -type f -name '*.tar.bz2' | head -n 1)"
+          [ -n "$FMOD_PACKAGE" ] || { echo "::error::FMOD package missing"; exit 1; }
+
+          FMOD_HASH=$(python3 -c "import hashlib,sys; print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$FMOD_PACKAGE")
+          FMOD_FILE_URL=$(python3 -c "import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_uri())" "$FMOD_PACKAGE")
+
+          echo "FMOD_PLATFORM=linux64" >> "$GITHUB_ENV"
+          echo "FMOD_HASH=$FMOD_HASH" >> "$GITHUB_ENV"
+          echo "FMOD_FILE_URL=$FMOD_FILE_URL" >> "$GITHUB_ENV"
+
+      - name: Point autobuild to private FMOD package
+        shell: bash
+        run: |
+          autobuild installables edit fmodstudio \
+            platform="$FMOD_PLATFORM" \
+            hash="$FMOD_HASH" \
+            url="$FMOD_FILE_URL"
+
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            mesa-common-dev libgl1-mesa-dev libxinerama-dev \
+            libxrandr-dev libpulse-dev libglu1-mesa-dev \
+            libfreetype6-dev libfontconfig1 ninja-build \
+            libdbus-1-dev
+
+      - name: Configure with FMOD
+        shell: bash
+        env:
+          TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
+        run: |
+          autobuild configure \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            -- \
+            --fmodstudio \
+            --package \
+            --ninja
+
+      - name: Build with FMOD
+        shell: bash
+        run: |
+          autobuild build \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            --no-configure \
+            -- \
+            --fmodstudio \
+            --package \
+            --ninja
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tasia-Legacy-Viewer-Linux-FMOD
+          if-no-files-found: error
+          path: |
+            build-linux-x86_64/newview/*.tar.xz
+            build-linux-x86_64/newview/*.bz2
