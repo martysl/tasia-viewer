@@ -75,13 +75,15 @@
 
 ## What was last attempted
 - Focused code review/static sanity pass on profile badge image loading patch.
+- CI builds were triggered after commit `4ed7ac0c21`.
+- Removed profile badge URL from hover tooltip; hover now uses configured tooltip/profile text only.
 
 ## Exact last failing step
-- None yet for this patch; no compile/build attempted after the edits.
+- Linux run `26417570550` and Windows run `26417571261` failed compiling `indra/newview/llpanelprofile.cpp` because `LLViewerTextureList::getImageFromMemory(...)` is private.
 
 ## What must not be changed
 - Existing GIPHY/welcome/chat preview behavior.
 - Existing remote config JSON schema and fallback badge behavior.
 
 ## Next exact action
-- Commit the badge image loading patch, push branch `feature/tasia-tag-badge-fix`, and run focused Linux/Windows CI builds.
+- Commit and push fix to use public `LLViewerTextureManager::getFetchedTextureFromMemory(...)`, then rerun focused Linux/Windows CI builds.
