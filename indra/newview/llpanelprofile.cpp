@@ -29,6 +29,9 @@
 
 // Common
 #include "llavatarnamecache.h"
+#include "llcorehttputil.h"
+#include "llcoros.h"
+#include "llhttpconstants.h"
 #include "llsdutil.h"
 #include "llslurl.h"
 #include "lldateutil.h" //ageFromDate
@@ -105,6 +108,88 @@ static const std::string PANEL_PROFILE_VIEW = "panel_profile_view";
 
 static const std::string PROFILE_PROPERTIES_CAP = "AgentProfile";
 static const std::string PROFILE_IMAGE_UPLOAD_CAP = "UploadAgentProfileImage";
+static const U32 TASIA_PROFILE_BADGE_MAX_BYTES = 10 * 1024 * 1024;
+
+static std::string tasia_badge_mime_from_url(const std::string& url)
+{
+    std::string path = url;
+    std::string::size_type query_pos = path.find_first_of("?#");
+    if (query_pos != std::string::npos)
+    {
+        path.erase(query_pos);
+    }
+    LLStringUtil::toLower(path);
+
+    if (LLStringUtil::endsWith(path, ".png")) return "image/png";
+    if (LLStringUtil::endsWith(path, ".jpg") || LLStringUtil::endsWith(path, ".jpeg")) return "image/jpeg";
+    if (LLStringUtil::endsWith(path, ".gif")) return "image/gif";
+    if (LLStringUtil::endsWith(path, ".bmp")) return "image/bmp";
+    if (LLStringUtil::endsWith(path, ".tga")) return "image/tga";
+    return "image/png";
+}
+
+static std::string tasia_badge_clean_mime(const std::string& content_type, const std::string& url)
+{
+    std::string mime = content_type;
+    std::string::size_type semicolon = mime.find(';');
+    if (semicolon != std::string::npos)
+    {
+        mime.erase(semicolon);
+    }
+    LLStringUtil::trim(mime);
+    LLStringUtil::toLower(mime);
+    return mime.empty() ? tasia_badge_mime_from_url(url) : mime;
+}
+
+static void tasia_fetch_profile_badge_coro(std::string icon_url, LLHandle<LLPanel> handle)
+{
+    LLCore::HttpRequest::ptr_t http_request(new LLCore::HttpRequest);
+    LLCoreHttpUtil::HttpCoroutineAdapter::ptr_t http_adapter(
+        new LLCoreHttpUtil::HttpCoroutineAdapter("TasiaProfileBadgeFetch", LLCore::HttpRequest::DEFAULT_POLICY_ID));
+    LLCore::HttpHeaders::ptr_t http_headers(new LLCore::HttpHeaders);
+    LLCore::HttpOptions::ptr_t http_options(new LLCore::HttpOptions);
+
+    http_options->setTimeout(60);
+    http_options->setTransferTimeout(60);
+    http_options->setRetries(0);
+    http_options->setFollowRedirects(true);
+    http_headers->append(HTTP_OUT_HEADER_ACCEPT, "image/png, image/jpeg, image/gif, image/*;q=0.9, */*;q=0.1");
+    http_headers->append(HTTP_OUT_HEADER_RANGE, "bytes=0-10485759");
+
+    LLSD result = http_adapter->getRawAndSuspend(http_request, icon_url, http_options, http_headers);
+    LLSD http_results = result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS];
+    LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(http_results);
+
+    if (handle.isDead())
+    {
+        return;
+    }
+
+    LLPanelProfileSecondLife* panel = static_cast<LLPanelProfileSecondLife*>(handle.get());
+    if (!panel)
+    {
+        return;
+    }
+
+    if (!status || !result.has(LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS_RAW))
+    {
+        LL_WARNS("TasiaProfile") << "Profile badge fetch failed for " << icon_url << ": " << status.toString() << LL_ENDL;
+        panel->onTasiaRemoteBadgeDownloaded(icon_url, std::string(), LLSD::Binary());
+        return;
+    }
+
+    const LLSD::Binary& raw = result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS_RAW].asBinary();
+    if (raw.empty() || raw.size() > TASIA_PROFILE_BADGE_MAX_BYTES)
+    {
+        LL_WARNS("TasiaProfile") << "Profile badge fetch returned invalid size for " << icon_url << ": " << raw.size() << LL_ENDL;
+        panel->onTasiaRemoteBadgeDownloaded(icon_url, std::string(), LLSD::Binary());
+        return;
+    }
+
+    LLSD result_headers = http_results[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS_HEADERS];
+    const std::string mime = tasia_badge_clean_mime(result_headers[HTTP_IN_HEADER_CONTENT_TYPE].asString(), icon_url);
+    panel->onTasiaRemoteBadgeDownloaded(icon_url, mime, raw);
+}
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -1073,6 +1158,7 @@ void LLPanelProfileSecondLife::resetData()
     getChild<LLThumbnailCtrl>("tasia_badge_icon")->clearTexture();
     mTasiaBadgeFallbackName.clear();
     mTasiaBadgeFallbackTooltip.clear();
+    mTasiaBadgeIconUrl.clear();
     getChild<LLLayoutPanel>("tasia_badge_layout")->setTargetDim(1);
     getChild<LLLayoutPanel>("tasia_badge_layout")->setMinDim(1);
     getChild<LLUICtrl>("account_info")->setToolTip(std::string());
@@ -1609,33 +1695,57 @@ bool LLPanelProfileSecondLife::setTasiaRemoteBadgeIcon(const std::string& icon_u
     }
 
     LLThumbnailCtrl* icon_ctrl = getChild<LLThumbnailCtrl>("tasia_badge_icon");
-    LLViewerFetchedTexture* imagep = icon_ctrl->setImageUrl(icon_url, true);
-    if (!imagep)
-    {
-        return false;
-    }
-
+    icon_ctrl->clearTexture();
     icon_ctrl->setToolTip(tooltip);
-    childSetVisible("tasia_badge_layout", true);
+
+    childSetVisible("tasia_badge_layout", false);
     mTasiaBadgeFallbackName = fallback_badge_name;
     mTasiaBadgeFallbackTooltip = tooltip;
+    mTasiaBadgeIconUrl = icon_url;
 
-    if (imagep->getFullWidth() > 0 && imagep->getFullHeight() > 0)
-    {
-        updateTasiaBadgeIconSize(imagep);
-    }
-    else
-    {
-        imagep->setLoadedCallback(onTasiaBadgeIconLoaded,
-                                  MAX_DISCARD_LEVEL,
-                                  false,
-                                  false,
-                                  new LLHandle<LLPanel>(getHandle()),
-                                  NULL,
-                                  false);
-    }
+    LLCoros::instance().launch("TasiaProfileBadgeFetch",
+        boost::bind(tasia_fetch_profile_badge_coro, icon_url, getHandle()));
 
     return true;
+}
+
+void LLPanelProfileSecondLife::onTasiaRemoteBadgeDownloaded(const std::string& icon_url, const std::string& mime_type, const LLSD::Binary& body)
+{
+    if (icon_url != mTasiaBadgeIconUrl)
+    {
+        return;
+    }
+
+    if (body.empty() || mime_type.empty())
+    {
+        showTasiaBadgeFallback();
+        return;
+    }
+
+    LLViewerFetchedTexture* imagep = gTextureList.getImageFromMemory(&body[0], static_cast<U32>(body.size()), mime_type);
+    if (!imagep)
+    {
+        LL_WARNS("TasiaProfile") << "Failed to decode profile badge image from " << icon_url << " as " << mime_type << LL_ENDL;
+        showTasiaBadgeFallback();
+        return;
+    }
+
+    LLThumbnailCtrl* icon_ctrl = getChild<LLThumbnailCtrl>("tasia_badge_icon");
+    icon_ctrl->setTexture(imagep, true);
+    icon_ctrl->setToolTip(mTasiaBadgeFallbackTooltip);
+    childSetVisible("tasia_badge_layout", true);
+
+    updateTasiaBadgeIconSize(imagep);
+}
+
+void LLPanelProfileSecondLife::showTasiaBadgeFallback()
+{
+    mTasiaBadgeIconUrl.clear();
+    childSetVisible("tasia_badge_layout", false);
+    getChild<LLThumbnailCtrl>("tasia_badge_icon")->clearTexture();
+    setBadgeRawTooltip("Profile_Badge_Team",
+        mTasiaBadgeFallbackTooltip.empty() ? mTasiaBadgeFallbackName : mTasiaBadgeFallbackTooltip,
+        BadgeLocation::top);
 }
 
 void LLPanelProfileSecondLife::updateTasiaBadgeIconSize(LLViewerFetchedTexture* imagep)

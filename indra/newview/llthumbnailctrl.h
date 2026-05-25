@@ -68,6 +68,7 @@ public:
 
     virtual void setValue(const LLSD& value ) override;
     LLViewerFetchedTexture* setImageUrl(const std::string& url, bool draw_natural_size = false);
+    void setTexture(LLViewerFetchedTexture* texture, bool draw_natural_size = false);
     void setInitImmediately(bool val) { mInitImmediately = val; }
     void clearTexture();
 

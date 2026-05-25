@@ -237,6 +237,21 @@ LLViewerFetchedTexture* LLThumbnailCtrl::setImageUrl(const std::string& url, boo
     return mTexturep;
 }
 
+void LLThumbnailCtrl::setTexture(LLViewerFetchedTexture* texture, bool draw_natural_size)
+{
+    LLUICtrl::setValue(LLSD());
+    unloadImage();
+    mDrawNaturalSize = draw_natural_size;
+    mInited = true;
+    mTexturep = texture;
+
+    if (mTexturep)
+    {
+        mTexturep->forceToSaveRawImage(0);
+        mTexturep->setKnownDrawSize(MAX_IMAGE_SIZE, MAX_IMAGE_SIZE);
+    }
+}
+
 // virtual
 // value might be a string or a UUID
 void LLThumbnailCtrl::setValue(const LLSD& value)

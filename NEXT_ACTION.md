@@ -30,3 +30,9 @@ Example supported JSON fields per user:
 3. Test YouTube previews in chat
 4. Test image previews in chat
 5. **Test voice-disabled mic detection** — verify no microphone indicator when voice is disabled
+
+## Now: profile badge image loading
+1. Commit local patch in `/mnt/a/2026/tasia-tag-badge-fix`.
+2. Push branch `feature/tasia-tag-badge-fix`.
+3. Run Linux/Windows CI builds.
+4. Runtime-test `badge_icon` with PNG/JPG HTTPS URLs, redirecting URLs, invalid URL fallback, and profile reset/stale response handling.
