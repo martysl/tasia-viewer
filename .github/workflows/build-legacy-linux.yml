@@ -141,5 +141,5 @@ jobs:
           name: Tasia-Legacy-Viewer-Linux-FMOD
           if-no-files-found: error
           path: |
-            build-linux-x86_64/newview/*.tar.xz
-            build-linux-x86_64/newview/*.bz2
+            build-*/newview/*.tar.xz
+            build-*/newview/*.bz2
