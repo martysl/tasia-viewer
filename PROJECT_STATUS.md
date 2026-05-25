@@ -232,23 +232,24 @@ Next work:
 
 ## What is done
 - Moved Linux badge-fix worktree from `/tmp/opencode/tasia-fix` to persistent path `/mnt/a/2026/tasia-tag-badge-fix`.
-- Reworked remote profile badge icons to fetch HTTP image bytes directly and decode via `LLViewerTextureList::getImageFromMemory(...)`.
+- Reworked remote profile badge icons to fetch HTTP image bytes directly and decode via `LLViewerTextureManager::getFetchedTextureFromMemory(...)`.
 - Added `LLThumbnailCtrl::setTexture(...)` for displaying decoded in-memory badge textures.
 - Added redirect following, 60-second timeout, no retries, and a 10 MiB/range-limited badge fetch guard.
 - Kept fallback behavior to `Profile_Badge_Team` if badge fetch or decode fails.
+- Removed profile badge URL from hover tooltip; hover now uses configured tooltip/profile text only.
 
 ## What is broken
-- Full viewer build has not been run for this badge image loading patch yet.
+- Linux run `26417570550` and Windows run `26417571261` failed compiling `indra/newview/llpanelprofile.cpp` because `LLViewerTextureList::getImageFromMemory(...)` is private.
 
 ## What was last attempted
-- Focused code review/static sanity pass on profile badge image loading patch.
+- Follow-up fix uses public `LLViewerTextureManager::getFetchedTextureFromMemory(...)`.
 
 ## Exact last failing step
-- None yet for this patch; no compile/build attempted after the edits.
+- Last failing step: `llpanelprofile.cpp` compile error from private `LLViewerTextureList::getImageFromMemory(...)` access.
 
 ## What must not be changed
 - Existing GIPHY/welcome/chat preview behavior.
 - Existing remote config JSON schema and fallback badge behavior.
 
 ## Next exact action
-- Commit the badge image loading patches, push branches `feature/tasia-tag-badge-fix` and `feature/tasia-tag-badge-fix-win`, and run focused Linux/Windows CI builds.
+- Commit and push follow-up fix on both badge branches, then rerun focused Linux/Windows CI builds.
