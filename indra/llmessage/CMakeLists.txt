@@ -201,6 +201,7 @@ target_link_libraries(
         llcorehttp
         ll::xmlrpc-epi
         llxml #<FS:Ansariel> For accessing settings
+        llquic
 )
 target_include_directories( llmessage  INTERFACE   ${CMAKE_CURRENT_SOURCE_DIR})
 
