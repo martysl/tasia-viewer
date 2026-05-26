@@ -125,6 +125,7 @@ public:
 
     void setProfileImageUploading(bool loading);
     void setProfileImageUploaded(const LLUUID &image_asset_id);
+    void onTasiaRemoteBadgeDownloaded(const std::string& icon_url, const std::string& mime_type, const LLSD::Binary& body);
 
     bool hasUnsavedChanges() override;
     void commitUnsavedChanges() override;
@@ -173,6 +174,7 @@ protected:
     void fillTasiaUserData(const LLAvatarData* avatar_data, std::string& account_text);
     bool setTasiaRemoteBadgeIcon(const std::string& icon_url, const std::string& tooltip, const std::string& fallback_badge_name);
     void updateTasiaBadgeIconSize(LLViewerFetchedTexture* imagep);
+    void showTasiaBadgeFallback();
 
     void onImageLoaded(bool success, LLViewerFetchedTexture *imagep);
     static void onImageLoaded(bool success,
@@ -191,6 +193,7 @@ protected:
                                       void* userdata);
     std::string mTasiaBadgeFallbackName;
     std::string mTasiaBadgeFallbackTooltip;
+    std::string mTasiaBadgeIconUrl;
 
     /**
      * Displays avatar's online status if possible.

@@ -62,23 +62,6 @@
 #endif
 
 // static
-bool LLCoros::on_main_coro()
-{
-    if (!LLCoros::instanceExists() || LLCoros::getName().empty())
-    {
-        return true;
-    }
-
-    return false;
-}
-
-// static
-bool LLCoros::on_main_thread_main_coro()
-{
-    return on_main_coro() && on_main_thread();
-}
-
-// static
 LLCoros::CoroData& LLCoros::get_CoroData(const std::string& caller)
 {
     CoroData* current{ nullptr };
@@ -134,13 +117,16 @@ std::string LLCoros::getStatus()
 {
     return get_CoroData("getStatus()").mStatus;
 }
-
 LLCoros::LLCoros():
     // MAINT-2724: default coroutine stack size too small on Windows.
     // Previously we used
     // boost::context::guarded_stack_allocator::default_stacksize();
     // empirically this is insufficient.
-    mStackSize(1024*1024),
+#if ADDRESS_SIZE == 64
+    mStackSize(512*1024),
+#else
+    mStackSize(256*1024),
+#endif
     // mCurrent does NOT own the current CoroData instance -- it simply
     // points to it. So initialize it with a no-op deleter.
     mCurrent{ [](CoroData*){} }
@@ -295,8 +281,6 @@ std::string LLCoros::launch(const std::string& prefix, const callable_t& callabl
     catch (std::bad_alloc&)
     {
         // Out of memory on stack allocation?
-        LLError::LLUserWarningMsg::showOutOfMemory();
-        printActiveCoroutines();
         LL_ERRS("LLCoros") << "Bad memory allocation in LLCoros::launch(" << prefix << ")!" << LL_ENDL;
     }
 
@@ -310,54 +294,25 @@ namespace
 
 static const U32 STATUS_MSC_EXCEPTION = 0xE06D7363; // compiler specific
 
-U32 exception_filter(U32 code, struct _EXCEPTION_POINTERS* exception_infop)
+U32 exception_filter(U32 code, struct _EXCEPTION_POINTERS *exception_infop)
 {
-    if (LLApp::instance()->reportCrashToBugsplat((void*)exception_infop))
-    {
-        // Handled
-        return EXCEPTION_CONTINUE_SEARCH;
-    }
-    else if (code == STATUS_MSC_EXCEPTION)
+    if (code == STATUS_MSC_EXCEPTION)
     {
         // C++ exception, go on
         return EXCEPTION_CONTINUE_SEARCH;
     }
     else
     {
-        // handle it, convert to std::exception
+        // handle it
         return EXCEPTION_EXECUTE_HANDLER;
     }
-
-    return EXCEPTION_CONTINUE_SEARCH;
 }
 
-void cpphandle(const LLCoros::callable_t& callable, const std::string& name)
-{
-    // SE and C++ can not coexists, thus two handlers
-    try
-    {
-        callable();
-    }
-    catch (const LLCoros::Stop& exc)
-    {
-        LL_INFOS("LLCoros") << "coroutine " << name << " terminating because "
-            << exc.what() << LL_ENDL;
-    }
-    catch (const LLContinueError&)
-    {
-        // Any uncaught exception derived from LLContinueError will be caught
-        // here and logged. This coroutine will terminate but the rest of the
-        // viewer will carry on.
-        LOG_UNHANDLED_EXCEPTION(STRINGIZE("coroutine " << name));
-    }
-}
-
-void sehandle(const LLCoros::callable_t& callable, const std::string& name)
+void sehandle(const LLCoros::callable_t& callable)
 {
     __try
     {
-        // handle stop and continue exceptions first
-        cpphandle(callable, name);
+        callable();
     }
     __except (exception_filter(GetExceptionCode(), GetExceptionInformation()))
     {
@@ -369,7 +324,16 @@ void sehandle(const LLCoros::callable_t& callable, const std::string& name)
         throw std::exception(integer_string);
     }
 }
-#endif // LL_WINDOWS
+
+#else  // ! LL_WINDOWS
+
+inline void sehandle(const LLCoros::callable_t& callable)
+{
+    callable();
+}
+
+#endif // ! LL_WINDOWS
+
 } // anonymous namespace
 
 // Top-level wrapper around caller's coroutine callable.
@@ -382,14 +346,10 @@ void LLCoros::toplevel(std::string name, callable_t callable)
     // set it as current
     mCurrent.reset(&corodata);
 
-#ifdef LL_WINDOWS
-    // can not use __try directly, toplevel requires unwinding, thus use of a wrapper
-    sehandle(callable, name);
-#else // LL_WINDOWS
     // run the code the caller actually wants in the coroutine
     try
     {
-        callable();
+        sehandle(callable);
     }
     catch (const Stop& exc)
     {
@@ -411,7 +371,6 @@ void LLCoros::toplevel(std::string name, callable_t callable)
                             << name << LL_ENDL;
         LLCoros::instance().saveException(name, std::current_exception());
     }
-#endif // else LL_WINDOWS
 }
 
 //static
