@@ -225,7 +225,7 @@ jobs:
 
       - name: Upload artifact - Linux
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Tasia-Viewer-Linux-FMOD
           if-no-files-found: error
@@ -265,7 +265,7 @@ jobs:
 
       - name: Upload artifact - macOS
         if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Tasia-Viewer-macOS-FMOD
           if-no-files-found: error
@@ -275,7 +275,7 @@ jobs:
 
       - name: Upload artifact - Windows
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Tasia-Viewer-Windows-FMOD
           if-no-files-found: error
