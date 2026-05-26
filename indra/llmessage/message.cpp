@@ -4114,6 +4114,15 @@ S32 LLMessageSystem::getReceiveSize() const
 	return mMessageReader->getMessageSize();
 }
 
+const LLSD* LLMessageSystem::getCurrentLLSDMessageBody() const
+{
+	if (mMessageReader != mLLSDMessageReader)
+	{
+		return nullptr;
+	}
+	return &mLLSDMessageReader->getMessage();
+}
+
 //static 
 void LLMessageSystem::setTimeDecodes( BOOL b )
 {

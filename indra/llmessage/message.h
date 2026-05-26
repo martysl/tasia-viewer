@@ -752,6 +752,7 @@ public:
 	S32		getReceiveSize() const;
 	S32		getReceiveCompressedSize() const { return mIncomingCompressedSize; }
 	S32		getReceiveBytes() const;
+	const LLSD* getCurrentLLSDMessageBody() const;
 
 	S32		getUnackedListSize() const			{ return mUnackedListSize; }
 

@@ -94,6 +94,7 @@ public:
 
 	virtual const char* getMessageName() const;
 	virtual S32 getMessageSize() const;
+	const LLSD& getMessage() const { return mMessage; }
 
 	virtual void copyToBuilder(LLMessageBuilder&) const;
 
