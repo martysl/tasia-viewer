@@ -127,7 +127,7 @@ void FSFloaterNearbyChat::updateFSUseNearbyChatConsole(const LLSD &data)
 }
 
 
-bool FSFloaterNearbyChat::postBuild()
+BOOL FSFloaterNearbyChat::postBuild()
 {
     setIsSingleInstance(true);
 
@@ -333,7 +333,7 @@ void FSFloaterNearbyChat::addMessage(const LLChat& chat,bool archive,const LLSD 
 }
 
 // virtual
-bool FSFloaterNearbyChat::focusFirstItem(bool prefer_text_fields, bool focus_flash)
+BOOL FSFloaterNearbyChat::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash)
 {
     mInputEditor->setFocus(true);
     onTabInto();
@@ -705,7 +705,7 @@ bool FSFloaterNearbyChat::getVisible()
 }
 
 // virtual
-bool FSFloaterNearbyChat::handleKeyHere( KEY key, MASK mask )
+BOOL FSFloaterNearbyChat::handleKeyHere( KEY key, MASK mask )
 {
     bool handled = false;
 

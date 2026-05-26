@@ -50,7 +50,7 @@ public:
     FSFloaterNearbyChat(const LLSD& key);
     ~FSFloaterNearbyChat();
 
-    bool    postBuild();
+    BOOL    postBuild();
 
     /** @param archive true - to save a message to the chat history log */
     void    addMessage(const LLChat& message,bool archive = true, const LLSD &args = LLSD());
@@ -83,7 +83,7 @@ public:
     void onSearchButtonClicked();
 
     // overridden to fix the multitab focus bug -Zi
-    bool focusFirstItem(bool prefer_text_fields = false, bool focus_flash = true );
+    BOOL focusFirstItem(BOOL prefer_text_fields = FALSE, BOOL focus_flash = TRUE);
 
     void updateFSUseNearbyChatConsole(const LLSD &data);
     static bool isWordsName(const std::string& name);
@@ -92,7 +92,7 @@ public:
 
     S32 getMessageArchiveLength() { return static_cast<S32>(mMessageArchive.size()); }
 
-    virtual bool handleKeyHere( KEY key, MASK mask );
+    virtual BOOL handleKeyHere( KEY key, MASK mask );
 
     static void stopChat();
 
