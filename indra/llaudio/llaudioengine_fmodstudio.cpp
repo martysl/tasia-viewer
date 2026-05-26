@@ -46,7 +46,7 @@
 
 const U32 EXTRA_SOUND_CHANNELS = 10;
 
-FMOD_RESULT F_CALLBACK windCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, float *outbuffer, unsigned int length, int inchannels, int *outchannels);
+FMOD_RESULT F_CALL windCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, float *outbuffer, unsigned int length, int inchannels, int *outchannels);
 
 FMOD::ChannelGroup *LLAudioEngine_FMODSTUDIO::mChannelGroups[LLAudioEngine::AUDIO_TYPE_COUNT] = {0};
 
@@ -113,7 +113,7 @@ void set_device(FMOD::System* system, const LLUUID& device_uuid)
     }
 }
 
-FMOD_RESULT F_CALLBACK systemCallback(FMOD_SYSTEM *system, FMOD_SYSTEM_CALLBACK_TYPE type, void *commanddata1, void *commanddata2, void* userdata)
+FMOD_RESULT F_CALL systemCallback(FMOD_SYSTEM *system, FMOD_SYSTEM_CALLBACK_TYPE type, void *commanddata1, void *commanddata2, void* userdata)
 {
     FMOD::System* sys = (FMOD::System*)system;
     LLAudioEngine_FMODSTUDIO* audio_engine = (LLAudioEngine_FMODSTUDIO*)userdata;
@@ -881,7 +881,7 @@ void LLAudioChannelFMODSTUDIO::set3DMode(bool use3d)
 // not the main thread.  May have implications for callees or audio
 // engine shutdown.
 
-FMOD_RESULT F_CALLBACK windCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, float *outbuffer, unsigned int length, int inchannels, int *outchannels)
+FMOD_RESULT F_CALL windCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, float *outbuffer, unsigned int length, int inchannels, int *outchannels)
 {
     // inbuffer = fmod's original mixbuffer.
     // outbuffer = the buffer passed from the previous DSP unit.
