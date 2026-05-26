@@ -87,3 +87,52 @@
 
 ## Next exact action
 - Commit and push fix to use public `LLViewerTextureManager::getFetchedTextureFromMemory(...)`, then rerun focused Linux/Windows CI builds.
+
+## 2026-05-26 Badge release
+
+## What is done
+- Latest badge fallback builds passed:
+  - Linux run `26422421054` / commit `fbec75918c`
+  - Windows run `26422421559` / commit `bef3638071`
+- Published prereleases:
+  - Linux `v8.0.1-20`: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-20`
+  - Windows `v8.0.1-47-windows`: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-47-windows`
+- Deleted older visible releases `v8.0.1-17` and `v8.0.1-44-windows`.
+- Deleted older current-viewer Actions runs, keeping latest Linux/Windows release runs visible.
+
+## What is broken
+- Nothing release-blocking currently known.
+
+## What was last attempted
+- Posted formatted Discord message with separator lines using Mom-provided webhook.
+
+## Exact last failing step
+- Earlier local webhook from `~/.config/opencode/token.txt` returned HTTP 403; Mom-provided webhook succeeded with HTTP 204 when sent with a User-Agent header.
+
+## What must not be changed
+- Published release tags/assets unless replacing with a new build.
+
+## Next exact action
+- Runtime-test the new release builds, especially profile badge fallback/loading behavior.
+
+## 2026-05-26 Built-in profile badge names
+
+## What is done
+- Added support for using built-in profile badge texture names directly in `badge_name`.
+- Supported names: `Profile_Badge_Beta`, `Profile_Badge_Beta_Lifetime`, `Profile_Badge_Lifetime`, `Profile_Badge_Linden`, `Profile_Badge_Pplus_Lifetime`, `Profile_Badge_Premium_Lifetime`, `Profile_Badge_Team`.
+- Remote `badge_icon` URL still takes priority; built-in `badge_name` is used as fallback while remote image loads or if no URL is provided.
+
+## What is broken
+- Not built yet after the built-in badge-name change.
+
+## What was last attempted
+- Static patch and whitespace checks.
+
+## Exact last failing step
+- None yet for this change.
+
+## What must not be changed
+- Existing URL-based remote badge behavior and fallback team badge behavior.
+
+## Next exact action
+- Commit/push Linux and Windows badge branches and run CI.
