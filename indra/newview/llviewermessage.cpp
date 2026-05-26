@@ -3694,6 +3694,39 @@ BOOL LLPostTeleportNotifiers::tick()
 
 // Teleport notification from the simulator
 // We're going to pretend to be a new agent
+namespace
+{
+	void on_quic_circuit_failed_vm(const LLHost& host, void* /*user_data*/)
+	{
+		std::string reason;
+		if (gMessageSystem)
+		{
+			LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(host);
+			if (cdp && cdp->isQuic())
+			{
+				reason = cdp->describeQuicFailure();
+			}
+		}
+		if (reason.empty())
+		{
+			reason = "QUIC connection to the simulator was lost";
+		}
+
+		LL_WARNS("Messaging") << "QUIC circuit to " << host
+							  << " failed: " << reason
+							  << " (per spec there is no LLUDP fallback)"
+							  << LL_ENDL;
+
+		if (gAgent.getTeleportState() != LLAgent::TELEPORT_NONE)
+		{
+			LLSD args;
+			args["REASON"] = reason;
+			LLNotificationsUtil::add("CouldNotTeleportReason", args);
+			gAgent.setTeleportState(LLAgent::TELEPORT_NONE);
+		}
+	}
+}
+
 void process_teleport_finish(LLMessageSystem* msg, void**)
 {
 	LL_DEBUGS("Teleport","Messaging") << "Received TeleportFinish message" << LL_ENDL;
@@ -3799,8 +3832,46 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 
 	LLHost sim_host(sim_ip, sim_port);
 
-	// Viewer trusts the simulator.
-	gMessageSystem->enableCircuit(sim_host, TRUE);
+	std::string quic_host;
+	U16         quic_port = 0;
+	if (const LLSD* body = msg->getCurrentLLSDMessageBody())
+	{
+		const LLSD& info = (*body)["Info"][0];
+		if (info.has("SimQuicHost")) quic_host = info["SimQuicHost"].asString();
+		if (info.has("SimQuicPort")) quic_port = static_cast<U16>(info["SimQuicPort"].asInteger());
+	}
+
+	LL_INFOS("Messaging") << "TeleportFinish: sim=" << sim_host
+						  << " SimQuicHost='" << quic_host
+						  << "' SimQuicPort=" << quic_port
+						  << " -> " << (quic_port > 0 && !quic_host.empty() ? "QUIC" : "LLUDP")
+						  << LL_ENDL;
+
+	if (quic_port > 0 && !quic_host.empty())
+	{
+		std::string quic_err;
+		if (!gMessageSystem->enableQuicCircuit(sim_host, quic_host, quic_port, TRUE, &quic_err))
+		{
+			LL_WARNS("Messaging") << "TeleportFinish: QUIC enable failed for " << sim_host
+								  << " (host=" << quic_host << " port=" << quic_port
+								  << "): " << quic_err
+								  << "; per spec NOT falling back to LLUDP." << LL_ENDL;
+			LLSD args;
+			args["REASON"] = quic_err.empty()
+				? std::string("Could not establish QUIC connection to the destination simulator")
+				: quic_err;
+			LLNotificationsUtil::add("CouldNotTeleportReason", args);
+			gAgent.setTeleportState(LLAgent::TELEPORT_NONE);
+			return;
+		}
+		gMessageSystem->setCircuitTimeoutCallback(sim_host, on_quic_circuit_failed_vm, NULL);
+	}
+	else
+	{
+		// Viewer trusts the simulator.
+		gMessageSystem->enableCircuit(sim_host, TRUE);
+	}
+
 // <FS:CR> Aurora Sim
 	//LLViewerRegion* regionp =  LLWorld::getInstance()->addRegion(region_handle, sim_host);
 	LLViewerRegion* regionp =  LLWorld::getInstance()->addRegion(region_handle, sim_host, region_size_x, region_size_y);
@@ -4210,6 +4281,49 @@ void process_crossed_region(LLMessageSystem* msg, void**)
 	}
 #endif
 // </FS:CR> Aurora Sim
+
+	// Enable QUIC or LLUDP circuit for the new region
+	{
+		std::string quic_host;
+		U16         quic_port = 0;
+		if (const LLSD* body = msg->getCurrentLLSDMessageBody())
+		{
+			const LLSD& rdata = (*body)["RegionData"][0];
+			if (rdata.has("SimQuicHost")) quic_host = rdata["SimQuicHost"].asString();
+			if (rdata.has("SimQuicPort")) quic_port = static_cast<U16>(rdata["SimQuicPort"].asInteger());
+		}
+
+		if (!msg->mCircuitInfo.findCircuit(sim_host))
+		{
+			LL_INFOS("Messaging") << "CrossedRegion: enabling new circuit sim=" << sim_host
+								  << " SimQuicHost='" << quic_host
+								  << "' SimQuicPort=" << quic_port
+								  << " -> " << (quic_port > 0 && !quic_host.empty() ? "QUIC" : "LLUDP")
+								  << LL_ENDL;
+			if (quic_port > 0 && !quic_host.empty())
+			{
+				std::string quic_err;
+				if (!msg->enableQuicCircuit(sim_host, quic_host, quic_port, TRUE, &quic_err))
+				{
+					LL_WARNS("Messaging") << "CrossedRegion: QUIC enable failed for " << sim_host
+										  << ": " << quic_err
+										  << "; per spec NOT falling back to LLUDP." << LL_ENDL;
+					LLSD args;
+					args["REASON"] = quic_err.empty()
+						? std::string("Could not establish QUIC connection to the destination simulator")
+						: quic_err;
+					LLNotificationsUtil::add("CouldNotTeleportReason", args);
+					return;
+				}
+				msg->setCircuitTimeoutCallback(sim_host, on_quic_circuit_failed_vm, NULL);
+			}
+			else
+			{
+				msg->enableCircuit(sim_host, TRUE);
+			}
+		}
+	}
+
 	send_complete_agent_movement(sim_host);
 
 // <FS:CR> Aurora Sim

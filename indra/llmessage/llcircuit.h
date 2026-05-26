@@ -28,7 +28,9 @@
 #ifndef LL_LLCIRCUIT_H
 #define LL_LLCIRCUIT_H
 
+#include <deque>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "llerror.h"
@@ -68,6 +70,7 @@ const F32 LL_COLLECT_ACK_TIME_MAX = 2.f;
 class LLMessageSystem;
 class LLEncodedDatagramService;
 class LLSD;
+class LLQuicConnection;
 
 //
 // Classes
@@ -132,6 +135,22 @@ public:
 	F64Seconds	getLastPacketInTime() const		{ return mLastPacketInTime;	}
 
 	LLThrottleGroup &getThrottleGroup()		{	return mThrottles; }
+
+	void                                       setQuicConnection(std::shared_ptr<LLQuicConnection> conn);
+	const std::shared_ptr<LLQuicConnection>&   getQuicConnection() const { return mQuicConnection; }
+	bool                                       isQuic() const noexcept   { return static_cast<bool>(mQuicConnection); }
+
+	void            setQuicPendingReplyCallback(void (*callback_func)(void **, S32), void **callback_data);
+	bool            hasQuicPendingReplyCallback() const { return mQuicPendingReplyCallback != nullptr; }
+	void            fireQuicPendingReplyCallback(S32 result);
+
+	bool            isQuicReady() const noexcept { return mQuicReady; }
+	void            setQuicNotReady() noexcept { mQuicReady = false; }
+	void            queueQuicPendingSend(const U8* data, S32 size, bool reliable);
+	size_t          getQuicPendingSendCount() const noexcept { return mQuicPendingSends.size(); }
+	size_t          markQuicReadyAndFlush();
+
+	std::string     describeQuicFailure() const;
 
 	class less
 	{
@@ -212,6 +231,9 @@ protected:
 	void	(*mTimeoutCallback)(const LLHost &host, void *user_data);
 	void	*mTimeoutUserData;
 
+	void    (*mQuicPendingReplyCallback)(void **, S32);
+	void    **mQuicPendingReplyUserData;
+
 	BOOL	mTrusted;					// Is this circuit trusted?
 	BOOL	mbAllowTimeout;				// Machines can "pause" circuits, forcing them not to be dropped
 
@@ -284,6 +306,17 @@ protected:
 	F64 mLastPacketLog;
 	U32 mLogMessagesSkipped;
 	// </FS:ND>
+
+	std::shared_ptr<LLQuicConnection> mQuicConnection;
+
+	bool mQuicReady;
+
+	struct QuicPendingSend
+	{
+		std::vector<U8> data;
+		bool            reliable;
+	};
+	std::deque<QuicPendingSend> mQuicPendingSends;
 };
 
 
@@ -316,6 +349,9 @@ public:
 
 	void			dumpResends();
 
+	bool drainNextQuicPacket(U8* dest, S32 dest_capacity, S32& out_size, LLHost& out_host);
+	void sweepDeadQuicCircuits(LLMessageSystem* msgsys);
+
 	typedef std::map<LLHost, LLCircuitData*> circuit_data_map;
 
 	/**
@@ -347,6 +383,8 @@ protected:
 	// optimize the many, many times we call findCircuit. This may be
 	// set in otherwise const methods, so it is declared mutable.
 	mutable LLCircuitData* mLastCircuit;
+
+	LLHost mNextQuicDrainKey;
 
 private:
 	const F32Seconds mHeartbeatInterval;

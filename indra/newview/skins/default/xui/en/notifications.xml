@@ -3944,6 +3944,32 @@ You can either check your Internet connection and try again in a few minutes or 
 
   <notification
    icon="alertmodal.tga"
+   name="LoginFailedQuic"
+   type="alertmodal">
+   <tag>fail</tag>
+We couldn&apos;t establish a secure (QUIC) session with [CURRENT_GRID].
+
+[REASON]
+
+You can check your Internet connection and try again in a few minutes, or click Help to view the [SUPPORT_SITE].
+    <url option="1" name="url">
+			mailto:009daw+viewersupport@gmail.com
+    </url>
+    <form name="form">
+      <button
+       default="true"
+       index="0"
+       name="OK"
+       text="OK"/>
+      <button
+       index="1"
+       name="Help"
+       text="Help"/>
+    </form>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="LoginRemoveMultiGridUserData"
    type="alertmodal">
     <tag>confirm</tag>

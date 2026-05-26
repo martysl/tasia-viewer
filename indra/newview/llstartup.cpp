@@ -3457,7 +3457,24 @@ void use_circuit_callback(void**, S32 result)
 		{
 			// Make sure user knows something bad happened. JC
 			LL_WARNS("AppInit") << "Backing up to login screen!" << LL_ENDL;
-			if (gRememberPassword)
+
+			std::string quic_reason;
+			if (gMessageSystem)
+			{
+				LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(gFirstSim);
+				if (cdp && cdp->isQuic())
+				{
+					quic_reason = cdp->describeQuicFailure();
+				}
+			}
+
+			if (!quic_reason.empty())
+			{
+				LLSD args;
+				args["REASON"] = quic_reason;
+				LLNotificationsUtil::add("LoginFailedQuic", args, LLSD(), login_alert_status);
+			}
+			else if (gRememberPassword)
 			{
 				LLNotificationsUtil::add("LoginPacketNeverReceived", LLSD(), LLSD(), login_alert_status);
 			}
@@ -4582,7 +4599,31 @@ bool process_login_success_response(U32 &first_sim_size_x, U32 &first_sim_size_y
 		gFirstSim.set(sim_ip_str, sim_port);
 		if (gFirstSim.isOk())
 		{
-			gMessageSystem->enableCircuit(gFirstSim, TRUE);
+			std::string sim_quic_host = response["sim_quic_host"].asString();
+			U16         sim_quic_port = static_cast<U16>(response["sim_quic_port"].asInteger());
+
+			LL_INFOS("AppInit") << "Login response: sim=" << gFirstSim
+								<< " sim_quic_host='" << sim_quic_host
+								<< "' sim_quic_port=" << sim_quic_port
+								<< " -> " << (sim_quic_port > 0 && !sim_quic_host.empty() ? "QUIC" : "LLUDP")
+								<< LL_ENDL;
+
+			if (sim_quic_port > 0 && !sim_quic_host.empty())
+			{
+				std::string quic_err;
+				if (!gMessageSystem->enableQuicCircuit(gFirstSim, sim_quic_host, sim_quic_port, TRUE, &quic_err))
+				{
+					LL_WARNS("AppInit") << "Login response advertised QUIC ("
+										<< sim_quic_host << ":" << sim_quic_port
+										<< ") but enableQuicCircuit failed: " << quic_err
+										<< "; per spec, NOT falling back to LLUDP."
+										<< LL_ENDL;
+				}
+			}
+			else
+			{
+				gMessageSystem->enableCircuit(gFirstSim, TRUE);
+			}
 		}
 	}
 	std::string region_x_str = response["region_x"];

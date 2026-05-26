@@ -194,6 +194,8 @@ LLStatusBar::LLStatusBar(const LLRect& rect)
 	mIconPresetsGraphic(NULL),
 	mIconPresetsCamera(NULL),
 	mMediaToggle(NULL),
+	mEncryptionIcon(NULL),
+	mLastEncryptionState(-2),
 	mMouseEnterPresetsConnection(),
 	mMouseEnterPresetsCameraConnection(),
 	mMouseEnterVolumeConnection(),
@@ -280,6 +282,7 @@ void LLStatusBar::draw()
 	refresh();
 	updateParcelInfoText();
 	updateHealth();
+	updateEncryptionIcon();
 	LLPanel::draw();
 }
 
@@ -411,6 +414,25 @@ BOOL LLStatusBar::postBuild()
 	mSGPacketLoss = LLUICtrlFactory::create<LLStatGraph>(pgp);
 	addChild(mSGPacketLoss);
 
+	// Encryption padlock icon (QUIC vs UDP indicator)
+	{
+		const S32 ICON_W = 16;
+		const S32 ICON_GAP = 4;
+		const S32 icon_right = x - SIM_STAT_WIDTH - ICON_GAP;
+		const S32 icon_left  = icon_right - ICON_W;
+		LLIconCtrl::Params iconp;
+		iconp.name(std::string("EncryptionIcon"));
+		iconp.rect(LLRect(icon_left, y + MENU_BAR_HEIGHT - 1, icon_right, y + 1));
+		iconp.image(LLUI::getUIImage("Locked_Icon"));
+		iconp.color(LLUIColor(LLColor4::red));
+		iconp.follows.flags(FOLLOWS_BOTTOM | FOLLOWS_RIGHT);
+		iconp.mouse_opaque(true);
+		iconp.tool_tip(std::string("Your connection to the simulator is unencrypted"));
+		mEncryptionIcon = LLUICtrlFactory::create<LLIconCtrl>(iconp);
+		addChild(mEncryptionIcon);
+		mEncryptionIcon->setVisible(FALSE);
+	}
+
 	mPanelPresetsCameraPulldown = new LLPanelPresetsCameraPulldown();
 	addChild(mPanelPresetsCameraPulldown);
 	mPanelPresetsCameraPulldown->setFollows(FOLLOWS_TOP|FOLLOWS_RIGHT);
@@ -473,6 +495,17 @@ BOOL LLStatusBar::postBuild()
 
 	mBalancePanel = getChild<LLPanel>("balance_bg");
 	mTimeMediaPanel = getChild<LLPanel>("time_and_media_bg");
+
+	// Shift the time/media and balance panels left to make room for the always-visible encryption padlock
+	{
+		const S32 ENCRYPTION_BLOCK_WIDTH = 22;
+		LLRect r = mTimeMediaPanel->getRect();
+		r.translate(-ENCRYPTION_BLOCK_WIDTH, 0);
+		mTimeMediaPanel->setRect(r);
+		r = mBalancePanel->getRect();
+		r.translate(-ENCRYPTION_BLOCK_WIDTH, 0);
+		mBalancePanel->setRect(r);
+	}
 
 	mFPSText = getChild<LLTextBox>("FPSText");
 	mVolumeIconsWidth = mBtnVolume->getRect().mRight - mStreamToggle->getRect().mLeft;
@@ -740,6 +773,7 @@ void LLStatusBar::setVisibleForMouselook(bool visible)
 	mSGBandwidth->setVisible(visible && showNetStats);
 	mSGPacketLoss->setVisible(visible && showNetStats);
 	mBandwidthButton->setVisible(visible && showNetStats); // <FS:PP> FIRE-6287: Clicking on traffic indicator toggles Lag Meter window
+	mEncryptionIcon->setVisible(visible && mLastEncryptionState >= 0);
 	mTimeMediaPanel->setVisible(visible);
 	setBackgroundVisible(visible);
 	mIconPresetsCamera->setVisible(visible);
@@ -1643,6 +1677,48 @@ void LLStatusBar::setBackgroundColor( const LLColor4& color )
 	mTimeMediaPanel->setBackgroundColor(color);
 }
 
+void LLStatusBar::updateEncryptionIcon()
+{
+	if (!mEncryptionIcon)
+	{
+		return;
+	}
+
+	LLViewerRegion* region = gAgent.getRegion();
+	LLCircuitData* cdp = nullptr;
+	if (region && gMessageSystem)
+	{
+		cdp = gMessageSystem->mCircuitInfo.findCircuit(region->getHost());
+	}
+
+	const S32 new_state = !cdp ? -1 : (cdp->isQuic() ? 1 : 0);
+	if (new_state == mLastEncryptionState)
+	{
+		return;
+	}
+	mLastEncryptionState = new_state;
+
+	switch (new_state)
+	{
+	case 1:
+	{
+		static const LLColor4 GOLDEN(1.0f, 0.84f, 0.0f, 1.0f);
+		mEncryptionIcon->setColor(LLUIColor(GOLDEN));
+		mEncryptionIcon->setToolTip(std::string("Your connection to the simulator is encrypted via QUIC"));
+		mEncryptionIcon->setVisible(TRUE);
+		break;
+	}
+	case 0:
+		mEncryptionIcon->setColor(LLUIColor(LLColor4::red));
+		mEncryptionIcon->setToolTip(std::string("Your connection to the simulator is unencrypted"));
+		mEncryptionIcon->setVisible(TRUE);
+		break;
+	default:
+		mEncryptionIcon->setVisible(FALSE);
+		break;
+	}
+}
+
 void LLStatusBar::updateNetstatVisibility(const LLSD& data)
 {
 	const S32 NETSTAT_WIDTH = (SIM_STAT_WIDTH + 2) * 2;
@@ -1660,6 +1736,13 @@ void LLStatusBar::updateNetstatVisibility(const LLSD& data)
 	rect = mBalancePanel->getRect();
 	rect.translate(NETSTAT_WIDTH * translateFactor, 0);
 	mBalancePanel->setRect(rect);
+
+	if (mEncryptionIcon)
+	{
+		rect = mEncryptionIcon->getRect();
+		rect.translate(NETSTAT_WIDTH * translateFactor, 0);
+		mEncryptionIcon->setRect(rect);
+	}
 
 	updateMenuSearchPosition();
 	update();

@@ -85,6 +85,30 @@ void process_generic_message(LLMessageSystem* msg, void**)
 	LLDispatcher::sparam_t strings;
 	LLDispatcher::unpackMessage(msg, request, invoice, strings);
 
+	if (request == "quicready")
+	{
+		LLCircuitData* cdp = msg->mCircuitInfo.findCircuit(msg->getSender());
+		const bool circuit_found = (cdp != nullptr);
+		const bool is_quic       = circuit_found && cdp->isQuic();
+		size_t flushed = 0;
+		if (is_quic)
+		{
+			flushed = cdp->markQuicReadyAndFlush();
+		}
+		const bool has_cb = is_quic && cdp->hasQuicPendingReplyCallback();
+		LL_INFOS("Quic","Messaging") << "Received quicready from " << msg->getSender()
+									 << " (circuit=" << (circuit_found ? "found" : "missing")
+									 << ", "         << (is_quic       ? "QUIC"  : "not-QUIC")
+									 << ", flushed=" << flushed
+									 << ", "         << (has_cb        ? "firing pending reply callback" : "no pending callback")
+									 << ")" << LL_ENDL;
+		if (has_cb)
+		{
+			cdp->fireQuicPendingReplyCallback(LL_ERR_NOERR);
+		}
+		return;
+	}
+
 	if(!gGenericDispatcher.dispatch(request, invoice, strings))
 	{
 		LL_WARNS() << "GenericMessage " << request << " failed to dispatch" 

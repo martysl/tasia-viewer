@@ -274,6 +274,9 @@ private:
 	// <FS:Ansariel> FIRE-14482: Show FPS in status bar
 	void onShowFPSChanged(const LLSD& newvalue);
 
+	// Update the simulator-connection encryption padlock indicator.
+	void updateEncryptionIcon();
+
 	/**
 	 * Updates parcel panel pos (mParcelPanel).
 	 */
@@ -338,6 +341,10 @@ private:
 	// <FS:Ansariel> Script debug
 	LLIconCtrl	*mScriptOut;
 	// </FS:Ansariel> Script debug
+
+	LLIconCtrl	*mEncryptionIcon; // Padlock showing UDP (red) vs QUIC (gold) encryption state
+	S32			 mLastEncryptionState; // -2 = uninitialised, -1 = no circuit, 0 = UDP, 1 = QUIC
+
 	LLFrameTimer	mClockUpdateTimer;
 	LLFrameTimer	mFPSUpdateTimer; // <FS:Ansariel> FIRE-14482: Show FPS in status bar
 	LLFrameTimer	mNetStatUpdateTimer; // <FS:Ansariel> Less frequent update of net stats

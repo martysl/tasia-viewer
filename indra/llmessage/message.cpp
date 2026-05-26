@@ -62,6 +62,8 @@
 #include "lltrustedmessageservice.h"
 #include "llmessagetemplate.h"
 #include "llmessagetemplateparser.h"
+#include "llquicconnection.h"
+#include "llquicglobal.h"
 #include "llsd.h"
 #include "llsdmessagebuilder.h"
 #include "llsdmessagereader.h"
@@ -490,7 +492,9 @@ BOOL LLMessageSystem::checkMessages(LockMessageChecker&, S64 frame_count )
 	BOOL	valid_packet = FALSE;
 
 	LLTransferTargetVFile::updateQueue();
-	
+
+	mCircuitInfo.sweepDeadQuicCircuits(this);
+
 	if (!mNumMessageCounts)
 	{
 		// This is the first message being handled after a resetReceiveCounts,
@@ -512,15 +516,27 @@ BOOL LLMessageSystem::checkMessages(LockMessageChecker&, S64 frame_count )
 		S32 true_rcv_size = 0;
 
 		U8* buffer = mTrueReceiveBuffer;
-		
-		mTrueReceiveSize = mPacketRing.receivePacket(mSocket, (char *)mTrueReceiveBuffer);
-		// If you want to dump all received packets into SecondLife.log, uncomment this
-		//dumpPacketToLog();
-		
+
+		LLHost quic_sender;
+		S32    quic_size = 0;
+		if (mCircuitInfo.drainNextQuicPacket(mTrueReceiveBuffer, MAX_BUFFER_SIZE, quic_size, quic_sender))
+		{
+			mTrueReceiveSize = quic_size;
+			mLastSender = quic_sender;
+			mLastReceivingIF = LLHost();
+		}
+		else
+		{
+			mTrueReceiveSize = mPacketRing.receivePacket(mSocket, (char *)mTrueReceiveBuffer);
+			// If you want to dump all received packets into SecondLife.log, uncomment this
+			//dumpPacketToLog();
+
+			mLastSender = mPacketRing.getLastSender();
+			mLastReceivingIF = mPacketRing.getLastReceivingInterface();
+		}
+
 		receive_size = mTrueReceiveSize;
-		mLastSender = mPacketRing.getLastSender();
-		mLastReceivingIF = mPacketRing.getLastReceivingInterface();
-		
+
 		if (receive_size < (S32) LL_MINIMUM_VALID_PACKET_SIZE)
 		{
 			// A receive size of zero is OK, that means that there are no more packets available.
@@ -1212,14 +1228,22 @@ S32 LLMessageSystem::sendMessage(const LLHost &host)
 	{
 		buf_ptr[0] |= LL_RELIABLE_FLAG;
 
-		if (!cdp->getUnackedPacketCount())
+		if (!cdp->isQuic())
 		{
-			// We are adding the first packed onto the unacked packet list(s)
-			// Add this circuit to the list of circuits with unacked packets
-			mCircuitInfo.mUnackedCircuitMap[cdp->mHost] = cdp;
-		}
+			if (!cdp->getUnackedPacketCount())
+			{
+				// We are adding the first packed onto the unacked packet list(s)
+				// Add this circuit to the list of circuits with unacked packets
+				mCircuitInfo.mUnackedCircuitMap[cdp->mHost] = cdp;
+			}
 
-		cdp->addReliablePacket(mSocket,buf_ptr,buffer_length, &mReliablePacketParams);
+			cdp->addReliablePacket(mSocket,buf_ptr,buffer_length, &mReliablePacketParams);
+		}
+		else if (mReliablePacketParams.mCallback && !cdp->hasQuicPendingReplyCallback())
+		{
+			cdp->setQuicPendingReplyCallback(mReliablePacketParams.mCallback,
+											 mReliablePacketParams.mCallbackData);
+		}
 		mReliablePacketsOut++;
 	}
 
@@ -1280,8 +1304,32 @@ S32 LLMessageSystem::sendMessage(const LLHost &host)
 		is_ack_appended = TRUE;
 	}
 
-	BOOL success;
-	success = mPacketRing.sendPacket(mSocket, (char *)buf_ptr, buffer_length, host);
+	bool success;
+	const bool route_quic = cdp->isQuic() && cdp->getQuicConnection();
+	if (route_quic)
+	{
+		const char* msg_name = mMessageBuilder->getMessageName();
+		const bool is_use_circuit_code =
+			(msg_name && strcmp(msg_name, _PREHASH_UseCircuitCode) == 0);
+		if (!cdp->isQuicReady() && !is_use_circuit_code)
+		{
+			cdp->queueQuicPendingSend(buf_ptr, static_cast<S32>(buffer_length), mSendReliable);
+			LL_INFOS("Quic","Messaging") << "Queued " << (msg_name ? msg_name : "(unnamed)")
+										 << " to " << host
+										 << " pending quicready (queue_depth="
+										 << cdp->getQuicPendingSendCount() << ")"
+										 << LL_ENDL;
+			success = true;
+		}
+		else
+		{
+			success = cdp->getQuicConnection()->sendPacket(buf_ptr, static_cast<S32>(buffer_length), mSendReliable);
+		}
+	}
+	else
+	{
+		success = mPacketRing.sendPacket(mSocket, (char *)buf_ptr, buffer_length, host);
+	}
 
 	if (!success)
 	{
@@ -1537,6 +1585,87 @@ void LLMessageSystem::enableCircuit(const LLHost &host, BOOL trusted)
 	cdp->setTrusted(trusted);
 }
 
+bool LLMessageSystem::enableQuicCircuit(const LLHost &host, const std::string &quic_host, U16 quic_port, BOOL trusted,
+										std::string *error_out)
+{
+	auto set_err = [&](const std::string &m)
+	{
+		if (error_out) *error_out = m;
+	};
+
+	if (quic_host.empty() || quic_port == 0)
+	{
+		std::string m = "Simulator did not advertise a QUIC endpoint";
+		LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): " << m << LL_ENDL;
+		set_err(m);
+		return false;
+	}
+
+	LLQuicGlobal& qg = LLQuicGlobal::instance();
+	if (!qg.isInitialized() && !qg.initialize())
+	{
+		std::string m = "QUIC subsystem failed to initialize on this client";
+		LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): " << m << LL_ENDL;
+		set_err(m);
+		return false;
+	}
+
+	auto config = qg.getClientConfiguration();
+	if (!config)
+	{
+		std::string m = "QUIC client configuration is unavailable on this client";
+		LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): " << m << LL_ENDL;
+		set_err(m);
+		return false;
+	}
+
+	LLCircuitData *cdp = mCircuitInfo.findCircuit(host);
+
+	if (cdp && cdp->isQuic())
+	{
+		const auto& existing = cdp->getQuicConnection();
+		if (existing
+			&& existing->getHost() == quic_host
+			&& (existing->getState() == LLQuicConnection::State::CONNECTING
+			 || existing->getState() == LLQuicConnection::State::CONNECTED))
+		{
+			cdp->setAlive(TRUE);
+			cdp->setTrusted(trusted);
+			LL_INFOS("Messaging") << "enableQuicCircuit: " << host
+								  << " reusing existing QUIC connection to "
+								  << quic_host << ":" << quic_port
+								  << (trusted ? " (trusted)" : " (untrusted)") << LL_ENDL;
+			return true;
+		}
+	}
+
+	auto conn = std::make_shared<LLQuicConnection>(config);
+	if (!conn->connect(quic_host, quic_port))
+	{
+		std::string m = conn->describeFailure();
+		LL_WARNS("Messaging") << "enableQuicCircuit(" << host << "): " << m << LL_ENDL;
+		set_err(m);
+		return false;
+	}
+
+	if (!cdp)
+	{
+		cdp = mCircuitInfo.addCircuitData(host, 0);
+	}
+	else
+	{
+		cdp->setAlive(TRUE);
+	}
+	cdp->setTrusted(trusted);
+	cdp->setQuicConnection(std::move(conn));
+	cdp->setQuicNotReady();
+
+	LL_INFOS("Messaging") << "enableQuicCircuit: " << host
+						  << " via QUIC " << quic_host << ":" << quic_port
+						  << (trusted ? " (trusted)" : " (untrusted)") << LL_ENDL;
+	return true;
+}
+
 void LLMessageSystem::disableCircuit(const LLHost &host)
 {
 	LL_INFOS("Messaging") << "LLMessageSystem::disableCircuit for " << host << LL_ENDL;
@@ -1581,8 +1710,13 @@ void LLMessageSystem::disableCircuit(const LLHost &host)
 		LL_WARNS("Messaging") << "Couldn't find circuit code for " << host << LL_ENDL;
 	}
 
+	// Always tear down the per-host circuit data. mCircuitInfo is keyed by host
+	// (not by circuit code), so removing one host's entry never affects any
+	// other host that may share the 0 circuit code (neighbour sims etc.).
+	// Without this, dead QUIC circuits without a registered code would loop
+	// forever in sweepDeadQuicCircuits.
+	mCircuitInfo.removeCircuitData(host);
 }
-
 
 void LLMessageSystem::setCircuitAllowTimeout(const LLHost &host, BOOL allow)
 {
@@ -1750,7 +1884,7 @@ void	process_complete_ping_check(LLMessageSystem *msgsystem, void** /*user_data*
 	cdp = msgsystem->mCircuitInfo.findCircuit(msgsystem->getSender());
 
 	// stop the appropriate timer
-	if (cdp)
+	if (cdp && !cdp->isQuic())
 	{
 		cdp->pingTimerStop(ping_id);
 	}
@@ -1763,6 +1897,10 @@ void	process_start_ping_check(LLMessageSystem *msgsystem, void** /*user_data*/)
 
 	LLCircuitData *cdp;
 	cdp = msgsystem->mCircuitInfo.findCircuit(msgsystem->getSender());
+	if (cdp && cdp->isQuic())
+	{
+		return;
+	}
 	if (cdp)
 	{
 		// Grab the packet id of the oldest unacked packet
@@ -2205,7 +2343,7 @@ void	process_packet_ack(LLMessageSystem *msgsystem, void** /*user_data*/)
 
 	LLHost host = msgsystem->getSender();
 	LLCircuitData *cdp = msgsystem->mCircuitInfo.findCircuit(host);
-	if (cdp)
+	if (cdp && !cdp->isQuic())
 	{
 	
 		S32 ack_count = msgsystem->getNumberOfBlocksFast(_PREHASH_Packets);
