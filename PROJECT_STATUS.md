@@ -253,3 +253,25 @@ Next work:
 
 ## Next exact action
 - Commit and push follow-up fix on both badge branches, then rerun focused Linux/Windows CI builds.
+
+## 2026-05-26 Built-in profile badge names
+
+## What is done
+- Added support for using built-in profile badge texture names directly in `badge_name`.
+- Supported names: `Profile_Badge_Beta`, `Profile_Badge_Beta_Lifetime`, `Profile_Badge_Lifetime`, `Profile_Badge_Linden`, `Profile_Badge_Pplus_Lifetime`, `Profile_Badge_Premium_Lifetime`, `Profile_Badge_Team`.
+- Remote `badge_icon` URL still takes priority; built-in `badge_name` is used as fallback while remote image loads or if no URL is provided.
+
+## What is broken
+- Not built yet after the built-in badge-name change.
+
+## What was last attempted
+- Static patch and whitespace checks.
+
+## Exact last failing step
+- None yet for this change.
+
+## What must not be changed
+- Existing URL-based remote badge behavior and fallback team badge behavior.
+
+## Next exact action
+- Commit/push Linux and Windows badge branches and run CI.

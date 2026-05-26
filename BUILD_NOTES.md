@@ -16,6 +16,7 @@
 - Profile badge hover text no longer includes the badge image URL.
 - Fallback team badge now shows immediately while the remote badge image is fetched/decoded.
 - Added `TasiaProfile` log lines for fetch/decode/display status.
+- `badge_name` may now be a built-in profile badge texture name (`Profile_Badge_Linden`, `Profile_Badge_Premium_Lifetime`, etc.); remote `badge_icon` URL still wins when provided.
 
 ### Focused checks
 - Initial CI failed because `LLViewerTextureList::getImageFromMemory(...)` is private.
