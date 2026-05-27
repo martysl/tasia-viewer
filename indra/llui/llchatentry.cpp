@@ -290,7 +290,7 @@ void LLChatEntry::paste()
 void LLChatEntry::insertEmoji(llwchar emoji)
 {
     LLWString wtext(1, emoji);
-    insertText(wtext, false, false, false, false);
+    insertText(wtext);
 }
 
 void LLChatEntry::showEmojiHelper()
