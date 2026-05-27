@@ -565,7 +565,7 @@ void LLFloaterEmojiPicker::createGroupButton(LLButton::Params& params, const LLR
 
     button->setRect(rect);
     button->setTabStop(false);
-    button->setLabel(LLUIString(wstring_to_utf8str(LLWString(1, emoji))));
+    button->setLabel(wstring_to_utf8str(LLWString(1, emoji)));
 
     mGroupButtons.push_back(button);
     mGroups->addChild(button);
@@ -715,9 +715,19 @@ void LLFloaterEmojiPicker::fillEmojisCategory(const std::vector<LLEmojiSearchRes
     const LLPanel::Params& icon_params, const LLRect& icon_rect, S32 max_icons, const LLColor4& bg)
 {
     // Place the category title
-    std::string title =
-        category == FREQUENTLY_USED_CATEGORY ? getString("title_for_frequently_used") :
-        isupper(category.front()) ? category : (std::string(1, LLStringUtil::toUpper(category[0])) + category.substr(1));
+    std::string title;
+    if (category == FREQUENTLY_USED_CATEGORY)
+    {
+        title = getString("title_for_frequently_used");
+    }
+    else if (isupper(category.front()))
+    {
+        title = category;
+    }
+    else
+    {
+        title = ((std::string)"" + (char)LLStringUtil::toUpper(category[0])) + category.substr(1);
+    }
     LLEmojiGridDivider* div = new LLEmojiGridDivider(row_panel_params, title);
     mEmojiGrid->addPanel(div);
 
