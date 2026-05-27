@@ -42,7 +42,7 @@ public:
     typedef boost::function<void(const std::string& url)> selection_callback_t;
 
     LLFloaterGiphyPicker(const LLSD& key);
-    bool postBuild() override;
+	BOOL postBuild() override;
     void onOpen(const LLSD& key) override;
     void onClose(bool app_quitting) override;
 

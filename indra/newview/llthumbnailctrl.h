@@ -64,7 +64,7 @@ public:
     virtual ~LLThumbnailCtrl();
 
     virtual void draw() override;
-    void setVisible(bool visible) override;
+    void setVisible(BOOL visible) override;
 
     virtual void setValue(const LLSD& value ) override;
     LLViewerFetchedTexture* setImageUrl(const std::string& url, bool draw_natural_size = false);
@@ -72,7 +72,7 @@ public:
     void setInitImmediately(bool val) { mInitImmediately = val; }
     void clearTexture();
 
-    virtual bool handleHover(S32 x, S32 y, MASK mask) override;
+    virtual BOOL handleHover(S32 x, S32 y, MASK mask) override;
 
 protected:
     void initImage();

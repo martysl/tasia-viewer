@@ -611,7 +611,7 @@ class LLFloaterProfilePermissions
 public:
     LLFloaterProfilePermissions(LLView * owner, const LLUUID &avatar_id);
     ~LLFloaterProfilePermissions();
-    bool postBuild() override;
+    BOOL postBuild() override;
     void onOpen(const LLSD& key) override;
     void draw() override;
     void changed(U32 mask) override; // LLFriendObserver
@@ -663,7 +663,7 @@ LLFloaterProfilePermissions::~LLFloaterProfilePermissions()
     }
 }
 
-bool LLFloaterProfilePermissions::postBuild()
+BOOL LLFloaterProfilePermissions::postBuild()
 {
     mDescription = getChild<LLTextBase>("perm_description");
     mOnlineStatus = getChild<LLCheckBoxCtrl>("online_check");

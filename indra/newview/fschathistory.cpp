@@ -567,7 +567,7 @@ public:
         addChild(mOpenButton);
     }
 
-    void reshape(S32 width, S32 height, bool called_from_parent = true) override
+    void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE)
     {
         LLPanel::reshape(width, height, called_from_parent);
         if (mMedia)
@@ -647,7 +647,7 @@ public:
         addChild(mOpenButton);
     }
 
-    void reshape(S32 width, S32 height, bool called_from_parent = true) override
+    void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE)
     {
         LLPanel::reshape(width, height, called_from_parent);
         if (mTitle)
@@ -753,7 +753,7 @@ public:
         addChild(mOpenButton);
     }
 
-    void reshape(S32 width, S32 height, bool called_from_parent = true) override
+    void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE)
     {
         LLPanel::reshape(width, height, called_from_parent);
         if (mMedia)
@@ -891,7 +891,7 @@ public:
         }
     }
 
-    bool handleMouseUp(S32 x, S32 y, MASK mask)
+    BOOL handleMouseUp(S32 x, S32 y, MASK mask)
     {
         return LLPanel::handleMouseUp(x,y,mask);
     }
@@ -1347,7 +1347,7 @@ public:
         return false;
     }
 
-    bool postBuild()
+    BOOL postBuild()
     {
         setDoubleClickCallback(boost::bind(&FSChatHistoryHeader::showInspector, this));
 
@@ -1390,7 +1390,7 @@ public:
         return  child->pointInView(local_x, local_y);
     }
 
-    bool handleRightMouseDown(S32 x, S32 y, MASK mask)
+    BOOL handleRightMouseDown(S32 x, S32 y, MASK mask)
     {
         if(pointInChild("avatar_icon",x,y) || pointInChild("user_name",x,y))
         {
@@ -1970,8 +1970,8 @@ FSChatHistory::FSChatHistory(const FSChatHistory::Params& p)
     mUnreadChatSources(0)
 {
     mLineSpacingPixels = llclamp(gSavedSettings.getS32("FSFontChatLineSpacingPixels"), 0, 36);
-    mTextVAlign = LLFontGL::VAlign::VCENTER;
-    mUseColor = true;
+    mVAlign = LLFontGL::VCENTER;
+    // mUseColor = true; // not present in legacy LLTextBase
 
     setIsObjectBlockedCallback(boost::bind(&LLMuteList::isMuted, LLMuteList::getInstance(), _1, _2, 0));
 }
@@ -2003,7 +2003,7 @@ void FSChatHistory::updateChatInputLine()
 }
 
 #if LL_SDL2
-void FSChatHistory::setFocus(bool b)
+void FSChatHistory::setFocus(BOOL b)
 {
     LLTextEditor::setFocus(b);
 
@@ -2147,9 +2147,11 @@ void FSChatHistory::appendMessage(const LLChat& chat, const LLSD &args, const LL
     }
 
     F32 alpha = 1.f;
-    LLUIColor txt_color = LLUIColorTable::instance().getColor("White");
-    LLUIColor name_color = LLUIColorTable::instance().getColor("ChatNameColor");
-    LLViewerChat::getChatColor(chat, txt_color, alpha, LLSD().with("is_local", is_local));
+    LLColor4 txt_color(LLUIColorTable::instance().getColor("White"));
+    LLColor4 name_color(LLUIColorTable::instance().getColor("ChatNameColor"));
+    LLSD chat_args = LLSD::emptyMap();
+    chat_args["is_local"] = is_local;
+    LLViewerChat::getChatColor(chat, txt_color, chat_args);
     LLFontGL* fontp = LLViewerChat::getChatFont();
     std::string font_name = LLFontGL::nameFromFont(fontp);
     std::string font_size = LLFontGL::sizeFromFont(fontp);
@@ -2157,7 +2159,6 @@ void FSChatHistory::appendMessage(const LLChat& chat, const LLSD &args, const LL
     LLStyle::Params body_message_params;
     body_message_params.color(txt_color);
     body_message_params.readonly_color(txt_color);
-    body_message_params.alpha(alpha);
     body_message_params.font.name(font_name);
     body_message_params.font.size(font_size);
     body_message_params.font.style(input_append_params.font.style);
@@ -2180,7 +2181,7 @@ void FSChatHistory::appendMessage(const LLChat& chat, const LLSD &args, const LL
     // FS:LO FIRE-2899 - Faded text for IMs in nearby chat
 
     //IRC styled /me messages.
-    bool irc_me = FSCommon::is_irc_me_prefix(chat.mText);
+    bool irc_me = is_irc_me_prefix(chat.mText);
 
     // Delimiter after a name in header copy/past and in plain text mode
     std::string delimiter = ": ";
@@ -2700,7 +2701,7 @@ void FSChatHistory::appendMessage(const LLChat& chat, const LLSD &args, const LL
 }
 
 // <FS_Zi> FIRE-8602: Typing in chat history focuses chat input line
-bool FSChatHistory::handleUnicodeCharHere(llwchar uni_char)
+BOOL FSChatHistory::handleUnicodeCharHere(llwchar uni_char)
 {
     // do not change focus when the CTRL key is used to make copy/select all etc. possible
     if(gKeyboard->currentMask(false) & MASK_CONTROL)
