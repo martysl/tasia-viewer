@@ -137,7 +137,6 @@
 #include "llurlentry.h"
 #include "llvolumemgr.h"
 #include "llxfermanager.h"
-#include "llphysicsextensions.h"
 
 #include "llnotificationmanager.h"
 #include "llnotifications.h"
