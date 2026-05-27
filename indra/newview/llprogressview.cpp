@@ -193,7 +193,7 @@ LLProgressViewMini::LLProgressViewMini()
     sInstance = this;
 }
 
-bool LLProgressViewMini::postBuild()
+BOOL LLProgressViewMini::postBuild()
 {
     mCancelBtn=getChild<LLButton>("cancel_btn");
     mCancelBtn->setClickedCallback(LLProgressViewMini::onCancelButtonClicked, nullptr);
@@ -253,7 +253,7 @@ LLProgressView::LLProgressView()
     mFadeFromLoginTimer.stop();
 }
 
-bool LLProgressView::postBuild()
+BOOL LLProgressView::postBuild()
 {
     mProgressBar = getChild<LLProgressBar>("login_progress_bar");
 
@@ -303,7 +303,7 @@ LLProgressView::~LLProgressView()
     sInstance = NULL;
 }
 
-bool LLProgressView::handleHover(S32 x, S32 y, MASK mask)
+BOOL LLProgressView::handleHover(S32 x, S32 y, MASK mask)
 {
     if( childrenHandleHover( x, y, mask ) == NULL )
     {
@@ -313,7 +313,7 @@ bool LLProgressView::handleHover(S32 x, S32 y, MASK mask)
 }
 
 
-bool LLProgressView::handleKeyHere(KEY key, MASK mask)
+BOOL LLProgressView::handleKeyHere(KEY key, MASK mask)
 {
     // Suck up all keystokes except CTRL-Q.
     if( ('Q' == key) && (MASK_CONTROL == mask) )

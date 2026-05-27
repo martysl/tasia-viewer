@@ -273,7 +273,7 @@ void LLThumbnailCtrl::setValue(const LLSD& value)
     }
 }
 
-bool LLThumbnailCtrl::handleHover(S32 x, S32 y, MASK mask)
+BOOL LLThumbnailCtrl::handleHover(S32 x, S32 y, MASK mask)
 {
     if (mInteractable && getEnabled())
     {

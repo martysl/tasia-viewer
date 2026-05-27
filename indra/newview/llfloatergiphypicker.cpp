@@ -40,7 +40,7 @@ LLFloaterGiphyPicker::LLFloaterGiphyPicker(const LLSD& key)
 {
 }
 
-bool LLFloaterGiphyPicker::postBuild()
+BOOL LLFloaterGiphyPicker::postBuild()
 {
     mSearchEditor = getChild<LLLineEditor>("search_edit");
     mResultsList = getChild<LLScrollListCtrl>("results_list");

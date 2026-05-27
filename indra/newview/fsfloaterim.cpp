@@ -94,7 +94,7 @@ FSFloaterIMTimer::FSFloaterIMTimer(FSFloaterIMTimer::callback_t callback) :
     mCallback(callback)
 { }
 
-bool FSFloaterIMTimer::tick()
+BOOL FSFloaterIMTimer::tick()
 {
     if (!mCallback.empty())
     {
@@ -858,7 +858,7 @@ void FSFloaterIM::changed(U32 mask)
 // </AO> Callbacks for llimcontrol panel, merged into this floater
 
 //virtual
-bool FSFloaterIM::postBuild()
+BOOL FSFloaterIM::postBuild()
 {
     const LLUUID& other_party_id = LLIMModel::getInstance()->getOtherParticipantID(mSessionID);
     if (other_party_id.notNull())
@@ -1380,7 +1380,7 @@ void FSFloaterIM::setDocked(bool docked, bool pop_on_undock)
     }
 }
 
-void FSFloaterIM::setVisible(bool visible)
+void FSFloaterIM::setVisible(BOOL visible)
 {
     LLNotificationsUI::LLScreenChannel* channel = static_cast<LLNotificationsUI::LLScreenChannel*>
         (LLNotificationsUI::LLChannelManager::getInstance()->findChannelByID(LLNotificationsUI::NOTIFICATION_CHANNEL_UUID));
@@ -1431,7 +1431,7 @@ void FSFloaterIM::setVisible(bool visible)
     }
 }
 
-void FSFloaterIM::setMinimized(bool b)
+void FSFloaterIM::setMinimized(BOOL b)
 {
     handleMinimized(b);
 
@@ -1864,8 +1864,8 @@ void FSFloaterIM::processChatHistoryStyleUpdate(const LLSD& newvalue)
     }
 }
 
-bool FSFloaterIM::handleDragAndDrop(S32 x, S32 y, MASK mask,
-                           bool drop, EDragAndDropType cargo_type,
+BOOL FSFloaterIM::handleDragAndDrop(S32 x, S32 y, MASK mask,
+                           BOOL drop, EDragAndDropType cargo_type,
                            void *cargo_data, EAcceptance *accept,
                            std::string& tooltip_msg)
 {
@@ -2004,7 +2004,7 @@ bool FSFloaterIM::dropPerson(LLUUID* person_id, bool drop)
 }
 
 //virtual
-bool FSFloaterIM::tick()
+BOOL FSFloaterIM::tick()
 {
     // add people who were added via dropPerson()
     if (!mPendingParticipants.empty())
@@ -2019,7 +2019,7 @@ bool FSFloaterIM::tick()
 }
 
 // virtual
-bool FSFloaterIM::handleKeyHere( KEY key, MASK mask )
+BOOL FSFloaterIM::handleKeyHere( KEY key, MASK mask )
 {
     bool handled = false;
 

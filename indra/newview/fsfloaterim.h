@@ -66,17 +66,17 @@ public:
     virtual ~FSFloaterIM();
 
     // LLView overrides
-    /*virtual*/ bool postBuild();
-    /*virtual*/ void setVisible(bool visible);
+    /*virtual*/ BOOL postBuild();
+    /*virtual*/ void setVisible(BOOL visible);
     /*virtual*/ bool getVisible();
-    /*virtual*/ void setMinimized(bool b);
+    /*virtual*/ void setMinimized(BOOL b);
 
     // LLFloater overrides
     /*virtual*/ void onClose(bool app_quitting);
     /*virtual*/ void setDocked(bool docked, bool pop_on_undock = true);
     /*virtual*/ void onSnooze();
 
-    /*virtual*/ bool tick();
+    /*virtual*/ BOOL tick();
 
     // Make IM conversion visible and update the message history
     static FSFloaterIM* show(const LLUUID& session_id);
@@ -126,7 +126,7 @@ public:
                                void *cargo_data, EAcceptance *accept,
                                std::string& tooltip_msg);
 
-    virtual bool handleKeyHere( KEY key, MASK mask );
+    virtual BOOL handleKeyHere( KEY key, MASK mask );
 
     /**
      * Returns true if chat is displayed in multi tabbed floater
@@ -306,7 +306,7 @@ public:
     typedef boost::function<void()> callback_t;
 
     FSFloaterIMTimer(callback_t callback);
-    /*virtual*/ bool tick();
+    /*virtual*/ BOOL tick();
 
 private:
     callback_t mCallback;

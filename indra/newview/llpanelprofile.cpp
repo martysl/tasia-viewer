@@ -886,7 +886,7 @@ LLPanelProfileSecondLife::~LLPanelProfileSecondLife()
     // </FS:Ansariel>
 }
 
-bool LLPanelProfileSecondLife::postBuild()
+BOOL LLPanelProfileSecondLife::postBuild()
 {
     mGroupList              = getChild<LLGroupList>("group_list");
     // <FS:Ansariel> Fix LL UI/UX design accident
@@ -1072,7 +1072,7 @@ void LLPanelProfileSecondLife::onOpen(const LLSD& key)
 }
 
 
-bool LLPanelProfileSecondLife::handleDragAndDrop(S32 x, S32 y, MASK mask, bool drop,
+BOOL LLPanelProfileSecondLife::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
                                           EDragAndDropType cargo_type,
                                           void* cargo_data,
                                           EAcceptance* accept,
@@ -2944,7 +2944,7 @@ void LLPanelProfileWeb::onOpen(const LLSD& key)
     mAvatarNameCacheConnection = LLAvatarNameCache::get(getAvatarId(), boost::bind(&LLPanelProfileWeb::onAvatarNameCache, this, _1, _2));
 }
 
-bool LLPanelProfileWeb::postBuild()
+BOOL LLPanelProfileWeb::postBuild()
 {
     mWebBrowser = getChild<LLMediaCtrl>("profile_html");
     mWebBrowser->addObserver(this);
@@ -3081,7 +3081,7 @@ LLPanelProfileFirstLife::~LLPanelProfileFirstLife()
 {
 }
 
-bool LLPanelProfileFirstLife::postBuild()
+BOOL LLPanelProfileFirstLife::postBuild()
 {
     mDescriptionEdit = getChild<LLTextEditor>("fl_description_edit");
     // <FS:Zi> Allow proper texture swatch handling
@@ -3520,7 +3520,7 @@ void LLPanelProfileNotes::commitUnsavedChanges()
     }
 }
 
-bool LLPanelProfileNotes::postBuild()
+BOOL LLPanelProfileNotes::postBuild()
 {
     mNotesEditor = getChild<LLTextEditor>("notes_edit");
     mSaveChanges = getChild<LLButton>("notes_save_changes");
@@ -3644,7 +3644,7 @@ LLPanelProfile::~LLPanelProfile()
 {
 }
 
-bool LLPanelProfile::postBuild()
+BOOL LLPanelProfile::postBuild()
 {
     return true;
 }
