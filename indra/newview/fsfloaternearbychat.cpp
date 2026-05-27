@@ -792,7 +792,7 @@ void FSFloaterNearbyChat::sendChat( EChatType type )
         LLWStringUtil::replaceChar(text,182,'\n'); // Convert paragraph symbols back into newlines.
         if (!text.empty())
         {
-            FSCommon::updateUsedEmojis(text);
+            FSCommon::updateUsedEmojis(wstring_to_utf8str(text));
 
             if(type == CHAT_TYPE_OOC)
             {

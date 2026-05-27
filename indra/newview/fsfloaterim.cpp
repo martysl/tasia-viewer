@@ -375,7 +375,7 @@ void FSFloaterIM::sendMsgFromInputEditor(EChatType type)
             LLWStringUtil::replaceChar(text,182,'\n'); // Convert paragraph symbols back into newlines.
             if (!text.empty())
             {
-                FSCommon::updateUsedEmojis(text);
+                FSCommon::updateUsedEmojis(wstring_to_utf8str(text));
 
                 if (type == CHAT_TYPE_OOC)
                 {
@@ -467,24 +467,24 @@ void FSFloaterIM::sendMsgFromInputEditor(EChatType type)
                         str_viewer_mode = "T";
 
                     //Build it up
-                    size_t insert_pos = FSCommon::is_irc_me_prefix(utf8_text) ? 4 : 0;
+                    size_t insert_pos = is_irc_me_prefix(utf8_text) ? 4 : 0;
 
                     //For testing/beta groups, we display the build version since it doesn't speed by and this might change often
                     if (FSData::getInstance()->isTestingGroup(mSessionID))
                     {
                         if(chat_prefix_testing)
                         {
-                            auto viewer_maturity = LLVersionInfo::getInstance()->getFSViewerMaturity();
+                            auto viewer_maturity = LLVersionInfo::getInstance()->getViewerMaturity();
                             std::string str_version_tag;
-                            if( viewer_maturity == LLVersionInfo::FSViewerMaturity::RELEASE_VIEWER )
+                            if( viewer_maturity == LLVersionInfo::RELEASE_VIEWER )
                             {
                                 str_version_tag = "Release";
                             }
-                            else if( viewer_maturity == LLVersionInfo::FSViewerMaturity::STREAMING_VIEWER )
+                            else if( viewer_maturity == LLVersionInfo::BETA_VIEWER )
                             {
                                 str_version_tag = "Streaming";
                             }
-                            else if( viewer_maturity == LLVersionInfo::FSViewerMaturity::UNOFFICIAL_VIEWER )
+                            else if( viewer_maturity == LLVersionInfo::TEST_VIEWER )
                             {
                                 str_version_tag = "Unofficial";
                             }
@@ -502,16 +502,16 @@ void FSFloaterIM::sendMsgFromInputEditor(EChatType type)
                         if(chat_prefix_support)
                         {
                             std::string str_version_tag;
-                            auto viewer_maturity = LLVersionInfo::getInstance()->getFSViewerMaturity();
-                            if( viewer_maturity == LLVersionInfo::FSViewerMaturity::UNOFFICIAL_VIEWER )
+                            auto viewer_maturity = LLVersionInfo::getInstance()->getViewerMaturity();
+                            if( viewer_maturity == LLVersionInfo::TEST_VIEWER )
                             {
                                 str_version_tag = "Unofficial";
                             }
-                            if( viewer_maturity == LLVersionInfo::FSViewerMaturity::STREAMING_VIEWER )
-                            {
-                                str_version_tag = "Streaming";
-                            }
-                            else if( viewer_maturity != LLVersionInfo::FSViewerMaturity::RELEASE_VIEWER )
+            if( viewer_maturity == LLVersionInfo::BETA_VIEWER )
+            {
+                str_version_tag = "Streaming";
+            }
+            else if( viewer_maturity != LLVersionInfo::RELEASE_VIEWER )
                             {
                                 str_version_tag = "pre-Release";
                             }
