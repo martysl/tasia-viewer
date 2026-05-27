@@ -45,6 +45,8 @@ set(llui_SOURCE_FILES
     llfolderviewmodel.cpp
     lliconctrl.cpp
     llkeywords.cpp
+    llemojidictionary.cpp
+    llemojihelper.cpp
     lllayoutstack.cpp
     lllineeditor.cpp
     llloadingindicator.cpp
@@ -159,6 +161,8 @@ set(llui_HEADER_FILES
     llhelp.h
     lliconctrl.h
     llkeywords.h
+    llemojidictionary.h
+    llemojihelper.h
     lllayoutstack.h
     lllazyvalue.h
     lllineeditor.h

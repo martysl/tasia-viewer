@@ -320,6 +320,7 @@ set(viewer_SOURCE_FILES
     llfloaterdisplayname.cpp
     llfloatereditenvironmentbase.cpp
     llfloatereditextdaycycle.cpp
+    llfloateremojipicker.cpp
     llfloaterenvironmentadjust.cpp
     llfloaterevent.cpp
     llfloaterexperiencepicker.cpp
@@ -533,6 +534,7 @@ set(viewer_SOURCE_FILES
     llpaneleditsky.cpp
     llpaneleditwater.cpp
     llpaneleditwearable.cpp
+    llpanelemojicomplete.cpp
     llpanelenvironment.cpp
     llpanelexperiencelisteditor.cpp
     llpanelexperiencelog.cpp
@@ -1114,6 +1116,7 @@ set(viewer_HEADER_FILES
     llfloaterdisplayname.h
     llfloatereditenvironmentbase.h
     llfloatereditextdaycycle.h
+    llfloateremojipicker.h
     llfloaterenvironmentadjust.h
     llfloaterevent.h
     llfloaterexperiencepicker.h
@@ -1319,6 +1322,7 @@ set(viewer_HEADER_FILES
     llpaneleditsky.h
     llpaneleditwater.h
     llpaneleditwearable.h
+    llpanelemojicomplete.h
     llpanelenvironment.h
     llpanelexperiencelisteditor.h
     llpanelexperiencelog.h
@@ -2054,6 +2058,7 @@ set(viewer_APPSETTINGS_FILES
     app_settings/cloud.xml
     app_settings/cmd_line.xml
     app_settings/commands.xml
+    app_settings/emoji_groups.xml
     app_settings/foldertypes.xml
     app_settings/graphic_preset_controls.xml
     app_settings/grass.xml
