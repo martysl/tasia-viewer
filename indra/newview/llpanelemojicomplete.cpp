@@ -61,14 +61,10 @@ LLPanelEmojiComplete::LLPanelEmojiComplete(const LLPanelEmojiComplete::Params& p
     , mMaxVisible(p.max_visible)
     , mPadding(p.padding)
     , mSelectedImage(p.selected_image)
-    // , mIconFont(LLFontGL::getFontEmojiHuge()) // <FS:Beq/> Add B&W emoji font support
     , mTextFont(LLFontGL::getFontSansSerifBig())
     , mScrollbar(nullptr)
 {
-    // <FS:Beq> Add B&W emoji font support
-    static LLCachedControl<bool> useBWEmojis(gSavedSettings, "FSUseBWEmojis");
-    mIconFont = LLFontGL::getFontEmojiHuge( useBWEmojis );
-    // </FS:Beq>
+    mIconFont = LLFontGL::getFontSansSerifHuge();
     if (mVertical)
     {
         LLScrollbar::Params sbparams;

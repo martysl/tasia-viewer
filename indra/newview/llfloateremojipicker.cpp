@@ -83,7 +83,7 @@ public:
         addChild(mList);
     }
 
-    virtual void updatePanel(bool allow_modify) override {}
+    virtual void updatePanel(BOOL allow_modify) override {}
 
 public:
     LLScrollingPanelList* mList;
@@ -117,7 +117,7 @@ public:
             static_cast<S32>(mText.size())); // max_chars
     }
 
-    virtual void updatePanel(bool allow_modify) override {}
+    virtual void updatePanel(BOOL allow_modify) override {}
 
 private:
     const LLWString mText;
@@ -137,15 +137,11 @@ public:
 
     virtual void draw() override
     {
-        static LLCachedControl<bool> useBWEmojis(gSavedSettings, "FSUseBWEmojis", false); // <FS:Beq/> Add B&W emoji font support
         LLScrollingPanel::draw();
 
         F32 x = (F32)(getRect().getWidth() / 2);
         F32 y = (F32)(getRect().getHeight() / 2);
-        // <FS:Beq> Add B&W emoji font support
-        // LLFontGL::getFontEmojiLarge()->render( 
-        LLFontGL::getFontEmojiLarge(useBWEmojis)->render( 
-        // </FS:Beq>
+        LLFontGL::getFontSansSerif()->render(
             mChar,                      // wstr
             0,                          // begin_offset
             x,                          // x
@@ -158,7 +154,7 @@ public:
             1);                         // max_chars
     }
 
-    virtual void updatePanel(bool allow_modify) override {}
+    virtual void updatePanel(BOOL allow_modify) override {}
 
     const LLEmojiSearchResult& getData() const { return mData; }
     const LLWString& getChar() const { return mChar; }
@@ -218,10 +214,7 @@ protected:
     void drawIcon(F32 x, F32 y, S32 max_pixels)
     {
         // <FS:Beq> Add B&W emoji font support
-        // LLFontGL::getFontEmojiHuge()->render(
-        static LLCachedControl<bool> useBWEmojis(gSavedSettings, "FSUseBWEmojis", false);
-        LLFontGL::getFontEmojiHuge( useBWEmojis )->render(
-        // </FS:Beq>
+        LLFontGL::getFontSansSerifHuge()->render(
             mWStr,                      // wstr
             0,                          // begin_offset
             x,                          // x
@@ -237,11 +230,9 @@ protected:
 
     void drawName(F32 x, F32 y, S32 max_pixels, const LLColor4& color)
     {
-        static LLCachedControl<bool> useBWEmojis(gSavedSettings, "FSUseBWEmojis", false); // <FS:Beq/> Add B&W emoji font support
-
         F32 x0 = x;
         F32 x1 = (F32)max_pixels;
-        LLFontGL* font = LLFontGL::getFontEmojiLarge(useBWEmojis); // <FS:Beq/> Add B&W emoji font support
+        LLFontGL* font = LLFontGL::getFontSansSerif();
         if (mBegin)
         {
             LLWString text = mTitle.substr(0, mBegin);
@@ -310,7 +301,7 @@ LLFloaterEmojiPicker::LLFloaterEmojiPicker(const LLSD& key)
 : super(key)
 {
     // This floater should hover on top of our dependent (with the dependent having the focus)
-    setFocusStealsFrontmost(false);
+    // Legacy does not have setFocusStealsFrontmost
     setBackgroundVisible(false);
     setAutoFocus(false);
 
@@ -429,14 +420,12 @@ void LLFloaterEmojiPicker::initialize()
         (1 + mFilteredEmojiGroups.size()));
 
     mGroupButtons[mSelectedGroupIndex]->setToggleState(true);
-    mGroupButtons[mSelectedGroupIndex]->setUseFontColor(true);
 
     fillEmojis();
 }
 
 void LLFloaterEmojiPicker::fillGroups()
 {
-    static LLCachedControl<bool> useBWEmojis(gSavedSettings, "FSUseBWEmojis", false); // <FS:Beq/> Add B&W emoji font support
     // Do not use deleteAllChildren() because mBadge shouldn't be removed
     for (LLButton* button : mGroupButtons)
     {
@@ -448,7 +437,7 @@ void LLFloaterEmojiPicker::fillGroups()
     mGroupButtons.clear();
 
     LLButton::Params params;
-    params.font = LLFontGL::getFontEmojiLarge(useBWEmojis); // <FS:Beq/> Add B&W emoji font support
+    params.font = LLFontGL::getFontSansSerif();
 
     LLRect rect;
     rect.mTop = mGroups->getRect().getHeight();
@@ -576,8 +565,7 @@ void LLFloaterEmojiPicker::createGroupButton(LLButton::Params& params, const LLR
 
     button->setRect(rect);
     button->setTabStop(false);
-    button->setLabel(LLUIString(LLWString(1, emoji)));
-    button->setUseFontColor(false);
+    button->setLabel(LLUIString(wstring_to_utf8str(LLWString(1, emoji))));
 
     mGroupButtons.push_back(button);
     mGroups->addChild(button);
@@ -614,13 +602,11 @@ void LLFloaterEmojiPicker::selectEmojiGroup(U32 index)
 
     if (mSelectedGroupIndex < mGroupButtons.size())
     {
-        mGroupButtons[mSelectedGroupIndex]->setUseFontColor(false);
         mGroupButtons[mSelectedGroupIndex]->setToggleState(false);
     }
 
     mSelectedGroupIndex = index;
     mGroupButtons[mSelectedGroupIndex]->setToggleState(true);
-    mGroupButtons[mSelectedGroupIndex]->setUseFontColor(true);
 
     LLButton* button = mGroupButtons[mSelectedGroupIndex];
     LLRect rect = mBadge->getRect();
@@ -641,12 +627,12 @@ void LLFloaterEmojiPicker::fillEmojis(bool fromResize)
     }
 
     const S32 scroll_width = mEmojiScroll->getRect().getWidth();
+    static const S32 GRID_PADDING = 4;
+    static const S32 ICON_SPACING = 1;
     const S32 client_width = scroll_width - scrollbar_size - mEmojiScroll->getBorderWidth() * 2;
-    const S32 grid_padding = mEmojiGrid->getPadding();
-    const S32 icon_spacing = mEmojiGrid->getSpacing();
-    const S32 row_width = client_width - grid_padding * 2;
+    const S32 row_width = client_width - GRID_PADDING * 2;
     const S32 icon_size = 28; // icon width and height
-    const S32 max_icons = llmax(1, (row_width + icon_spacing) / (icon_size + icon_spacing));
+    const S32 max_icons = llmax(1, (row_width + ICON_SPACING) / (icon_size + ICON_SPACING));
 
     // Optimization: don't rearrange for different widths with the same maxIcons
     if (fromResize && (max_icons == mRecentMaxIcons))
@@ -673,10 +659,6 @@ void LLFloaterEmojiPicker::fillEmojis(bool fromResize)
     row_panel_params.rect = LLRect(0, icon_size, row_width, 0);
 
     LLScrollingPanelList::Params row_list_params;
-    row_list_params.rect = row_panel_params.rect;
-    row_list_params.is_horizontal = true;
-    row_list_params.padding = 0;
-    row_list_params.spacing = icon_spacing;
 
     LLPanel::Params icon_params;
     LLRect icon_rect(0, icon_size, icon_size, 0);
@@ -735,9 +717,9 @@ void LLFloaterEmojiPicker::fillEmojisCategory(const std::vector<LLEmojiSearchRes
     // Place the category title
     std::string title =
         category == FREQUENTLY_USED_CATEGORY ? getString("title_for_frequently_used") :
-        isupper(category.front()) ? category : LLStringUtil::capitalize(category);
+        isupper(category.front()) ? category : (std::string(1, LLStringUtil::toUpper(category[0])) + category.substr(1));
     LLEmojiGridDivider* div = new LLEmojiGridDivider(row_panel_params, title);
-    mEmojiGrid->addPanel(div, true);
+    mEmojiGrid->addPanel(div);
 
     int icon_index = 0;
     LLEmojiGridRow* row = nullptr;
@@ -795,7 +777,7 @@ void LLFloaterEmojiPicker::createEmojiIcon(const LLEmojiSearchResult& emoji,
     if (!(icon_index % max_icons))
     {
         row = new LLEmojiGridRow(row_panel_params, *(const LLScrollingPanelList::Params*)&row_list_params);
-        mEmojiGrid->addPanel(row, true);
+        mEmojiGrid->addPanel(row);
     }
 
     // Place a new icon to the current row
@@ -807,7 +789,7 @@ void LLFloaterEmojiPicker::createEmojiIcon(const LLEmojiSearchResult& emoji,
     icon->setBackgroundColor(bg);
     icon->setBackgroundOpaque(1);
     icon->setRect(icon_rect);
-    row->mList->addPanel(icon, true);
+    row->mList->addPanel(icon);
 
     icon_index++;
 }
@@ -835,18 +817,10 @@ void LLFloaterEmojiPicker::onGroupButtonClick(LLUICtrl* ctrl)
 
 void LLFloaterEmojiPicker::onGroupButtonMouseEnter(LLUICtrl* ctrl)
 {
-    if (LLButton* button = dynamic_cast<LLButton*>(ctrl))
-    {
-        button->setUseFontColor(true);
-    }
 }
 
 void LLFloaterEmojiPicker::onGroupButtonMouseLeave(LLUICtrl* ctrl)
 {
-    if (LLButton* button = dynamic_cast<LLButton*>(ctrl))
-    {
-        button->setUseFontColor(button->getToggleState());
-    }
 }
 
 void LLFloaterEmojiPicker::onEmojiMouseEnter(LLUICtrl* ctrl)
