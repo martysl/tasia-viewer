@@ -728,7 +728,7 @@ void LLFloaterEmojiPicker::fillEmojisCategory(const std::vector<LLEmojiSearchRes
     {
         // Capitalize first letter
         title = category;
-        title[0] = LLStringUtil::toUpper(title[0]);
+        title[0] = (char)toupper((unsigned char)title[0]);
     }
     LLEmojiGridDivider* div = new LLEmojiGridDivider(row_panel_params, title);
     mEmojiGrid->addPanel(div);
