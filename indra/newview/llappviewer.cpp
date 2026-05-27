@@ -4040,7 +4040,7 @@ LLSD LLAppViewer::getViewerInfo() const
         if (std::equal(build_version.begin(), build_version.begin() + version.serverVersion.size(),
                        version.serverVersion.begin()))
         {  // Normal case: Show type and build version.
-            version_string << version.serverType << " " << build_version << std::endl;
+            version_string << version.voiceServerType << " " << build_version << std::endl;
         }
         else
         {  // Mismatch: Show both versions.
@@ -6045,7 +6045,7 @@ void LLAppViewer::sendLogoutRequest()
 
 		if(LLVoiceClient::instanceExists())
 		{
-			LLVoiceClient::getInstance()->leaveChannel();
+			LLVoiceClient::getInstance()->leaveNonSpatialChannel();
 		}
 	}
 }
