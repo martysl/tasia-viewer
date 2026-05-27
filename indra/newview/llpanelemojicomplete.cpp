@@ -502,7 +502,6 @@ LLFloaterEmojiComplete::LLFloaterEmojiComplete(const LLSD& sdKey)
     : LLFloater(sdKey)
 {
     // This floater should hover on top of our dependent (with the dependent having the focus)
-    setFocusStealsFrontmost(false);
     setAutoFocus(false);
     setBackgroundVisible(false);
     setIsChrome(true);
