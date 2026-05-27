@@ -292,7 +292,6 @@ using namespace LL;
 
 #include "fsradar.h"
 #include "fsassetblacklist.h"
-#include "bugsplatattributes.h"
 // #include "fstelemetry.h" // <FS:Beq> Tracy profiler support
 
 #include "lospoof.h"
