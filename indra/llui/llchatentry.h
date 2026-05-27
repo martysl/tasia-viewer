@@ -68,11 +68,15 @@ public:
 	void enableSingleLineMode(bool single_line_mode);
 	boost::signals2::connection setTextExpandedCallback(const commit_signal_t::slot_type& cb);
 
-	// <FS:Ansariel> Changed to public so we can update history when using modifier keys
+    // <FS:Ansariel> Changed to public so we can update history when using modifier keys
 	void	updateHistory();
 
 	// <FS:Ansariel> Fix linefeed pasting
 	/*virtual*/ void	paste();
+
+	// Emoji support
+	void insertEmoji(llwchar emoji);
+	void showEmojiHelper();
 
 private:
 

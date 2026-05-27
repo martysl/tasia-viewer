@@ -45,9 +45,9 @@ public:
 
     LLFloaterEmojiPicker(const LLSD& key);
 
-    virtual bool postBuild() override;
-    virtual void dirtyRect() override;
-    virtual void goneFromFront() override;
+    /*virtual*/ BOOL postBuild();
+    /*virtual*/ void dirtyRect();
+    /*virtual*/ void goneFromFront();
 
     void hideFloater() const;
 
@@ -100,9 +100,9 @@ private:
     void selectGridIcon(LLEmojiGridIcon* icon);
     void unselectGridIcon(LLEmojiGridIcon* icon);
 
-    void onOpen(const LLSD& key) override;
-    void onClose(bool app_quitting) override;
-    virtual bool handleKey(KEY key, MASK mask, bool called_from_parent) override;
+    /*virtual*/ void onOpen(const LLSD& key);
+    /*virtual*/ void onClose(bool app_quitting);
+    /*virtual*/ BOOL handleKey(KEY key, MASK mask, BOOL called_from_parent);
 
     class LLPanel* mGroups { nullptr };
     class LLPanel* mBadge { nullptr };

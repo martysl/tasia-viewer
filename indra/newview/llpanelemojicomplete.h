@@ -59,14 +59,14 @@ protected:
 public:
     virtual ~LLPanelEmojiComplete();
 
-    void draw() override;
-    bool handleHover(S32 x, S32 y, MASK mask) override;
-    bool handleKey(KEY key, MASK mask, bool called_from_parent) override;
-    bool handleMouseDown(S32 x, S32 y, MASK mask) override;
-    bool handleMouseUp(S32 x, S32 y, MASK mask) override;
-    bool handleScrollWheel(S32 x, S32 y, S32 clicks) override;
-    void onCommit() override;
-    void reshape(S32 width, S32 height, bool called_from_parent) override;
+    /*virtual*/ void draw();
+    /*virtual*/ BOOL handleHover(S32 x, S32 y, MASK mask);
+    /*virtual*/ BOOL handleKey(KEY key, MASK mask, BOOL called_from_parent);
+    /*virtual*/ BOOL handleMouseDown(S32 x, S32 y, MASK mask);
+    /*virtual*/ BOOL handleMouseUp(S32 x, S32 y, MASK mask);
+    /*virtual*/ BOOL handleScrollWheel(S32 x, S32 y, S32 clicks);
+    /*virtual*/ void onCommit();
+    /*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent);
 
 public:
     size_t getEmojiCount() const { return mEmojis.size(); }
@@ -118,10 +118,10 @@ public:
     LLFloaterEmojiComplete(const LLSD& sdKey);
 
 public:
-    bool handleKey(KEY key, MASK mask, bool called_from_parent) override;
-    void onOpen(const LLSD& key) override;
-    bool postBuild() override;
-    void reshape(S32 width, S32 height, bool called_from_parent) override;
+    /*virtual*/ BOOL handleKey(KEY key, MASK mask, BOOL called_from_parent);
+    /*virtual*/ void onOpen(const LLSD& key);
+    /*virtual*/ BOOL postBuild();
+    /*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent);
 
 protected:
     LLPanelEmojiComplete* mEmojiCtrl = nullptr;

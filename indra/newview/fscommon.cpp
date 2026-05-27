@@ -519,3 +519,8 @@ LLUUID FSCommon::getGroupForRezzing()
 
 	return group_id;
 }
+
+void FSCommon::updateUsedEmojis(const std::string& text)
+{
+	// No-op in legacy until emoji tracking is fully ported
+}

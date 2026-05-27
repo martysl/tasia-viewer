@@ -93,6 +93,8 @@ namespace FSCommon
 	bool isFilterEditorKeyCombo(KEY key, MASK mask);
 
 	LLUUID getGroupForRezzing();
+
+	void updateUsedEmojis(const std::string& text);
 };
 
 #endif // FS_COMMON_H

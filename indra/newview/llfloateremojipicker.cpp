@@ -317,7 +317,7 @@ LLFloaterEmojiPicker::LLFloaterEmojiPicker(const LLSD& key)
     loadState();
 }
 
-bool LLFloaterEmojiPicker::postBuild()
+BOOL LLFloaterEmojiPicker::postBuild()
 {
     mGroups = getChild<LLPanel>("Groups");
     mBadge = getChild<LLPanel>("Badge");
@@ -1047,7 +1047,7 @@ void LLFloaterEmojiPicker::unselectGridIcon(LLEmojiGridIcon* icon)
 }
 
 // virtual
-bool LLFloaterEmojiPicker::handleKey(KEY key, MASK mask, bool called_from_parent)
+BOOL LLFloaterEmojiPicker::handleKey(KEY key, MASK mask, BOOL called_from_parent)
 {
     if (mask == MASK_NONE)
     {

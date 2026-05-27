@@ -286,3 +286,14 @@ void LLChatEntry::paste()
 	}
 }
 // </FS:Ansariel>
+
+void LLChatEntry::insertEmoji(llwchar emoji)
+{
+    LLWString wtext(1, emoji);
+    insertText(wtext, false, false, false, false);
+}
+
+void LLChatEntry::showEmojiHelper()
+{
+    // No-op in legacy until emoji helper is fully ported
+}
