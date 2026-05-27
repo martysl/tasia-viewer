@@ -234,7 +234,6 @@
 #include "llfloatersimplesnapshot.h"
 #include "llfloatersnapshot.h"
 #include "llfloaterflickr.h"
-#include "fsfloaterprimfeed.h" // <FS:Beq/> Primfeed Floater
 
 #include "llsidepanelinventory.h"
 #include "llatmosphere.h"
