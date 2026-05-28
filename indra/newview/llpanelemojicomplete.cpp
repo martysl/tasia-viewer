@@ -133,7 +133,7 @@ void LLPanelEmojiComplete::draw()
                 std::string text = shortCode.substr(0, mEmojis[curIdx].Begin);
                 mTextFont->renderUTF8(text, 0, x0, iconCenterY, LLColor4::white,
                     LLFontGL::LEFT, LLFontGL::VCENTER, LLFontGL::NORMAL, LLFontGL::NO_SHADOW,
-                    static_cast<S32>(text.size()), (S32)x1);
+                    static_cast<S32>(text.size()), (S32)x1, NULL, FALSE);
                 x0 += mTextFont->getWidthF32(text);
                 x1 = textLeft + textWidth - x0;
             }
@@ -142,7 +142,7 @@ void LLPanelEmojiComplete::draw()
                 std::string text = shortCode.substr(mEmojis[curIdx].Begin, mEmojis[curIdx].End - mEmojis[curIdx].Begin);
                 mTextFont->renderUTF8(text, 0, x0, iconCenterY, LLColor4::yellow6,
                     LLFontGL::LEFT, LLFontGL::VCENTER, LLFontGL::NORMAL, LLFontGL::NO_SHADOW,
-                    static_cast<S32>(text.size()), (S32)x1);
+                    static_cast<S32>(text.size()), (S32)x1, NULL, FALSE);
                 x0 += mTextFont->getWidthF32(text);
                 x1 = textLeft + textWidth - x0;
             }
@@ -151,7 +151,7 @@ void LLPanelEmojiComplete::draw()
                 std::string text = shortCode.substr(mEmojis[curIdx].End);
                 mTextFont->renderUTF8(text, 0, x0, iconCenterY, LLColor4::white,
                     LLFontGL::LEFT, LLFontGL::VCENTER, LLFontGL::NORMAL, LLFontGL::NO_SHADOW,
-                    static_cast<S32>(text.size()), (S32)x1);
+                    static_cast<S32>(text.size()), (S32)x1, NULL, FALSE);
             }
             iconCenterY -= mEmojiHeight;
         }
