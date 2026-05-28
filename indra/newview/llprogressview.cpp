@@ -373,7 +373,7 @@ void LLProgressView::setStartupComplete()
     LLViewerMedia::getInstance()->setOnlyAudibleMediaTextureID(LLUUID::null);
 }
 
-void LLProgressView::setVisible(bool visible)
+void LLProgressView::setVisible(BOOL visible)
 {
     if (!visible && mFadeFromLoginTimer.getStarted())
     {
@@ -624,13 +624,6 @@ std::string LLProgressView::getBestWelcomeName()
 {
     std::string name;
     LLAgentUI::buildFullname(name);
-    LLStringUtil::trim(name);
-    if (!name.empty())
-    {
-        return name;
-    }
-
-    name = FSPanelLogin::getWelcomeUsername();
     LLStringUtil::trim(name);
     if (!name.empty())
     {
