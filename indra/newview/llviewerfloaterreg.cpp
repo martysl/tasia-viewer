@@ -47,7 +47,7 @@
 #include "llfloaterbeacons.h"
 #include "llfloaterbuildoptions.h"
 #include "llfloaterbulkpermission.h"
-#include "llfloaterbulkupload.h"
+//#include "llfloaterbulkupload.h"
 #include "llfloaterbump.h"
 #include "llfloaterbuy.h"
 #include "llfloaterbuycontents.h"
@@ -77,7 +77,7 @@
 #include "llfloaterfonttest.h"
 #include "llfloaterforgetuser.h"
 #include "llfloatergesture.h"
-#include "llfloatergltfasseteditor.h"
+//#include "llfloatergltfasseteditor.h" // PBR-only
 #include "llfloatergodtools.h"
 #include "llfloatergridstatus.h"
 #include "llfloatergroups.h"
@@ -89,7 +89,7 @@
 #include "llfloaterimsession.h"
 #include "llfloaterinspect.h"
 #include "llfloaterinventorysettings.h"
-#include "llfloaterinventorythumbnailshelper.h"
+//#include "llfloaterinventorythumbnailshelper.h" // PBR-only
 #include "llfloaterjoystick.h"
 #include "llfloaterlagmeter.h"
 #include "llfloaterland.h"
@@ -136,10 +136,10 @@
 #include "llfloaterscriptlimits.h"
 #include "llfloatersearch.h"
 #include "llfloatersellland.h"
-#include "llfloatersettingscolor.h"
+//#include "llfloatersettingscolor.h" // PBR-only
 #include "llfloatersettingsdebug.h"
 #include "llfloatersidepanelcontainer.h"
-#include "llfloaterslapptest.h"
+//#include "llfloaterslapptest.h" // PBR-only
 #include "llfloatersnapshot.h"
 #include "llfloatersounddevices.h"
 #include "llfloaterspellchecksettings.h"
@@ -230,7 +230,7 @@
 #include "fsfloaterprimfeed.h"
 #include "llfloaterflickr.h"
 #include "llfloatergiphypicker.h"
-#include "llfloatertasiafeed.h"
+//#include "llfloatertasiafeed.h" // not yet ported to legacy
 #include "llfloaterscriptrecover.h"
 #include "llfloatersearchreplace.h"
 #include "llpanelgroup.h"
@@ -418,7 +418,8 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("buy_object_contents", "floater_buy_contents.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterBuyContents>);
     LLFloaterReg::add("build", "floater_tools.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterTools>);
     LLFloaterReg::add("build_options", "floater_build_options.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterBuildOptions>);
-    LLFloaterReg::add("bulk_upload", "floater_bulk_upload.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterBulkUpload>);
+    // LLFloaterBulkUpload does not exist in legacy
+    //LLFloaterReg::add("bulk_upload", "floater_bulk_upload.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterBulkUpload>);
     LLFloaterReg::add("bumps", "floater_bumps.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterBump>);
 
     LLFloaterReg::add("camera", "floater_camera.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterCamera>);
@@ -464,7 +465,7 @@ void LLViewerFloaterReg::registerFloaters()
     //LLFloaterReg::add("forget_username", "floater_forget_user.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterForgetUser>);
 
     LLFloaterReg::add("gestures", "floater_gesture.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterGesture>);
-    LLFloaterReg::add("gltf_asset_editor", "floater_gltf_asset_editor.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterGLTFAssetEditor>);
+    //LLFloaterReg::add("gltf_asset_editor", "floater_gltf_asset_editor.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterGLTFAssetEditor>); // PBR-only
     LLFloaterReg::add("god_tools", "floater_god_tools.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterGodTools>);
     LLFloaterReg::add("grid_status", "floater_grid_status.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterGridStatus>);
     LLFloaterReg::add("group_picker", "floater_choose_group.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterGroupPicker>);
@@ -483,7 +484,7 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("incoming_call", "floater_incoming_call.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLIncomingCallDialog>);
     LLFloaterReg::add("inventory", "floater_my_inventory.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterSidePanelContainer>);
     LLFloaterReg::add("inspect", "floater_inspect.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterInspect>);
-    LLFloaterReg::add("inventory_thumbnails_helper", "floater_inventory_thumbnails_helper.xml", (LLFloaterBuildFunc) &LLFloaterReg::build<LLFloaterInventoryThumbnailsHelper>);
+    //LLFloaterReg::add("inventory_thumbnails_helper", "floater_inventory_thumbnails_helper.xml", (LLFloaterBuildFunc) &LLFloaterReg::build<LLFloaterInventoryThumbnailsHelper>); // PBR-only
     LLFloaterReg::add("item_properties", "floater_item_properties.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterItemProperties>);
     LLFloaterReg::add("task_properties", "floater_task_properties.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterItemProperties>);
     LLFloaterReg::add("inventory_settings", "floater_inventory_settings.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterInventorySettings>);
@@ -592,7 +593,7 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("script_limits", "floater_script_limits.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterScriptLimits>);
     LLFloaterReg::add("my_scripts", "floater_my_scripts.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterMyScripts>);
     LLFloaterReg::add("sell_land", "floater_sell_land.xml", &LLFloaterSellLand::buildFloater);
-    LLFloaterReg::add("settings_color", "floater_settings_color.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterSettingsColor>);
+    //LLFloaterReg::add("settings_color", "floater_settings_color.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterSettingsColor>); // PBR-only
     LLFloaterReg::add("settings_debug", "floater_settings_debug.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterSettingsDebug>);
     LLFloaterReg::add("sound_devices", "floater_sound_devices.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterSoundDevices>);
     // <FS:LO> Add ability for the statistics window to not be able to receive focus
@@ -608,7 +609,7 @@ void LLViewerFloaterReg::registerFloaters()
     //LLFloaterReg::add("search", "floater_search.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterSearch>);
     LLFloaterReg::add("profile", "floater_profile.xml",(LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterProfile>);
     LLFloaterReg::add("guidebook", "floater_how_to.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterHowTo>);
-    LLFloaterReg::add("slapp_test", "floater_test_slapp.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterSLappTest>);
+    //LLFloaterReg::add("slapp_test", "floater_test_slapp.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterSLappTest>); // PBR-only
 
     LLFloaterReg::add("big_preview", "floater_big_preview.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterBigPreview>);
 
@@ -637,7 +638,7 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("flickr", "floater_flickr.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterFlickr>);
     LLFloaterReg::add("giphy_picker", "floater_giphy_picker.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterGiphyPicker>);
     LLFloaterReg::add("primfeed", "floater_primfeed.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterPrimfeed>);
-    LLFloaterReg::add("tasiafeed", "floater_tasiafeed.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterTasiaFeed>);
+    //LLFloaterReg::add("tasiafeed", "floater_tasiafeed.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterTasiaFeed>); // not yet ported to legacy
     LLFloaterReg::add("fs_asset_blacklist", "floater_fs_asset_blacklist.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterAssetBlacklist>);
     LLFloaterReg::add("fs_avatar_render_settings", "floater_fs_avatar_render_settings.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterAvatarRenderSettings>);
     LLFloaterReg::add("fs_blocklist", "floater_fs_blocklist.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterBlocklist>);
