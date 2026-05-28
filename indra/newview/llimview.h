@@ -442,13 +442,12 @@ public:
 	 * Creates a P2P session with the requisite handle for responding to voice calls.
 	 * 
 	 * @param name session name, cannot be null
-	 * @param caller_uri - sip URI of caller. It should be always be passed into the method to avoid
-	 * incorrect working of LLVoiceChannel instances. See EXT-2985.
+	 * @param other_participant_id - UUID of the other participant
+	 * @param voice_channel_info - LLSD map with voice channel info
 	 */	
 	LLUUID addP2PSession(const std::string& name,
 					  const LLUUID& other_participant_id,
-					  const std::string& voice_session_handle,
-					  const std::string& caller_uri);
+					  const LLSD& voice_channel_info);
 
 	/**
 	 * Leave the session with session id. Send leave session notification
