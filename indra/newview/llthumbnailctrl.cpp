@@ -193,7 +193,7 @@ void LLThumbnailCtrl::draw()
     LLUICtrl::draw();
 }
 
-void LLThumbnailCtrl::setVisible(bool visible)
+void LLThumbnailCtrl::setVisible(BOOL visible)
 {
     if (!visible && mInited)
     {
@@ -225,7 +225,7 @@ LLViewerFetchedTexture* LLThumbnailCtrl::setImageUrl(const std::string& url, boo
         url,
         FTT_DEFAULT,
         false,
-        LLGLTexture::BOOST_THUMBNAIL,
+        LLGLTexture::BOOST_PREVIEW,
         LLViewerTexture::LOD_TEXTURE);
 
     if (mTexturep)
@@ -298,7 +298,7 @@ void LLThumbnailCtrl::initImage()
         if (mImageAssetID.notNull())
         {
             // Should it support baked textures?
-            mTexturep = LLViewerTextureManager::getFetchedTexture(mImageAssetID, FTT_DEFAULT, MIPMAP_YES, LLGLTexture::BOOST_THUMBNAIL);
+            mTexturep = LLViewerTextureManager::getFetchedTexture(mImageAssetID, FTT_DEFAULT, MIPMAP_YES, LLGLTexture::BOOST_PREVIEW);
 
             mTexturep->forceToSaveRawImage(0);
 
