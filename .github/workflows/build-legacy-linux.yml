@@ -119,6 +119,7 @@ jobs:
           tar xzf /tmp/boost-json.tar.gz -C /tmp
           BOOST_JSON_DIR="$(ls -d /tmp/boostorg-json-*/include/boost 2>/dev/null | head -1)"
           if [ -n "$BOOST_JSON_DIR" ]; then
+            sudo mkdir -p /usr/local/include/boost
             # Copy the main header json.hpp AND the json/ subdirectory
             sudo cp "$BOOST_JSON_DIR/json.hpp" /usr/local/include/boost/
             sudo cp -r "$BOOST_JSON_DIR/json" /usr/local/include/boost/
