@@ -41,7 +41,7 @@ class LLWebRTCProtocolParser;
 #include "llparcel.h"
 #include "llmutelist.h"
 #include <queue>
-#include "boost/json.hpp"
+#include <nlohmann/json.hpp>
 
 #ifdef LL_USESYSTEMLIBS
 # include "expat.h"

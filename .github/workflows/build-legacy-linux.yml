@@ -108,17 +108,7 @@ jobs:
             mesa-common-dev libgl1-mesa-dev libxinerama-dev \
             libxrandr-dev libpulse-dev libglu1-mesa-dev \
             libfreetype6-dev libfontconfig1 ninja-build \
-            libdbus-1-dev libboost-dev
-
-      - name: Install boost 1.83 headers (needed by boost/json & new voice API)
-        shell: bash
-        run: |
-          set -euo pipefail
-          wget -qO /tmp/boost.tar.gz \
-            "https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz"
-          sudo tar xzf /tmp/boost.tar.gz -C /usr/local/include \
-            --strip-components=1 boost_1_83_0/boost
-          echo "boost 1.83 headers installed"
+            libdbus-1-dev libboost-dev nlohmann-json3-dev
 
       - name: Configure with FMOD
         shell: bash
@@ -132,19 +122,6 @@ jobs:
             --fmodstudio \
             --package \
             --ninja
-
-      - name: Override autobuild boost with 1.83 headers
-        shell: bash
-        run: |
-          set -euo pipefail
-          BOOST_PKG_DIR="build-linux-x86_64/packages/include/boost"
-          if [ -d "$BOOST_PKG_DIR" ]; then
-            sudo rm -rf "$BOOST_PKG_DIR"
-            sudo ln -s /usr/local/include/boost "$BOOST_PKG_DIR"
-            echo "Boost 1.83 linked into autobuild packages"
-          else
-            echo "Warning: $BOOST_PKG_DIR not found, configure may not have run yet"
-          fi
 
       - name: Build with FMOD
         shell: bash
