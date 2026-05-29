@@ -110,25 +110,17 @@ jobs:
             libfreetype6-dev libfontconfig1 ninja-build \
             libdbus-1-dev libboost-dev
 
-      - name: Install boost-json headers (not packaged on ubuntu-22.04)
+      - name: Install boost headers needed by new voice API (boost 1.83+)
         shell: bash
         run: |
           set -euo pipefail
-          wget -qO /tmp/boost-json.tar.gz \
-            "https://api.github.com/repos/boostorg/json/tarball/refs/tags/boost-1.83.0"
-          tar xzf /tmp/boost-json.tar.gz -C /tmp
-          BOOST_JSON_DIR="$(ls -d /tmp/boostorg-json-*/include/boost 2>/dev/null | head -1)"
-          if [ -n "$BOOST_JSON_DIR" ]; then
-            sudo mkdir -p /usr/local/include/boost
-            # Copy the main header json.hpp AND the json/ subdirectory
-            sudo cp "$BOOST_JSON_DIR/json.hpp" /usr/local/include/boost/
-            sudo cp -r "$BOOST_JSON_DIR/json" /usr/local/include/boost/
-            echo "boost-json headers installed"
-          else
-            echo "Could not find boost/json directory in tarball"
-            find /tmp/boostorg-json-* -maxdepth 4 -type d | head -20
-            exit 1
-          fi
+          # Download boost 1.83 source (~130MB) and extract only include/boost/
+          wget -qO /tmp/boost.tar.gz \
+            "https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz"
+          # Extract just the boost/ directory into /usr/local/include/
+          sudo tar xzf /tmp/boost.tar.gz -C /usr/local/include \
+            --strip-components=2 boost_1_83_0/boost
+          echo "boost 1.83 headers installed ($(du -sh /usr/local/include/boost | cut -f1))"
 
       - name: Configure with FMOD
         shell: bash
