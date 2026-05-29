@@ -108,7 +108,25 @@ jobs:
             mesa-common-dev libgl1-mesa-dev libxinerama-dev \
             libxrandr-dev libpulse-dev libglu1-mesa-dev \
             libfreetype6-dev libfontconfig1 ninja-build \
-            libdbus-1-dev libboost-json-dev
+            libdbus-1-dev
+
+      - name: Install boost-json headers (not packaged on ubuntu-22.04)
+        shell: bash
+        run: |
+          set -euo pipefail
+          wget -qO /tmp/boost-json.tar.gz \
+            "https://api.github.com/repos/boostorg/json/tarball/refs/tags/boost-1.83.0"
+          # Extract just the include/boost/ directory preserving paths
+          tar xzf /tmp/boost-json.tar.gz -C /tmp
+          BOOST_JSON_DIR="$(ls -d /tmp/boostorg-json-*/include/boost 2>/dev/null | head -1)"
+          if [ -n "$BOOST_JSON_DIR" ]; then
+            sudo cp -r "$BOOST_JSON_DIR/json" /usr/local/include/boost/
+            echo "boost-json headers installed"
+          else
+            echo "Could not find boost/json directory in tarball"
+            find /tmp/boostorg-json-* -maxdepth 4 -type d | head -20
+            exit 1
+          fi
 
       - name: Configure with FMOD
         shell: bash
