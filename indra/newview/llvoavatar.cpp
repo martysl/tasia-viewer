@@ -3270,7 +3270,6 @@ void LLVOAvatar::idleUpdateLipSync(bool voice_enabled)
 	// Use the Lipsync_Ooh and Lipsync_Aah morphs for lip sync
     if ( voice_enabled
         && mLastRezzedStatus > 0 // no point updating lip-sync for clouds
-        && (LLVoiceClient::getInstance()->lipSyncEnabled())
         && LLVoiceClient::getInstance()->getIsSpeaking( mID ) )
 	{
 		F32 ooh_morph_amount = 0.0f;
