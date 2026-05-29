@@ -116,10 +116,11 @@ jobs:
           set -euo pipefail
           wget -qO /tmp/boost-json.tar.gz \
             "https://api.github.com/repos/boostorg/json/tarball/refs/tags/boost-1.83.0"
-          # Extract just the include/boost/ directory preserving paths
           tar xzf /tmp/boost-json.tar.gz -C /tmp
           BOOST_JSON_DIR="$(ls -d /tmp/boostorg-json-*/include/boost 2>/dev/null | head -1)"
           if [ -n "$BOOST_JSON_DIR" ]; then
+            # Copy the main header json.hpp AND the json/ subdirectory
+            sudo cp "$BOOST_JSON_DIR/json.hpp" /usr/local/include/boost/
             sudo cp -r "$BOOST_JSON_DIR/json" /usr/local/include/boost/
             echo "boost-json headers installed"
           else
