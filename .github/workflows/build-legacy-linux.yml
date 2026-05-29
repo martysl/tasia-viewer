@@ -119,7 +119,7 @@ jobs:
             "https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz"
           # Extract just the boost/ directory into /usr/local/include/
           sudo tar xzf /tmp/boost.tar.gz -C /usr/local/include \
-            --strip-components=2 boost_1_83_0/boost
+            --strip-components=1 boost_1_83_0/boost
           echo "boost 1.83 headers installed ($(du -sh /usr/local/include/boost | cut -f1))"
 
       - name: Configure with FMOD
