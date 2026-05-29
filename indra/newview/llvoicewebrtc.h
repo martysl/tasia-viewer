@@ -40,6 +40,7 @@ class LLWebRTCProtocolParser;
 #include "llcoros.h"
 #include "llparcel.h"
 #include "llmutelist.h"
+#include "workqueue.h"
 #include <queue>
 #include <nlohmann/json.hpp>
 
