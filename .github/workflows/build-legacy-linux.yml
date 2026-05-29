@@ -110,17 +110,15 @@ jobs:
             libfreetype6-dev libfontconfig1 ninja-build \
             libdbus-1-dev libboost-dev
 
-      - name: Install boost headers needed by new voice API (boost 1.83+)
+      - name: Install boost 1.83 headers (needed by boost/json & new voice API)
         shell: bash
         run: |
           set -euo pipefail
-          # Download boost 1.83 source (~130MB) and extract only include/boost/
           wget -qO /tmp/boost.tar.gz \
             "https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz"
-          # Extract just the boost/ directory into /usr/local/include/
           sudo tar xzf /tmp/boost.tar.gz -C /usr/local/include \
             --strip-components=1 boost_1_83_0/boost
-          echo "boost 1.83 headers installed ($(du -sh /usr/local/include/boost | cut -f1))"
+          echo "boost 1.83 headers installed"
 
       - name: Configure with FMOD
         shell: bash
@@ -134,6 +132,19 @@ jobs:
             --fmodstudio \
             --package \
             --ninja
+
+      - name: Override autobuild boost with 1.83 headers
+        shell: bash
+        run: |
+          set -euo pipefail
+          BOOST_PKG_DIR="build-linux-x86_64/packages/include/boost"
+          if [ -d "$BOOST_PKG_DIR" ]; then
+            sudo rm -rf "$BOOST_PKG_DIR"
+            sudo ln -s /usr/local/include/boost "$BOOST_PKG_DIR"
+            echo "Boost 1.83 linked into autobuild packages"
+          else
+            echo "Warning: $BOOST_PKG_DIR not found, configure may not have run yet"
+          fi
 
       - name: Build with FMOD
         shell: bash
