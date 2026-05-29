@@ -108,7 +108,7 @@ jobs:
             mesa-common-dev libgl1-mesa-dev libxinerama-dev \
             libxrandr-dev libpulse-dev libglu1-mesa-dev \
             libfreetype6-dev libfontconfig1 ninja-build \
-            libdbus-1-dev
+            libdbus-1-dev libboost-dev
 
       - name: Install boost-json headers (not packaged on ubuntu-22.04)
         shell: bash
