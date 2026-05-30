@@ -625,14 +625,25 @@ if [ $WANTS_BUILD -eq $TRUE ] ; then
             fi
         fi
     elif [ $TARGET_PLATFORM == "windows" ] ; then
-        if [ "${AUTOBUILD_VSVER}" -ge 170 ] ; then
-            msbuild.exe Firestorm.sln -p:Configuration=${BTYPE} -flp:LogFile="logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
-                -flp1:"errorsonly;LogFile=logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
-                -verbosity:normal -toolsversion:Current -p:"VCBuildAdditionalOptions= /incremental"
+        if [ $WANTS_NINJA -eq $TRUE ] ; then
+            if [ $JOBS == "0" ] ; then
+                JOBS="${NUMBER_OF_PROCESSORS:-4}"
+            fi
+            ninja -j $JOBS | tee -a $LOG
+            if [ ${PIPESTATUS[0]} -ne 0 ]; then
+                echo "Ninja build failed for $TARGET_PLATFORM" | tee -a $LOG
+                exit 1
+            fi
         else
-            msbuild.exe Firestorm.sln -p:Configuration=${BTYPE} -flp:LogFile="logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
-                -flp1:"errorsonly;LogFile=logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
-                -verbosity:normal -toolsversion:15.0 -p:"VCBuildAdditionalOptions= /incremental"
+            if [ "${AUTOBUILD_VSVER}" -ge 170 ] ; then
+                msbuild.exe Firestorm.sln -p:Configuration=${BTYPE} -flp:LogFile="logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
+                    -flp1:"errorsonly;LogFile=logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
+                    -verbosity:normal -toolsversion:Current -p:"VCBuildAdditionalOptions= /incremental"
+            else
+                msbuild.exe Firestorm.sln -p:Configuration=${BTYPE} -flp:LogFile="logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
+                    -flp1:"errorsonly;LogFile=logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
+                    -verbosity:normal -toolsversion:15.0 -p:"VCBuildAdditionalOptions= /incremental"
+            fi
         fi
     fi
 fi
