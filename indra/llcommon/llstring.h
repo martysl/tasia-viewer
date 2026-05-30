@@ -753,6 +753,8 @@ LL_COMMON_API std::string utf8str_removeCRLF(const std::string& utf8str);
 
 
 #if LL_WINDOWS
+#include "llwin32headerslean.h"
+
 /* @name Windows string helpers
  */
 //@{
