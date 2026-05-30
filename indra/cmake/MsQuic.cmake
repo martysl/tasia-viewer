@@ -34,7 +34,20 @@ set(_msquic_saved_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL}")
 set(_msquic_saved_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 set(_msquic_saved_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE}")
 
+# MsQuic C code does not compile under C++ (/TP forced by 00-Common.cmake).
+# Save the global /TP compile option and replace with /TC for this sub-build.
+if(WINDOWS)
+    get_directory_property(_msquic_saved_COMPILE_OPTIONS COMPILE_OPTIONS)
+    set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
+    add_compile_options(/TC)
+endif()
+
 FetchContent_MakeAvailable(msquic)
+
+if(WINDOWS)
+    set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
+    add_compile_options(${_msquic_saved_COMPILE_OPTIONS})
+endif()
 
 set(CMAKE_C_FLAGS_DEBUG          "${_msquic_saved_C_FLAGS_DEBUG}")
 set(CMAKE_C_FLAGS_MINSIZEREL     "${_msquic_saved_C_FLAGS_MINSIZEREL}")
