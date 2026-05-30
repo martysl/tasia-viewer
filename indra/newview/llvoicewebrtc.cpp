@@ -1078,28 +1078,28 @@ void LLWebRTCVoiceClient::sendPositionUpdate(bool force)
         nlohmann::json spatial;
 
         spatial["sp"] = {
-            {"x", (int) (mAvatarPosition[0] * 100)},
-            {"y", (int) (mAvatarPosition[1] * 100)},
-            {"z", (int) (mAvatarPosition[2] * 100)}
+            {"x", (int) (mAvatarPosition.mdV[0] * 100)},
+            {"y", (int) (mAvatarPosition.mdV[1] * 100)},
+            {"z", (int) (mAvatarPosition.mdV[2] * 100)}
         };
         spatial["sh"]  = {
-            {"x", (int) (mAvatarRot[0] * 100)},
-            {"y", (int) (mAvatarRot[1] * 100)},
-            {"z", (int) (mAvatarRot[2] * 100)},
-            {"w", (int) (mAvatarRot[3] * 100)}
+            {"x", (int) (mAvatarRot.mQ[0] * 100)},
+            {"y", (int) (mAvatarRot.mQ[1] * 100)},
+            {"z", (int) (mAvatarRot.mQ[2] * 100)},
+            {"w", (int) (mAvatarRot.mQ[3] * 100)}
         };
 
         spatial["lp"] = {
-            {"x", (int) (mListenerPosition[0] * 100)},
-            {"y", (int) (mListenerPosition[1] * 100)},
-            {"z", (int) (mListenerPosition[2] * 100)}
+            {"x", (int) (mListenerPosition.mdV[0] * 100)},
+            {"y", (int) (mListenerPosition.mdV[1] * 100)},
+            {"z", (int) (mListenerPosition.mdV[2] * 100)}
         };
 
         spatial["lh"] = {
-            {"x", (int) (mListenerRot[0] * 100)},
-            {"y", (int) (mListenerRot[1] * 100)},
-            {"z", (int) (mListenerRot[2] * 100)},
-            {"w", (int) (mListenerRot[3] * 100)}};
+            {"x", (int) (mListenerRot.mQ[0] * 100)},
+            {"y", (int) (mListenerRot.mQ[1] * 100)},
+            {"z", (int) (mListenerRot.mQ[2] * 100)},
+            {"w", (int) (mListenerRot.mQ[3] * 100)}};
 
         mSpatialCoordsDirty = false;
         spatial_data = spatial.dump();
