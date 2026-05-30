@@ -805,6 +805,7 @@ set(viewer_SOURCE_FILES
     llvoiceclient.cpp
     llvoicevisualizer.cpp
     llvoicevivox.cpp
+    llvoicewebrtc.cpp
     llvoinventorylistener.cpp
     llvopartgroup.cpp
     llvosky.cpp
@@ -1594,6 +1595,7 @@ set(viewer_HEADER_FILES
     llvoiceclient.h
     llvoicevisualizer.h
     llvoicevivox.h
+    llvoicewebrtc.h
     llvoinventorylistener.h
     llvopartgroup.h
     llvosky.h
