@@ -10,34 +10,37 @@
 - llscreenchannel.h: added notification channel UUID constants
 - loversion.h copied from current/PBR to legacy
 - Legacy fsfloaterim.cpp/fsfloaternearbychat.cpp fixed for legacy font APIs
-- **llimview.cpp**: All 6 voice API mismatches fixed:
-  1. LLVoiceChannelP2P constructor → added 4th arg (outgoingInterface)
-  2. LLVoiceChannelGroup constructor → added 3rd arg (is_p2p = false)
-  3. endUserIMSession → removed (no equivalent in new API)
-  4. isValidChannel → replaced with getIncomingCallInterface check
-  5. Two declineInvite calls → replaced with call->declineInvite() via incoming interface
-  6. setSessionHandle → replaced with LLSD-based addP2PSession (matches header declaration)
-- File restored to lostorm-13 baseline with voice API fixes applied (reverts PBR replacement)
+- **llimview.cpp**: All 6 voice API mismatches fixed, restored to lostorm-13 baseline
+- **llvoavatar.cpp**: Restored from lostorm-13, Tasia tag badges re-applied
+- **boost::json → nlohmann::json**: Replaced boost 1.83 dependency with nlohmann-json3-dev (CI, works alongside autobuild boost 1.72)
+- **llvoicewebrtc.cpp/.h**: Added `workqueue.h` include, replaced PBR-only `LL_PROFILE_ZONE_SCOPED_CATEGORY_VOICE` with `_VOLUME`
+- **llvoicewebrtc.h**: Fixed `LL::WorkQueue::weak_t` missing include
+- **llvoicewebrtc.cpp**: Fixed `LLVector3d::operator[]` → `.mdV[]`, `LLQuaternion::operator[]` → `.mQ[]` (PBR APIs not in legacy)
+- **postToMainCoro** (PBR-only): Replaced with direct `LLFirstUse::speak()` calls in `llvoicevivox.cpp` and `llvoicewebrtc.cpp`
+- **CMakeLists.txt**: Added `llvoicewebrtc.cpp/.h` to the build
+- **Linux CI passes**: 1375/1375 → links → packages → uploads real ~316 MB artifact
+
+## CI branches
+- `tasia-legacy-port` — **Linux CI only** (passes, produces real artifact)
+- `tasia-legacy-port-win` — **Windows CI** (created to keep Windows fixes separate)
 
 ## What is broken
 - **Windows CI** still produces 194-byte placeholder artifact instead of real installer
-- **Linux CI** currently in progress (run 26565850569, started 09:14Z May 28)
-- Previous Linux run (26546679374) failed on llimview.cpp voice API mismatches; this run should get past that
+- Windows CI reports "success" but the artifact is empty/fake
 
-## What was last attempted
-- Fixed all 6 voice API calls in llimview.cpp
-- Pushed to `martysl/tasia-viewer` repo, `tasia-legacy-port` branch
-- Windows CI completed with "success" but produces 194-byte placeholder artifact
-- Linux CI currently in progress
+## What was last attempted (Linux)
+- CI run 26694360564 completed successfully on 2026-05-30
+- Final fix: `LLVector3d::operator[]` / `LLQuaternion::operator[]` → direct member access
+- All 1375 targets compiled without errors, linked, and packaged
 
 ## What must not be changed
 - llappviewer.cpp must remain lostorm-13 baseline with only our 2 includes
 - Don't drag in PBR-era dependencies
 - Preserve MsQuic/QUIC by deliberate port, not removal
 - llimview.cpp must use lostorm-13 baseline with surgical voice API fixes, not PBR replacement
+- `tasia-legacy-port` branch stays Linux-only; Windows CI fixes go to `tasia-legacy-port-win`
 
 ## Next actions
-1. Wait for Linux CI to finish
-2. If Linux CI passes (real artifact > 50 MiB), fix Windows CI
-3. Runtime-test: QUIC padlock, emoji picker, voice
-4. Clean up stale todo entries
+1. Fix Windows CI on `tasia-legacy-port-win` branch
+2. Runtime-test: QUIC padlock, emoji picker, voice (after Windows also passes)
+3. Clean up stale workflow runs
