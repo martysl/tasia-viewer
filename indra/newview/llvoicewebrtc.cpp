@@ -473,7 +473,7 @@ void LLWebRTCVoiceClient::voiceConnectionCoro()
         LLMuteList::getInstance()->addObserver(this);
         while (!sShuttingDown)
         {
-            LL_PROFILE_ZONE_NAMED_CATEGORY_VOICE("voiceConnectionCoroLoop")
+            LL_PROFILE_ZONE_NAMED_CATEGORY_VOLUME("voiceConnectionCoroLoop")
             // TODO: Doing some measurement and calculation here,
             // we could reduce the timeout to take into account the
             // time spent on the previous loop to have the loop
@@ -2690,7 +2690,7 @@ bool LLVoiceWebRTCConnection::connectionStateMachine()
     {
         case VOICE_STATE_START_SESSION:
         {
-            LL_PROFILE_ZONE_NAMED_CATEGORY_VOICE("VOICE_STATE_START_SESSION")
+            LL_PROFILE_ZONE_NAMED_CATEGORY_VOLUME("VOICE_STATE_START_SESSION")
             if (mShutDown)
             {
                 setVoiceConnectionState(VOICE_STATE_SESSION_EXIT);
