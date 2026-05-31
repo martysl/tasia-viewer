@@ -2173,6 +2173,8 @@ add_executable(${VIEWER_BINARY_NAME}
     ${viewer_SOURCE_FILES}
     )
 
+target_include_directories(${VIEWER_BINARY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
 if (pch_output)
 	add_custom_target(pch_target
 		DEPENDS ${pch_output}
