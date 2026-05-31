@@ -2308,9 +2308,12 @@ if (WINDOWS)
       COMMENT "Performing viewer_manifest copy"
       )
 
-    add_custom_target(copy_w_viewer_manifest ALL DEPENDS ${CMAKE_CFG_INTDIR}/copy_touched.bat)
+    # <FS:Tasia> Disable viewer manifest on Windows (requires runtime DLLs that
+    # aren't staged correctly with Ninja). Remove ALL and dependency so the
+    # build succeeds without packaging. Can be re-enabled once packaging is fixed.
+    add_custom_target(copy_w_viewer_manifest DEPENDS ${CMAKE_CFG_INTDIR}/copy_touched.bat)
 
-    add_dependencies(${VIEWER_BINARY_NAME} stage_third_party_libs llcommon copy_w_viewer_manifest)
+    add_dependencies(${VIEWER_BINARY_NAME} stage_third_party_libs llcommon)
 
     if (EXISTS ${CMAKE_SOURCE_DIR}/copy_win_scripts)
       add_dependencies(${VIEWER_BINARY_NAME} copy_win_scripts)
