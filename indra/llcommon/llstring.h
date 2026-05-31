@@ -753,8 +753,6 @@ LL_COMMON_API std::string utf8str_removeCRLF(const std::string& utf8str);
 
 
 #if LL_WINDOWS
-#include "llwin32headerslean.h"
-
 /* @name Windows string helpers
  */
 //@{
@@ -830,6 +828,10 @@ template<>
 LL_COMMON_API std::wstring windows_message<std::wstring>(unsigned long error);
 
 /// Get Windows message string, implicitly calling GetLastError()
+// Forward-declare GetLastError rather than #include <windows.h>, which would
+// pollute the global namespace and conflict with the lean/non-lean Windows
+// headers pattern used elsewhere in the codebase (e.g. lluuid.cpp).
+extern "C" __declspec(dllimport) unsigned long __stdcall GetLastError();
 template<typename STRING>
 STRING windows_message() { return windows_message<STRING>(GetLastError()); }
 
