@@ -98,6 +98,7 @@ if (WINDOWS)
           /W3
           /c
           /Zc:forScope
+          /wd4996          # Disable deprecated CRT warnings (sscanf, sprintf, fopen, etc.)
           /nologo
           /Oy-
           /Oi
