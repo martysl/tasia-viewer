@@ -94,6 +94,7 @@ if (WINDOWS)
           /Zo
           /GS
           /TP
+          /Zc:wchar_t-    # Firestorm codebase expects wchar_t=unsigned short
           /W3
           /c
           /Zc:forScope
