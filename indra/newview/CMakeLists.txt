@@ -2175,6 +2175,12 @@ add_executable(${VIEWER_BINARY_NAME}
 
 target_include_directories(${VIEWER_BINARY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+# Disable LTCG for the viewer binary — autobuild pre-compiled packages
+# (e.g. libpng16.lib) were compiled with a different MSVC version than
+# FetchContent packages (MsQuic), causing LNK1257 at link time when LTCG
+# detects mismatched compiler version stamps.
+set_target_properties(${VIEWER_BINARY_NAME} PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
+
 if (pch_output)
 	add_custom_target(pch_target
 		DEPENDS ${pch_output}
