@@ -1238,7 +1238,14 @@ void LLWebRTCPeerConnectionImpl::OnSuccess(webrtc::SessionDescriptionInterface *
         int bandwidth  = 0;
         int payload_id = 0;
         // force mono down, stereo up
+#if LL_WINDOWS
+#pragma warning(push)
+#pragma warning(disable: 4996) // sscanf is safe here (fixed format string, no buffer overrun)
+#endif
         if (std::sscanf(sdp_line.c_str(), "a=rtpmap:%i opus/%i/2", &payload_id, &bandwidth) == 2)
+#if LL_WINDOWS
+#pragma warning(pop)
+#endif
         {
             opus_payload = std::to_string(payload_id);
             sdp_mangled_stream << "a=rtpmap:" << opus_payload << " opus/48000/2" << "\n";
