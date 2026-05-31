@@ -108,9 +108,9 @@ public:
     void updateCallButton();
     void changed(U32 mask);
     // ## Zi: overridden to fix the IM focus bug - FIRE-3989 etc.
-    bool focusFirstItem(bool prefer_text_fields = false, bool focus_flash = true );
+    BOOL focusFirstItem(BOOL prefer_text_fields = FALSE, BOOL focus_flash = TRUE);
 
-    void onVisibilityChange(bool new_visibility);
+    void onVisibilityChange(BOOL new_visibility);
     void processIMTyping(const LLUUID& from_id, bool typing);
     void processAgentListUpdates(const LLSD& body);
 

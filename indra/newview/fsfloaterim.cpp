@@ -190,7 +190,7 @@ FSFloaterIM::FSFloaterIM(const LLUUID& session_id)
 }
 
 // virtual
-bool FSFloaterIM::focusFirstItem(bool prefer_text_fields, bool focus_flash)
+BOOL FSFloaterIM::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash)
 {
     mInputEditor->setFocus(true);
     onTabInto();
@@ -340,7 +340,7 @@ void FSFloaterIM::newIMCallback(const LLSD& data){
     }
 }
 
-void FSFloaterIM::onVisibilityChange(bool new_visibility)
+void FSFloaterIM::onVisibilityChange(BOOL new_visibility)
 {
     LLVoiceChannel* voice_channel = LLIMModel::getInstance()->getVoiceChannel(mSessionID);
 
