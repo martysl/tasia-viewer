@@ -2146,7 +2146,6 @@ void FSChatHistory::appendMessage(const LLChat& chat, const LLSD &args, const LL
         }
     }
 
-    F32 alpha = 1.f;
     LLColor4 txt_color(LLUIColorTable::instance().getColor("White"));
     LLColor4 name_color(LLUIColorTable::instance().getColor("ChatNameColor"));
     LLSD chat_args = LLSD::emptyMap();
