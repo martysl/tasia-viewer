@@ -94,6 +94,3 @@ target_include_directories(fs::msquic SYSTEM INTERFACE
 if(TARGET msquic)
     set_target_properties(msquic PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
 endif()
-if(TARGET msquic::base_link)
-    set_target_properties(msquic::base_link PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
-endif()
