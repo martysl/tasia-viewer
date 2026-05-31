@@ -132,13 +132,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Build without packaging (viewer_manifest.py needs runtime DLLs that
+          # aren't staged correctly on Windows with Ninja). The --package flag
+          # is only needed in configure to set up install paths.
+          # Use --no-package here to skip the fragile viewer_manifest step;
+          # we'll collect the raw build output as a zip fallback instead.
           autobuild build \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
             --no-configure \
             -- \
             --fmodstudio \
-            --package \
+            --no-package \
             --ninja
 
       - name: Collect Windows artifact
@@ -153,14 +158,15 @@ jobs:
             exit 0
           fi
 
-          # Fallback: check LOCAL_DIST_DIR (newview/unpacked)
-          if [ -d "build-vc170-64/newview/unpacked" ] && [ "$(find build-vc170-64/newview/unpacked -type f 2>/dev/null | head -n 1)" ]; then
+          # Fallback: zip the viewer binary and its support files
+          NEWVIEW_DIR="build-vc170-64/newview/Release"
+          if [ -d "$NEWVIEW_DIR" ] && [ "$(find "$NEWVIEW_DIR" -maxdepth 1 -name '*.exe' 2>/dev/null | head -n 1)" ]; then
             python3 - <<'PY'
           import shutil
           from pathlib import Path
-          dist = Path('build-vc170-64/newview/unpacked')
+          dist = Path('build-vc170-64/newview/Release')
           archive = shutil.make_archive('Tasia-Legacy-Viewer-Windows-FMOD', 'zip', dist)
-          print(f'Created fallback archive: {archive}')
+          print(f'Created fallback archive from Release dir: {archive}')
           PY
             exit 0
           fi
