@@ -56,8 +56,8 @@ public:
     void    addMessage(const LLChat& message,bool archive = true, const LLSD &args = LLSD());
 
     /*virtual*/ void onOpen(const LLSD& key);
-    /*virtual*/ void setVisible(bool visible);
-    /*virtual*/ void setMinimized(bool b);
+    /*virtual*/ void setVisible(BOOL visible);
+    /*virtual*/ void setMinimized(BOOL b);
 
     void    openFloater(const LLSD& key);
 

@@ -404,7 +404,7 @@ void FSFloaterNearbyChat::removeScreenChat()
     }
 }
 
-void FSFloaterNearbyChat::setVisible(bool visible)
+void FSFloaterNearbyChat::setVisible(BOOL visible)
 {
     if (visible)
     {
@@ -440,7 +440,7 @@ void FSFloaterNearbyChat::setVisible(bool visible)
     }
 }
 
-void FSFloaterNearbyChat::setMinimized(bool b)
+void FSFloaterNearbyChat::setMinimized(BOOL b)
 {
     handleMinimized(b);
 
