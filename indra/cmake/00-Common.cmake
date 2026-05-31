@@ -20,6 +20,12 @@ include(Variables)
 # <FS:Ansariel> Use the previous version for Windows or the compile command line will be screwed up royally
 if (WINDOWS)
   set(CMAKE_CXX_FLAGS_RELEASE "$ENV{LL_BUILD_RELEASE}")
+  # Strip /GL (Whole Program Optimization) from release flags — autobuild
+  # pre-compiled packages (libpng16.lib) use a different MSVC version than
+  # FetchContent packages (MsQuic), causing LNK1257 at link time when LTCG
+  # detects mismatched compiler version stamps.
+  string(REPLACE "/GL" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+  string(REPLACE "/GL" "" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "$ENV{LL_BUILD_RELWITHDEBINFO}")
   set(CMAKE_CXX_FLAGS_DEBUG "$ENV{LL_BUILD_DEBUG}")
 else (WINDOWS)

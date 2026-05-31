@@ -16,6 +16,13 @@ set(ROOT_PROJECT_NAME "Firestorm" CACHE STRING
     "The root project/makefile/solution name. Defaults to Firestorm.")
 project(${ROOT_PROJECT_NAME})
 
+# Disable interprocedural optimization globally — autobuild pre-compiled
+# packages (libpng16.lib) use a different MSVC version than FetchContent
+# packages (MsQuic), causing LNK1257 when LTCG detects mismatched compiler
+# version stamps at link time.
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE OFF)
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake"  "${CMAKE_CURRENT_BINARY_DIR}")
 
 include(conanbuildinfo OPTIONAL RESULT_VARIABLE USE_CONAN )

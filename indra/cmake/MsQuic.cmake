@@ -88,3 +88,12 @@ add_library(fs::msquic INTERFACE IMPORTED)
 target_link_libraries(fs::msquic INTERFACE msquic msquic::base_link)
 target_include_directories(fs::msquic SYSTEM INTERFACE
     ${msquic_SOURCE_DIR}/src/inc)
+# Disable IPO for msquic — it would propagate to the viewer binary and
+# cause LNK1257 when linked against autobuild packages. The msquic target
+# itself may enable IPO, we override it here to prevent the mismatch.
+if(TARGET msquic)
+    set_target_properties(msquic PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
+endif()
+if(TARGET msquic::base_link)
+    set_target_properties(msquic::base_link PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
+endif()
