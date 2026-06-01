@@ -251,3 +251,24 @@ jobs:
           if-no-files-found: error
           path: |
             Tasia-Legacy-Viewer-Windows-FMOD.*
+
+      - name: Publish GitHub Release
+        if: ${{ github.event.inputs.publish_release == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="v8.0.1-${{ github.run_number }}-windows"
+          RELEASE_FILES=()
+          for f in Tasia-Legacy-Viewer-Windows-FMOD.*; do
+            [ -f "$f" ] && RELEASE_FILES+=("$f")
+          done
+          if [ ${#RELEASE_FILES[@]} -eq 0 ]; then
+            echo "::error::No release files found"
+            exit 1
+          fi
+          gh release create "$TAG" \
+            --title "Tasia Legacy Viewer ${{ github.run_number }} Windows" \
+            --notes "Automated Windows build of Tasia Legacy Viewer." \
+            --prerelease \
+            "${RELEASE_FILES[@]}"
