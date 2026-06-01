@@ -25,10 +25,17 @@ FetchContent_Declare(
   GIT_SHALLOW    FALSE
 )
 
+set(_msquic_saved_C_FLAGS               "${CMAKE_C_FLAGS}")
 set(_msquic_saved_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}")
 set(_msquic_saved_C_FLAGS_MINSIZEREL     "${CMAKE_C_FLAGS_MINSIZEREL}")
 set(_msquic_saved_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
 set(_msquic_saved_C_FLAGS_RELEASE        "${CMAKE_C_FLAGS_RELEASE}")
+# Strip /GL from C flags before building MsQuic — MsQuic itself enables LTCG
+# internally, which causes the linker to auto-enable /LTCG and then fail with
+# LNK1257 when autobuild packages have mismatched MSVC version stamps.
+string(REPLACE "/GL" "" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+string(REPLACE "/GL" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+set(_msquic_saved_CXX_FLAGS               "${CMAKE_CXX_FLAGS}")
 set(_msquic_saved_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG}")
 set(_msquic_saved_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL}")
 set(_msquic_saved_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
@@ -49,10 +56,12 @@ if(WINDOWS)
     add_compile_options(${_msquic_saved_COMPILE_OPTIONS})
 endif()
 
+set(CMAKE_C_FLAGS               "${_msquic_saved_C_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG          "${_msquic_saved_C_FLAGS_DEBUG}")
 set(CMAKE_C_FLAGS_MINSIZEREL     "${_msquic_saved_C_FLAGS_MINSIZEREL}")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${_msquic_saved_C_FLAGS_RELWITHDEBINFO}")
 set(CMAKE_C_FLAGS_RELEASE        "${_msquic_saved_C_FLAGS_RELEASE}")
+set(CMAKE_CXX_FLAGS               "${_msquic_saved_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG          "${_msquic_saved_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_MINSIZEREL     "${_msquic_saved_CXX_FLAGS_MINSIZEREL}")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${_msquic_saved_CXX_FLAGS_RELWITHDEBINFO}")
