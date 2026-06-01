@@ -133,34 +133,54 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # viewer_manifest.py searches for runtime DLLs in
-          # build-vc170-64/sharedlibs/Release but autobuild installs
-          # them to packages/lib/release when using Ninja.
-          # Copy them to where the manifest expects them.
           SHAREDLIBS="build-vc170-64/sharedlibs/Release"
           PKGLIBS="build-vc170-64/packages/lib/release"
           mkdir -p "$SHAREDLIBS"
+
+          # Copy DLLs from autobuild packages (where Ninja puts them)
           if [ -d "$PKGLIBS" ]; then
             find "$PKGLIBS" -maxdepth 1 -name '*.dll' -exec cp -v {} "$SHAREDLIBS/" \;
-            echo "Staged $(ls "$SHAREDLIBS"/*.dll 2>/dev/null | wc -l) DLLs to sharedlibs/Release"
+            echo "Staged $(ls "$SHAREDLIBS"/*.dll 2>/dev/null | wc -l) DLLs from packages/lib/release"
           else
-            echo "WARNING: $PKGLIBS not found — packaging may fail"
+            echo "WARNING: $PKGLIBS not found"
           fi
+
+          # Copy MSVC runtime DLLs (msvcp140.dll, vcruntime140.dll) from the
+          # Visual Studio 2022 VC Redist directory. These aren't in autobuild
+          # packages but are needed by the viewer at runtime and expected by
+          # viewer_manifest.py.
+          VS_REDIST="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Redist/MSVC"
+          if [ -d "$VS_REDIST" ]; then
+            REDIST_DIR="$(find "$VS_REDIST" -maxdepth 1 -type d | sort -V | tail -n 1)"
+            if [ -n "$REDIST_DIR" ]; then
+              X64_DIR="$REDIST_DIR/x64/Microsoft.VC143.CRT"
+              if [ -d "$X64_DIR" ]; then
+                cp -v "$X64_DIR/msvcp140.dll" "$SHAREDLIBS/" 2>/dev/null || echo "msvcp140.dll not found in $X64_DIR"
+                cp -v "$X64_DIR/vcruntime140.dll" "$SHAREDLIBS/" 2>/dev/null || echo "vcruntime140.dll not found in $X64_DIR"
+                echo "Copied MSVC CRT DLLs from $X64_DIR"
+              else
+                echo "WARNING: $X64_DIR not found"
+              fi
+            fi
+          else
+            echo "WARNING: VS Redist dir not found at $VS_REDIST"
+          fi
+
+          echo "Final DLL count in sharedlibs/Release: $(ls "$SHAREDLIBS"/*.dll 2>/dev/null | wc -l)"
 
       - name: Build Windows with FMOD
         shell: bash
         run: |
           set -euo pipefail
-          # Keep --no-package to skip the fragile viewer_manifest step
-          # (it needs runtime DLLs not staged correctly on Ninja).
-          # The binary and its dependencies are still built.
+          # Full build including packaging (viewer_manifest.py). Runtime DLLs
+          # were staged to sharedlibs/Release in the previous step so the
+          # manifest can find them.
           autobuild build \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
             --no-configure \
             -- \
             --fmodstudio \
-            --no-package \
             --ninja
 
       - name: Collect Windows artifact
