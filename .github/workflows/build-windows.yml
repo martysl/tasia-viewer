@@ -153,7 +153,7 @@ jobs:
       - name: Restore Windows build cache
         if: runner.os == 'Windows'
         id: restore-windows-build-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |
             build-vc170-64
@@ -265,7 +265,7 @@ jobs:
 
       - name: Save Windows build cache
         if: always() && runner.os == 'Windows'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             build-vc170-64
