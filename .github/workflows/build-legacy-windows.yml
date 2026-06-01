@@ -143,31 +143,47 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Try to find a package file (zip, exe, 7z, tar.*) from the build
-          PACKAGE="$(find build-vc170-64 -maxdepth 4 -type f \( -name '*.zip' -o -name '*.exe' -o -name '*.7z' -o -name '*.tar.xz' -o -name '*.tar.bz2' \) 2>/dev/null | head -n 1)"
-          if [ -n "$PACKAGE" ]; then
-            cp "$PACKAGE" "Tasia-Legacy-Viewer-Windows-FMOD.${PACKAGE##*.}"
-            echo "Collected package: $PACKAGE"
-            exit 0
+          # Find the actual viewer binary (firestorm-bin.exe) in the build tree.
+          # The CMake packaging step (viewer_manifest.py) is skipped because
+          # runtime DLLs aren't staged correctly with Ninja on Windows, so
+          # we grab the raw binary + any support files directly.
+          VIEWER_EXE="$(find build-vc170-64 -type f -name 'firestorm-bin.exe' 2>/dev/null | head -n 1)"
+          if [ -z "$VIEWER_EXE" ]; then
+            echo "ERROR: firestorm-bin.exe not found in build tree"
+            find build-vc170-64 -maxdepth 5 -type f 2>/dev/null | head -100
+            exit 1
           fi
 
-          # Fallback: zip the viewer binary and its support files
-          NEWVIEW_DIR="build-vc170-64/newview/Release"
-          if [ -d "$NEWVIEW_DIR" ] && [ "$(find "$NEWVIEW_DIR" -maxdepth 1 -name '*.exe' 2>/dev/null | head -n 1)" ]; then
-            python3 - <<'PY'
-          import shutil
-          from pathlib import Path
-          dist = Path('build-vc170-64/newview/Release')
+          echo "Found viewer binary: $VIEWER_EXE"
+          DIST_DIR="build-vc170-64/newview/install"
+          mkdir -p "$DIST_DIR"
+
+          # Copy the viewer binary
+          cp "$VIEWER_EXE" "$DIST_DIR/Tasia-Legacy-Viewer-Windows-FMOD.exe"
+
+          # Collect available runtime DLLs from the build tree
+          # (autobuild packages are installed to build-vc170-64/sharedlibs/)
+          SHAREDLIBS="build-vc170-64/packages/lib/release"
+          if [ -d "$SHAREDLIBS" ]; then
+            find "$SHAREDLIBS" -maxdepth 1 -name '*.dll' 2>/dev/null -exec cp {} "$DIST_DIR/" \;
+            echo "Copied DLLs from packages/lib/release"
+          fi
+          SHAREDLIBS2="build-vc170-64/sharedlibs/Release"
+          if [ -d "$SHAREDLIBS2" ]; then
+            find "$SHAREDLIBS2" -maxdepth 1 -name '*.dll' 2>/dev/null -exec cp {} "$DIST_DIR/" \;
+            echo "Copied DLLs from sharedlibs/Release"
+          fi
+
+          ls -la "$DIST_DIR/"
+          python3 -c "
+          import shutil, os
+          dist = os.path.abspath('$DIST_DIR')
+          # Skip empty DLL directories
+          archives = [f for f in os.listdir(dist) if f.endswith(('.exe', '.dll'))]
+          print(f'Collected {len(archives)} files ({sum(os.path.getsize(os.path.join(dist,f)) for f in archives) / 1024 / 1024:.1f} MB)')
           archive = shutil.make_archive('Tasia-Legacy-Viewer-Windows-FMOD', 'zip', dist)
-          print(f'Created fallback archive from Release dir: {archive}')
-          PY
-            exit 0
-          fi
-
-          # Last resort: list build output so we can debug
-          echo "ERROR: No package or install output found."
-          find build-vc170-64 -maxdepth 5 -type f 2>/dev/null | head -100
-          exit 1
+          print(f'Created archive: {archive}')
+          "
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
