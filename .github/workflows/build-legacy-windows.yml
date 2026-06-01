@@ -200,8 +200,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # First try to find a package produced by the manifest
-          PACKAGE="$(find build-vc170-64 -maxdepth 4 -type f \( -name '*.zip' -o -name '*.exe' -o -name '*.7z' -o -name '*.tar.xz' -o -name '*.tar.bz2' \) 2>/dev/null | grep -vi 'firestorm-bin\|\.pdb\|touched' | head -n 1)"
+          # First try to find the NSIS installer produced by viewer_manifest.py
+          PACKAGE="$(find build-vc170-64 -maxdepth 4 -type f -name '*_Setup.exe' 2>/dev/null | head -n 1)"
+          if [ -z "$PACKAGE" ]; then
+            # Fallback: try other package formats but exclude tiny/test files
+            PACKAGE="$(find build-vc170-64 -maxdepth 4 -type f \( -name '*.zip' -o -name '*.7z' -o -name '*.tar.*' \) 2>/dev/null | head -n 1)"
+          fi
           if [ -n "$PACKAGE" ]; then
             cp "$PACKAGE" "Tasia-Legacy-Viewer-Windows-FMOD.${PACKAGE##*.}"
             echo "Collected package: $PACKAGE ($(du -h "$PACKAGE" | cut -f1))"
