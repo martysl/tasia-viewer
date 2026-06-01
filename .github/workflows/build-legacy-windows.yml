@@ -133,19 +133,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Build without packaging (viewer_manifest.py needs runtime DLLs that
-          # aren't staged correctly on Windows with Ninja). The --package flag
-          # is only needed in configure to set up install paths.
-          # Use --no-package here to skip the fragile viewer_manifest step;
-          # we'll collect the raw build output as a zip fallback instead.
-          autobuild build \
-            -c ReleaseFS_open \
-            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
-            --no-configure \
-            -- \
-            --fmodstudio \
-            --no-package \
-            --ninja
+          # Build just the viewer binary with ninja (skip packaging —
+          # viewer_manifest.py needs runtime DLLs not staged correctly
+          # on Windows with Ninja). We'll collect the raw output as a
+          # zip fallback instead.
+          ninja -C build-vc170-64 newview/firestorm-bin.exe
 
       - name: Collect Windows artifact
         shell: bash
