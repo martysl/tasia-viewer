@@ -25,47 +25,43 @@ FetchContent_Declare(
   GIT_SHALLOW    FALSE
 )
 
-set(_msquic_saved_C_FLAGS               "${CMAKE_C_FLAGS}")
-set(_msquic_saved_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}")
-set(_msquic_saved_C_FLAGS_MINSIZEREL     "${CMAKE_C_FLAGS_MINSIZEREL}")
-set(_msquic_saved_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
-set(_msquic_saved_C_FLAGS_RELEASE        "${CMAKE_C_FLAGS_RELEASE}")
-# Strip /GL from C flags before building MsQuic — MsQuic itself enables LTCG
-# internally, which causes the linker to auto-enable /LTCG and then fail with
-# LNK1257 when autobuild packages have mismatched MSVC version stamps.
-string(REPLACE "/GL" "" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
-string(REPLACE "/GL" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-set(_msquic_saved_CXX_FLAGS               "${CMAKE_CXX_FLAGS}")
-set(_msquic_saved_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG}")
-set(_msquic_saved_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL}")
-set(_msquic_saved_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-set(_msquic_saved_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE}")
+# ---------------------------------------------------------------------------
+# Populate MsQuic manually so we can patch its CMakeLists.txt before building.
+# MsQuic v2.5.7 unconditionally adds /GL (LTCG) to CMAKE_C_FLAGS_RELEASE
+# and /LTCG to linker flags. With LTCG enabled, the linker checks all objects
+# and libraries for matching MSVC-version stamps and fails with LNK1257 when
+# autobuild pre-compiled packages (libpng16.lib) use a different MSVC version
+# than the FetchContent build. We strip /GL and /LTCG from the fetched source
+# to work around this.
+# ---------------------------------------------------------------------------
+FetchContent_GetProperties(msquic)
+if(NOT msquic_POPULATED)
+    FetchContent_Populate(msquic)
 
-# MsQuic C code does not compile under C++ (/TP forced by 00-Common.cmake).
-# Save the global /TP compile option and replace with /TC for this sub-build.
+    # Patch MsQuic's CMakeLists.txt to remove /GL and /LTCG flags.
+    set(_msquic_patch_file "${msquic_SOURCE_DIR}/CMakeLists.txt")
+    file(READ "${_msquic_patch_file}" _msquic_content)
+    string(REPLACE "/GL " "" _msquic_content "${_msquic_content}")
+    string(REPLACE "/LTCG " "" _msquic_content "${_msquic_content}")
+    string(REPLACE "/LTCG\"" "" _msquic_content "${_msquic_content}")   # end of string
+    file(WRITE "${_msquic_patch_file}" "${_msquic_content}")
+endif()
+
+# We need to suppress the /TP global compile option that 00-Common.cmake adds.
+# MsQuic is C code and won't compile under C++. Save/restore COMPILE_OPTIONS
+# around the subdirectory add.
 if(WINDOWS)
     get_directory_property(_msquic_saved_COMPILE_OPTIONS COMPILE_OPTIONS)
     set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
     add_compile_options(/TC)
 endif()
 
-FetchContent_MakeAvailable(msquic)
+add_subdirectory(${msquic_SOURCE_DIR} ${msquic_BINARY_DIR})
 
 if(WINDOWS)
     set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
     add_compile_options(${_msquic_saved_COMPILE_OPTIONS})
 endif()
-
-set(CMAKE_C_FLAGS               "${_msquic_saved_C_FLAGS}")
-set(CMAKE_C_FLAGS_DEBUG          "${_msquic_saved_C_FLAGS_DEBUG}")
-set(CMAKE_C_FLAGS_MINSIZEREL     "${_msquic_saved_C_FLAGS_MINSIZEREL}")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${_msquic_saved_C_FLAGS_RELWITHDEBINFO}")
-set(CMAKE_C_FLAGS_RELEASE        "${_msquic_saved_C_FLAGS_RELEASE}")
-set(CMAKE_CXX_FLAGS               "${_msquic_saved_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS_DEBUG          "${_msquic_saved_CXX_FLAGS_DEBUG}")
-set(CMAKE_CXX_FLAGS_MINSIZEREL     "${_msquic_saved_CXX_FLAGS_MINSIZEREL}")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${_msquic_saved_CXX_FLAGS_RELWITHDEBINFO}")
-set(CMAKE_CXX_FLAGS_RELEASE        "${_msquic_saved_CXX_FLAGS_RELEASE}")
 
 if (UNIX AND NOT APPLE)
     find_program(MSQUIC_NM_EXE nm)
@@ -97,9 +93,3 @@ add_library(fs::msquic INTERFACE IMPORTED)
 target_link_libraries(fs::msquic INTERFACE msquic msquic::base_link)
 target_include_directories(fs::msquic SYSTEM INTERFACE
     ${msquic_SOURCE_DIR}/src/inc)
-# Disable IPO for msquic — it would propagate to the viewer binary and
-# cause LNK1257 when linked against autobuild packages. The msquic target
-# itself may enable IPO, we override it here to prevent the mismatch.
-if(TARGET msquic)
-    set_target_properties(msquic PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
-endif()
