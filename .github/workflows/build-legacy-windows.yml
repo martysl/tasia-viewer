@@ -145,28 +145,41 @@ jobs:
             echo "WARNING: $PKGLIBS not found"
           fi
 
-          # Copy MSVC runtime DLLs (msvcp140.dll, vcruntime140.dll) from the
-          # Visual Studio 2022 VC Redist directory. These aren't in autobuild
-          # packages but are needed by the viewer at runtime and expected by
-          # viewer_manifest.py.
-          VS_REDIST="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Redist/MSVC"
-          if [ -d "$VS_REDIST" ]; then
-            REDIST_DIR="$(find "$VS_REDIST" -maxdepth 1 -type d | sort -V | tail -n 1)"
-            if [ -n "$REDIST_DIR" ]; then
-              X64_DIR="$REDIST_DIR/x64/Microsoft.VC143.CRT"
-              if [ -d "$X64_DIR" ]; then
-                cp -v "$X64_DIR/msvcp140.dll" "$SHAREDLIBS/" 2>/dev/null || echo "msvcp140.dll not found in $X64_DIR"
-                cp -v "$X64_DIR/vcruntime140.dll" "$SHAREDLIBS/" 2>/dev/null || echo "vcruntime140.dll not found in $X64_DIR"
-                echo "Copied MSVC CRT DLLs from $X64_DIR"
-              else
-                echo "WARNING: $X64_DIR not found"
-              fi
-            fi
+          # Copy MSVC runtime DLLs (msvcp140.dll, vcruntime140.dll).
+          # The ilammy/msvc-dev-cmd action sets VCToolsRedistDir.
+          REDIST_DIR="${VCToolsRedistDir:-}"
+          if [ -n "$REDIST_DIR" ]; then
+            CRT_DIR="${REDIST_DIR}x64/Microsoft.VC143.CRT"
+            echo "Using VCToolsRedistDir: $REDIST_DIR"
           else
-            echo "WARNING: VS Redist dir not found at $VS_REDIST"
+            # Fallback: search common locations
+            CRT_DIR=""
+            for candidate in \
+              "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Redist/MSVC" \
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC"; do
+              if [ -d "$candidate" ]; then
+                RD="$(find "$candidate" -maxdepth 1 -type d | sort -V | tail -n 1)"
+                if [ -n "$RD" ]; then
+                  CRT_DIR="$RD/x64/Microsoft.VC143.CRT"
+                  echo "Fallback Redist dir: $CRT_DIR"
+                  break
+                fi
+              fi
+            done
+          fi
+
+          if [ -n "$CRT_DIR" ] && [ -d "$CRT_DIR" ]; then
+            cp -v "$CRT_DIR/msvcp140.dll"  "$SHAREDLIBS/" 2>/dev/null || echo "msvcp140.dll not in $CRT_DIR"
+            cp -v "$CRT_DIR/vcruntime140.dll" "$SHAREDLIBS/" 2>/dev/null || echo "vcruntime140.dll not in $CRT_DIR"
+            cp -v "$CRT_DIR/vcruntime140_1.dll" "$SHAREDLIBS/" 2>/dev/null || true
+            echo "Copied MSVC CRT DLLs from $CRT_DIR"
+          else
+            echo "WARNING: MSVC Redist directory not found"
           fi
 
           echo "Final DLL count in sharedlibs/Release: $(ls "$SHAREDLIBS"/*.dll 2>/dev/null | wc -l)"
+          [ -f "$SHAREDLIBS/msvcp140.dll" ] && echo "msvcp140.dll: OK" || echo "msvcp140.dll: MISSING"
+          [ -f "$SHAREDLIBS/vcruntime140.dll" ] && echo "vcruntime140.dll: OK" || echo "vcruntime140.dll: MISSING"
 
       - name: Build Windows with FMOD
         shell: bash
