@@ -67,10 +67,18 @@ if (WINDOWS)
         MSVC_RUNTIME_LIBRARY "MultiThreadedDebug")
 endif (WINDOWS)
 
+set(llwebrtc_STAGE_BYPRODUCTS)
+if (WINDOWS)
+    set(llwebrtc_STAGE_BYPRODUCTS
+        BYPRODUCTS ${SHARED_LIB_STAGING_DIR}/llwebrtc.dll
+        )
+endif (WINDOWS)
+
 ADD_CUSTOM_COMMAND(TARGET llwebrtc POST_BUILD
+                   ${llwebrtc_STAGE_BYPRODUCTS}
                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
                        $<TARGET_FILE:llwebrtc>
-                               ${SHARED_LIB_STAGING_DIR})
+                                ${SHARED_LIB_STAGING_DIR})
 # Add tests
 if (LL_TESTS)
 endif (LL_TESTS)

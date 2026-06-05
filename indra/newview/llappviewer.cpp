@@ -3051,15 +3051,15 @@ bool LLAppViewer::initConfiguration()
         if (gDirUtilp->fileExists(settings_file_list))
         {
             LL_ERRS() << "Cannot load default configuration file settings_files.xml. "
-                << "Please reinstall viewer from https://i.let-us.cyou/ "
-                << "and contact support@easierit.org if issue persists after install."
+                << "Please reinstall viewer from https://www.firestormviewer.org/choose-your-platform/ "
+                << "and contact https://support.easierit.org if issue persists after reinstall."
                 << LL_ENDL;
         }
         else
         {
             LL_ERRS() << "Default configuration file settings_files.xml not found. "
-                << "Please reinstall viewer from https://i.let-us.cyou/ "
-                << "and contact support@easierit.org if issue persists after install."
+                << "Please reinstall viewer from https://www.firestormviewer.org/choose-your-platform/ "
+                << "and contact https://support.easierit.org if issue persists after reinstall."
                 << LL_ENDL;
         }
     }
@@ -3997,7 +3997,7 @@ LLSD LLAppViewer::getViewerInfo() const
 
     // return a URL to the release notes for this viewer, such as:
     // https://releasenotes.secondlife.com/viewer/2.1.0.123456.html
-    // <FS:Ansariel> FIRE-13993: Create URL in the form of https://wiki.firestormviewer.org/firestorm_change_log_x.y.z.rev
+    // <FS:Ansariel> FIRE-13993: Create URL in the form of https://i.let-us.cyou/firestorm_change_log_x.y.z.rev
     //std::string url = versionInfo.getReleaseNotes(); // VVM supplied
     //if (url.empty())
     //{
@@ -4337,7 +4337,7 @@ std::string LLAppViewer::getViewerInfoString(bool unfaked_string) const
 
     // Now build the various pieces
     if (unfaked_string)
-        support << "Tasia Viewer " << LO_VERSION_MAJOR << '.' << LO_VERSION_MINOR << '\n';
+        support << "Freestorm " << LO_VERSION_MAJOR << '.' << LO_VERSION_MINOR << '\n';
     support << LLTrans::getString("AboutHeader", args, default_string);
     //if (info.has("BUILD_CONFIG"))
     //{
@@ -5497,7 +5497,7 @@ void LLAppViewer::badNetworkHandler()
         "the issue. \n"
         " \n"
         "If the problem continues, see the Tech Support FAQ at: \n"
-        "support@easierit.org";
+        "support.easierit.org";
     forceDisconnect(message.str());
 
     LLApp::instance()->writeMiniDump();

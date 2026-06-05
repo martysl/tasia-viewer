@@ -280,6 +280,8 @@ class ViewerManifest(LLManifest,FSViewerManifest):
 
     def channel_type(self): # returns 'release', 'beta', 'project', or 'test'
         channel_qualifier=self.channel_variant().lower()
+        if not channel_qualifier:
+            return 'release'
         #<FS:TS> Somehow, we started leaving the - separating the variant from the app name
         # on the beginning of the channel qualifier. This screws up later processing that
         # depends on the channel type. If it's there, we chop it off.
@@ -327,7 +329,7 @@ class ViewerManifest(LLManifest,FSViewerManifest):
         global CHANNEL_VENDOR_BASE
         # a standard map of strings for replacing in the templates
         #<FS:TS> tag "OS" after CHANNEL_VENDOR_BASE and before any suffix
-        channel_base = "Phoenix-" + CHANNEL_VENDOR_BASE
+        channel_base = CHANNEL_VENDOR_BASE
         if self.fs_is_opensim():
             channel_base = channel_base + "OS"
         #</FS:TS>

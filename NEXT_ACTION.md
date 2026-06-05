@@ -1,5 +1,6 @@
-# NEXT ACTION
+# Next Action
 
+<<<<<<< HEAD
 ## Now: remote Tasia user config
 
 1. Review local branch/worktree `feature/tasia-remote-user-config` at `/tmp/opencode/tasia-user-config`.
@@ -23,10 +24,19 @@ Example supported JSON fields per user:
 ## Now
 - Wait for builds #26180447827 (Linux) and #26180456294 (Windows) to complete
 - Verify the voice mic detection fix works
+=======
+## Current
+1. ✅ Latest releases published:
+   - Linux `v8.0.1-17`
+   - Windows `v8.0.1-44-windows`
+2. ✅ Old releases and old Actions run results cleaned up.
+3. ✅ Discord release announcement sent with direct ZIP links.
+>>>>>>> 43da2163ac (Rebrand to Tasia: channel name, URLs, auto revision)
 
-## After builds pass
-1. Test GIPHY picker works
-2. Test welcome message appears
-3. Test YouTube previews in chat
-4. Test image previews in chat
-5. **Test voice-disabled mic detection** — verify no microphone indicator when voice is disabled
+## Next
+1. Runtime-test both releases with real `config.json` entries (2+ users, different `tag_color`, different badge icons).
+2. Confirm nametag full-color behavior and profile badge visibility across grids.
+3. If stable, keep this as baseline release procedure.
+
+## Blockers
+- None currently.

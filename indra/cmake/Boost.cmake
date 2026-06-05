@@ -8,11 +8,10 @@ if( USE_CONAN )
   return()
 endif()
 
-# Build Boost from source via FetchContent. The autobuild Windows prebuilt for
-# boost 1.86 is missing several Boost.Filesystem symbols that Boost.Wave's
-# templates need (path_traits::convert, path_algorithms::append_v3, ...), so
-# we build all of Boost ourselves to guarantee header/lib consistency on every
-# platform.
+# Build Boost from source via FetchContent. On Windows we use 1.86 to match
+# the prebuilt colladadom (compiled against 1.86). On other platforms 1.87 is
+# fine. Building from source guarantees header/lib consistency and includes all
+# symbols (unlike the autobuild prebuilt 1.86 package which was incomplete).
 include(FetchContent)
 
 set(BOOST_INCLUDE_LIBRARIES
@@ -52,10 +51,21 @@ else()
   string(REGEX REPLACE "(^| )-Werror( |$)" " " CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")
 endif()
 
+# Use Boost 1.86 on Windows to match prebuilt colladadom (compiled against 1.86).
+# Boost 1.87 changed the filesystem ABI (dropped path_traits::convert), which
+# causes unresolved external symbols when linking libcollada14dom23-s.lib.
+if (WINDOWS)
+    set(_ll_boost_version "1.86.0")
+    set(_ll_boost_hash "2c5ec5edcdff47ff55e27ed9560b0a0b94b07bd07ed9928b476150e16b0efc57")
+else()
+    set(_ll_boost_version "1.87.0")
+    set(_ll_boost_hash "7da75f171837577a52bbf217e17f8ea576c7c246e4594d617bfde7fafd408be5")
+endif()
+
 set(_ll_boost_fetchcontent_args
         Boost
-        URL      https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.xz
-        URL_HASH SHA256=7da75f171837577a52bbf217e17f8ea576c7c246e4594d617bfde7fafd408be5
+        URL      https://github.com/boostorg/boost/releases/download/boost-${_ll_boost_version}/boost-${_ll_boost_version}-cmake.tar.xz
+        URL_HASH SHA256=${_ll_boost_hash}
 )
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
   list(APPEND _ll_boost_fetchcontent_args DOWNLOAD_EXTRACT_TIMESTAMP TRUE)

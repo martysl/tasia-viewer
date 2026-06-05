@@ -38,7 +38,7 @@ if (($file['size'] ?? 0) <= 0 || ($file['size'] ?? 0) > $maxBytes) {
     fail(413, 'Invalid minidump size');
 }
 
-$product = preg_replace('/[^A-Za-z0-9_.-]/', '_', (string)($_POST['product'] ?? 'Tasia-Releasex64'));
+$product = preg_replace('/[^A-Za-z0-9_.-]/', '_', (string)($_POST['product'] ?? 'Tasia'));
 $version = preg_replace('/[^A-Za-z0-9_.-]/', '_', (string)($_POST['version'] ?? 'unknown'));
 $stamp = gmdate('Ymd_His');
 $token = bin2hex(random_bytes(8));

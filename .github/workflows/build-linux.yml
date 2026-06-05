@@ -217,7 +217,7 @@ jobs:
             "" \
             "Version: 8.0.1.${GITHUB_RUN_NUMBER}" \
             "Commit: ${GITHUB_SHA::7}" \
-            "Channel: Tasia-Releasex64" \
+            "Channel: Tasia" \
             "FMOD: enabled" \
             "KDU: removed" \
             "" \

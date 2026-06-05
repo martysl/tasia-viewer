@@ -12,4 +12,4 @@ cd symbols
 cp ../viewer/build-darwin-x86_64/newview/Release/Firestorm.xcarchive.zip .
 unzip Firestorm.xcarchive.zip
 rm Firestorm.xcarchive.zip
-npx -y @bugsplat/symbol-upload@10.1.11  -f "**/*.dSYM" -a "Tasia-Releasex64" -v "${VIEWER_VERSION}"
+npx -y @bugsplat/symbol-upload@10.1.11  -f "**/*.dSYM" -a "Tasia" -v "${VIEWER_VERSION}"

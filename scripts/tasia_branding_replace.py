@@ -94,17 +94,48 @@ TEXT_EXTENSIONS = {
 }
 
 
+# -- Protection placeholders -----------------------------------------------
+# These patterns must be preserved (e.g. license headers). We protect them by
+# replacing with a placeholder before any broad replacements run, then restore
+# them afterwards.
+# These license/copyright lines must be preserved as-is.
+# Each gets its own unique placeholder to avoid cross-corruption during restore.
+PROTECTED_PATTERNS = {
+    "Phoenix Firestorm Viewer Source Code": "__PHOENIX_FIRESTORM_VIEWER_SRC__",
+    "Phoenix Firestorm Viewer Common Library": "__PHOENIX_FIRESTORM_VIEWER_LIB__",
+    "Copyright (C) 2025, The Phoenix Firestorm Project, Inc.": "__PHOENIX_FIRESTORM_CP2025__",
+    "Copyright (C) 2014, Nicky Dasmijn": "__PHOENIX_NICKY_COPYRIGHT__",
+    "The Phoenix Firestorm Project, Inc.": "__PHOENIX_FIRESTORM_PROJECT_INC__",
+    "Developer ID Application: The Phoenix Firestorm Project, Inc.": "__PHOENIX_DEVELOPER_ID__",
+    "http://www.firestormviewer.org": "__PHOENIX_FIRESTORM_URL__",
+}
+
+
 # Global safe replacements: URLs/support text and explicit product strings only.
 GLOBAL_REPLACEMENTS = [
-    ("https://www.firestormviewer.org/support/", "mailto:009daw+viewersupport@gmail.com"),
-    ("https://www.firestormviewer.org/support", "mailto:009daw+viewersupport@gmail.com"),
+    # Download URLs → GitHub releases
+    ("https://www.firestormviewer.org/downloads", "https://github.com/martysl/tasia-viewer/releases"),
+    ("https://www.firestormviewer.org/download", "https://github.com/martysl/tasia-viewer/releases"),
+    # Support URLs → easierit
+    ("https://www.firestormviewer.org/support/", "https://support.easierit.org"),
+    ("https://www.firestormviewer.org/support", "https://support.easierit.org"),
+    ("http://www.firestormviewer.org/support", "https://support.easierit.org"),
+    ("www.firestormviewer.org/support", "support.easierit.org"),
+    # Wiki → let-us.cyou
+    ("https://wiki.firestormviewer.org/", "https://i.let-us.cyou/"),
+    ("http://wiki.firestormviewer.org/", "https://i.let-us.cyou/"),
+    ("wiki.firestormviewer.org", "i.let-us.cyou"),
+    # Bug tracker → email
     ("https://phoenixviewer.com/app/file-a-jira/?environment=[ENVIRONMENT]", "mailto:009daw+viewersupport@gmail.com?subject=Tasia%20Viewer%20Bug%20Report&body=Environment:%20[ENVIRONMENT]%0ALocation:%20[LOCATION]%0A%0ADescribe%20the%20issue:%0A"),
     ("https://phoenixviewer.com/app/file-a-jira/", "mailto:009daw+viewersupport@gmail.com"),
+    # Email
     ("support@secondlife.com", "009daw+viewersupport@gmail.com"),
-    ("Firestorm-Releasex64", "Tasia-Releasex64"),
+    # Product names
+    ("Firestorm-Releasex64", "Tasia"),
     ("Firestorm Viewer", "Tasia Viewer"),
+    ("Firestorm viewer", "Tasia Viewer"),
     ("Firestorm has crashed", "Tasia Viewer has crashed"),
-    ("Send crash reports to firestormviewer.org", "Send crash reports to Tasia Viewer support"),
+    ("Send crash reports to firestormviewer.org", "Send crash reports to support.easierit.org"),
 ]
 
 
@@ -126,10 +157,21 @@ RISKY_FILE_SUBSTRINGS = {
 ALLOW_PATH_PREFIXES = (
     "ci/",
     "scripts/",
+    "doc/",
+    "indra/llcommon/",
+    "indra/llcrashlogger/",
+    "indra/llui/",
+    "indra/linux_crash_logger/",
     "indra/newview/app_settings/",
+    "indra/newview/installers/",
+    "indra/newview/linux_tools/",
     "indra/newview/skins/",
     "indra/newview/viewer_manifest.py",
-    "indra/linux_crash_logger/",
+    "indra/newview/llappviewer.cpp",
+    "indra/newview/llpanelobject.cpp",
+    "indra/newview/llversioninfo.cpp",
+    "indra/newview/fsversionvalues.h.in",
+    "server/",
 )
 
 
@@ -177,11 +219,19 @@ def replacements_for(path: Path) -> list[tuple[str, str]]:
 
 
 def process_file(path: Path) -> dict | None:
-    original = read_text(path)
-    if original is None:
+    raw = read_text(path)
+    if raw is None:
         return None
 
-    updated = original
+    # Protect license/copyright headers from partial replacement by broad patterns
+    applied_placeholders: dict[str, str] = {}  # placeholder → original phrase
+    working = raw
+    for phrase, placeholder in PROTECTED_PATTERNS.items():
+        if phrase in working:
+            working = working.replace(phrase, placeholder)
+            applied_placeholders[placeholder] = phrase
+
+    updated = working
     hits: list[dict] = []
     for old, new in replacements_for(path):
         count = updated.count(old)
@@ -189,7 +239,11 @@ def process_file(path: Path) -> dict | None:
             updated = updated.replace(old, new)
             hits.append({"from": old, "to": new, "count": count})
 
-    if updated == original:
+    # Restore protected patterns (reverse order to avoid placeholder collision)
+    for placeholder, phrase in applied_placeholders.items():
+        updated = updated.replace(placeholder, phrase)
+
+    if updated == raw:
         return None
 
     return {

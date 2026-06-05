@@ -4,20 +4,15 @@ import tarfile
 
 class FSViewerManifest:
     def fs_installer_basename(self):
-        if self.fs_is_avx2():
-            opt_string = "AVX2"
-        else:
-            opt_string = "LEGACY"
         substitution_strings = {
             'version' : '.'.join(self.args['version']),
             'version_short' : '.'.join(self.args['version'][:-1]),
             'version_dashes' : '-'.join(self.args['version']),
             'app_name':self.app_name(),
-            'optimized': opt_string,
             'app_name_oneword':self.app_name_oneword()
             }
 
-        return "Phoenix-%(app_name)s_%(optimized)s-%(version_dashes)s" % substitution_strings
+        return "%(app_name)s-%(version_dashes)s" % substitution_strings
 
     def fs_is_opensim(self):
         return self.args['viewer_flavor'] == 'oss' #Havok would be hvk
@@ -155,7 +150,15 @@ class FSViewerManifest:
         # Store windows symbols we want to keep for debugging in a tar file.
         symbolTar = tarfile.open( name=tarName, mode="w:xz")
         symbolTar.add( "%s/Firestorm-bin.exe" % self.args['configuration'].lower(), "firestorm-bin.exe" )
-        symbolTar.add( "%s/build_data.json" % self.args['configuration'].lower(), "build_data.json" )
+        build_data_candidates = [
+            "%s/build_data.json" % self.args['configuration'].lower(),
+            os.path.join(self.args['dest'], "build_data.json"),
+            os.path.normpath(os.path.join(self.args['build'], os.pardir, "build_data.json")),
+        ]
+        build_data_path = next((candidate for candidate in build_data_candidates if os.path.exists(candidate)), None)
+        if build_data_path is None:
+            raise FileNotFoundError("build_data.json not found in: %s" % build_data_candidates)
+        symbolTar.add( build_data_path, "build_data.json" )
         symbolTar.add( "%s/%s" % (self.args['configuration'].lower(),pdbName), pdbName )
         symbolTar.close()
 

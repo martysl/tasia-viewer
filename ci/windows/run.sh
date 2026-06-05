@@ -52,5 +52,5 @@ version=$(tr -d '\n' < ./indra/newview/VIEWER_VERSION.txt)
 revision=$(tr -d '\n' < ./revision.txt)
 VIEWER_VERSION="${version}.${revision}"
 if [ -n "$BUGSPLAT_DATABASE" ]; then
-  npx -y @bugsplat/symbol-upload@10.1.11 -d "build-*" -f "**/*.pdb" -a "Tasia-Releasex64" -v "${VIEWER_VERSION}"
+  npx -y @bugsplat/symbol-upload@10.1.11 -d "build-*" -f "**/*.pdb" -a "Tasia" -v "${VIEWER_VERSION}"
 fi

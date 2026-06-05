@@ -52,6 +52,24 @@
 - Single platform per run
 - Build order: Linux → Windows → macOS
 
+## Manual Release Procedure (saved)
+1. Wait for latest Linux + Windows branch runs to be `completed/success`.
+2. Get artifact IDs:
+   - `gh api repos/martysl/tasia-viewer/actions/runs/<RUN_ID>/artifacts`
+3. Download artifacts (resume allowed):
+   - `curl -fL -C - -H "Authorization: Bearer $TOKEN" -o /tmp/<name>.zip https://api.github.com/repos/martysl/tasia-viewer/actions/artifacts/<ARTIFACT_ID>/zip`
+4. Create/edit prereleases and upload assets:
+   - Linux tag format: `v8.0.1-<run_number>`
+   - Windows tag format: `v8.0.1-<run_number>-windows`
+   - `gh release create ... --prerelease`
+   - `gh release upload ... --clobber`
+5. Keep repo clean after publish:
+   - Delete old releases, keep only newest Linux + Windows.
+   - Delete older Actions runs for both feature branches, keep latest successful Linux + Windows runs.
+6. Post Discord webhook message with:
+   - release page links
+   - direct ZIP asset links
+
 ## 2026-05-18: GIPHY/welcome/loading feature branch
 
 ### Generated GIPHY key support
@@ -234,18 +252,65 @@
   - HTML parse smoke for `web/youtube-player/index.html`.
 - Needs runtime validation after GitHub build.
 
-### 2026-05-19: Linux voice-disabled microphone detection hotfix
-- Ported from Windows feature branch commit `660ea5fc99`.
-- Files changed:
-  - `indra/newview/llvoiceclient.cpp`
-  - `indra/newview/llvoicewebrtc.cpp`
-  - `indra/newview/llvoicevivox.cpp`
-- Behavior changed:
-  - device refresh is skipped while `EnableVoiceChat=false`;
-  - capture device selection is skipped while `EnableVoiceChat=false`;
-  - mic gain/audio config setup is skipped while `EnableVoiceChat=false`;
-  - WebRTC startup delays device refresh until voice is enabled.
-- Needs Linux build/runtime validation if Mom wants a Linux hotfix release.
+### 2026-05-19: Windows feature branch port
+- Branch: `feature/tasia-giphy-welcome-loading-windows`
+- Base: `github/windows-build-test`
+- Ported commits:
+  - `70f5906d0c Add Tasia GIPHY welcome chat previews`
+  - `a37e373645 Fix IM GIPHY and welcome username handling`
+  - `9f2c5e5c87 Render GIPHY previews with direct GIF media`
+  - `cad8a16097 Add hosted YouTube player wrapper support`
+- Windows workflow update:
+  - `actions/checkout` now uses `ref: ${{ github.ref_name }}`.
+  - Configure step passes `TASIA_GIPHY_API_KEY` from GitHub Secrets.
+- Focused checks passed:
+  - `git diff --check`
+  - `python3 -m py_compile scripts/generate_tasia_giphy_key.py`
+  - XML parse for settings, nearby chat, IM, GIPHY picker, and progress panel.
+  - HTML parse smoke for `web/youtube-player/index.html`.
+  - Conflict-marker scan of memory files.
+- Next: push branch and trigger Windows build.
+- Build triggered:
+  - Run: `26098421990`
+  - URL: `https://github.com/martysl/tasia-viewer/actions/runs/26098421990`
+  - Commit: `ab1dd99400a63adb46061b2597dba8252984140f`
+  - Inputs: `clean_build=false`, `probe_only=false`
+  - Result: success
+- Release status:
+  - Published: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-16-windows`
+  - Asset: `Tasia-Viewer-Windows-FMOD.zip`
+  - Asset size: 461141078 bytes
+  - Release type: GitHub prerelease
+  - Target commit: `ab1dd99400a63adb46061b2597dba8252984140f`
+
+### 2026-05-19: Next-build scope notes
+- Voice/microphone issue:
+  - Mom reports Windows microphone detection triggers immediately after app start even when voice chat is disabled.
+  - Test with `LL_BAD_FMODSTUDIO_DRIVER=1` still triggered microphone detection, so FMOD is likely not responsible.
+  - Official viewer reportedly does not show this behavior with voice disabled.
+  - Likely suspect: viewer voice/WebRTC/Vivox startup initializes/enumerates capture devices before honoring `EnableVoiceChat=false`.
+  - Desired behavior: if `EnableVoiceChat=false`, do not start voice backend or enumerate/query capture devices.
+- Voice-disabled microphone detection hotfix candidate:
+  - Files changed:
+    - `indra/newview/llvoiceclient.cpp`
+    - `indra/newview/llvoicewebrtc.cpp`
+    - `indra/newview/llvoicevivox.cpp`
+  - Behavior changed:
+    - device refresh is skipped while `EnableVoiceChat=false`;
+    - capture device selection is skipped while `EnableVoiceChat=false`;
+    - mic gain/audio config setup is skipped while `EnableVoiceChat=false`;
+    - WebRTC startup delays device refresh until voice is enabled.
+  - Focused checks passed:
+    - `git diff --check`
+    - memory conflict-marker scan.
+  - Needs Windows runtime test: launch with voice disabled and verify Windows microphone recent activity/indicator does not trigger.
+- Renderer/engine future work:
+  - Mom wants user-selectable rendering paths in viewer:
+    - current PBR renderer/engine;
+    - old pre-PBR renderer/engine from an older viewer line.
+  - Pre-PBR source reference: `https://gitlab.com/lostorm/lostorm/-/tree/lostorm-13?ref_type=heads`.
+  - This is a large feature and should be isolated in its own branch after the voice-disabled microphone issue is fixed.
+  - Do not mix dual-renderer port with small hotfixes.
 
 ## 2026-05-17: TasiaFeed upload fixes
 

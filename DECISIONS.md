@@ -22,3 +22,6 @@
 | 2026-05-18 | Direct image previews are implemented in active `FSChatHistory` only | Nearby chat and Firestorm IM use this path; legacy `LLChatHistory` is disabled by `#if 0` |
 | 2026-05-19 | Fix voice-disabled microphone detection before dual-renderer work | Privacy issue is smaller and more urgent than renderer architecture |
 | 2026-05-19 | Dual renderer/PBR vs pre-PBR must be a separate feature branch | Renderer architecture is high-risk and must not mix with hotfixes |
+| 2026-05-25 | Keep only the newest Linux+Windows releases visible | Avoids release confusion and stale downloads |
+| 2026-05-25 | Prune old Actions run results after successful publish | Keeps CI history focused on current releasable builds |
+| 2026-05-25 | Discord webhook post is part of release completion | Ensures Mom/community always gets direct release+ZIP links |

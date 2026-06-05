@@ -428,13 +428,13 @@ fi
 if [ \( $WANTS_VERSION -eq $TRUE \) -o \( $WANTS_CONFIG -eq $TRUE \) ] ; then
     echo "Versioning..."
     pushd ..
-    buildVer=78266
+    buildVer=$(git rev-list --count HEAD)
     export revision=${buildVer}
 
-    majorVer=`cat indra/newview/VIEWER_VERSION.txt | cut -d "." -f 1`
-    minorVer=`cat indra/newview/VIEWER_VERSION.txt | cut -d "." -f 2`
-    patchVer=`cat indra/newview/VIEWER_VERSION.txt | cut -d "." -f 3`
-    gitHash=c836a19aa8
+    majorVer=$(cat indra/newview/VIEWER_VERSION.txt | cut -d "." -f 1)
+    minorVer=$(cat indra/newview/VIEWER_VERSION.txt | cut -d "." -f 2)
+    patchVer=$(cat indra/newview/VIEWER_VERSION.txt | cut -d "." -f 3)
+    gitHash=$(git rev-parse --short HEAD)
     echo "Channel : ${CHANNEL}"
     echo "Version : ${majorVer}.${minorVer}.${patchVer}.${buildVer} [${gitHash}]"
     GITHASH=-DVIEWER_VERSION_GITHASH=\"${gitHash}\"

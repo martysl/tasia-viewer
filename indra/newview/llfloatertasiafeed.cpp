@@ -237,7 +237,12 @@ void LLFloaterTasiaFeed::uploadCallback(bool success, const LLSD& response)
     if (success)
     {
         mResultURL = response["post_url"].asString();
+        std::string owner_url = response.has("owner_url") ? response["owner_url"].asString() : "";
         mResultMessage = "Snapshot uploaded!\n" + mResultURL;
+        if (!owner_url.empty())
+        {
+            mResultMessage += "\nOwner/manage link:\n" + owner_url;
+        }
         LLSD args;
         args["URL"] = mResultURL;
         LLNotificationsUtil::add("TasiaFeedUploadComplete", args);
