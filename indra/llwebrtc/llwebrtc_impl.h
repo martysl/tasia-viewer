@@ -62,6 +62,7 @@
 #include "rtc_base/task_queue.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "api/task_queue/default_task_queue_factory.h"
+#include <optional>
 #include "modules/audio_device/include/audio_device_defines.h"
 
 namespace llwebrtc
@@ -158,7 +159,7 @@ class LLAudioDeviceObserver : public webrtc::AudioDeviceDataObserver
 class LLWebRTCAudioDeviceModule : public webrtc::AudioDeviceModule
 {
 public:
-    explicit LLWebRTCAudioDeviceModule(webrtc::scoped_refptr<webrtc::AudioDeviceModule> inner) : inner_(std::move(inner)), tuning_(false)
+    explicit LLWebRTCAudioDeviceModule(rtc::scoped_refptr<webrtc::AudioDeviceModule> inner) : inner_(std::move(inner)), tuning_(false)
     {
         RTC_CHECK(inner_);
     }
@@ -330,7 +331,7 @@ protected:
     ~LLWebRTCAudioDeviceModule() override = default;
 
 private:
-    webrtc::scoped_refptr<webrtc::AudioDeviceModule> inner_;
+    rtc::scoped_refptr<webrtc::AudioDeviceModule> inner_;
     LLWebRTCAudioTransport                        audio_transport_;
 
     bool tuning_;
