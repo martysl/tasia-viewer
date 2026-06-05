@@ -4,20 +4,15 @@ import tarfile
 
 class FSViewerManifest:
     def fs_installer_basename(self):
-        if self.fs_is_avx2():
-            opt_string = "AVX2"
-        else:
-            opt_string = "LEGACY"
         substitution_strings = {
             'version' : '.'.join(self.args['version']),
             'version_short' : '.'.join(self.args['version'][:-1]),
             'version_dashes' : '-'.join(self.args['version']),
             'app_name':self.app_name(),
-            'optimized': opt_string,
             'app_name_oneword':self.app_name_oneword()
             }
 
-        return "Phoenix-%(app_name)s_%(optimized)s-%(version_dashes)s" % substitution_strings
+        return "%(app_name)s-%(version_dashes)s" % substitution_strings
 
     def fs_is_opensim(self):
         return self.args['viewer_flavor'] == 'oss' #Havok would be hvk

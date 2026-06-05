@@ -239,9 +239,19 @@ Adam Frisby, Alexandrea Fride, DarkAgent Baphomet, David Rowe, Digital Scribe, D
        top="16"
        width="474"
        word_wrap="true">
-3Dconnexion SDK Copyright (C) 1992-2009 3Dconnexion
-APR Copyright (C) 2011 The Apache Software Foundation
-Collada DOM Copyright 2006 Sony Computer Entertainment Inc.
+ Tasia Viewer
+ Copyright (c) 2026 Tasia and Marty Mouse — EasierIT / Misfitz Interactive
+ All rights reserved.
+
+ This viewer is based on the Phoenix Tasia Viewer source code.
+ Phoenix Tasia Viewer is Copyright (c) The Phoenix Firestorm Project, Inc.
+ Licensed under the LGPL. See licenses.txt for details.
+
+---
+
+ 3Dconnexion SDK Copyright (C) 1992-2009 3Dconnexion
+ APR Copyright (C) 2011 The Apache Software Foundation
+ Collada DOM Copyright 2006 Sony Computer Entertainment Inc.
 cURL Copyright (C) 1996-2010, Daniel Stenberg, (daniel@haxx.se)
 DBus/dbus-glib Copyright (C) 2002, 2003 CodeFactory AB / Copyright (C) 2003, 2004 Red Hat, Inc.
 expat Copyright (C) 1998, 1999, 2000 Thai Open Source Software Center Ltd.

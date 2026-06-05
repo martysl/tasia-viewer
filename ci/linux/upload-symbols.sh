@@ -1,4 +1,4 @@
-npx_app="Tasia-Releasex64"
+npx_app="Tasia"
 if [ -z "${TASIA_BUGSPLAT_DATABASE:-${BUGSPLAT_DATABASE:-}}" ] || [ -n "${TASIA_CRASH_REPORT_URL:-}" ]; then
   echo "BugSplat database not configured; skipping symbol upload."
   exit 0

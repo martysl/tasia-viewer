@@ -316,7 +316,7 @@ jobs:
           Release build for all platforms.
 
           Commit: ${GITHUB_SHA::7}
-          Channel: Tasia-Releasex64
+          Channel: Tasia
           FMOD: enabled
           KDU: removed
           EOF

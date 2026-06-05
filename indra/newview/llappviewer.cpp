@@ -3052,14 +3052,14 @@ bool LLAppViewer::initConfiguration()
         {
             LL_ERRS() << "Cannot load default configuration file settings_files.xml. "
                 << "Please reinstall viewer from https://www.firestormviewer.org/choose-your-platform/ "
-                << "and contact https://www.firestormviewer.org/support if issue persists after reinstall."
+                << "and contact https://support.easierit.org if issue persists after reinstall."
                 << LL_ENDL;
         }
         else
         {
             LL_ERRS() << "Default configuration file settings_files.xml not found. "
                 << "Please reinstall viewer from https://www.firestormviewer.org/choose-your-platform/ "
-                << "and contact https://www.firestormviewer.org/support if issue persists after reinstall."
+                << "and contact https://support.easierit.org if issue persists after reinstall."
                 << LL_ENDL;
         }
     }
@@ -3997,7 +3997,7 @@ LLSD LLAppViewer::getViewerInfo() const
 
     // return a URL to the release notes for this viewer, such as:
     // https://releasenotes.secondlife.com/viewer/2.1.0.123456.html
-    // <FS:Ansariel> FIRE-13993: Create URL in the form of https://wiki.firestormviewer.org/firestorm_change_log_x.y.z.rev
+    // <FS:Ansariel> FIRE-13993: Create URL in the form of https://i.let-us.cyou/firestorm_change_log_x.y.z.rev
     //std::string url = versionInfo.getReleaseNotes(); // VVM supplied
     //if (url.empty())
     //{
@@ -5497,7 +5497,7 @@ void LLAppViewer::badNetworkHandler()
         "the issue. \n"
         " \n"
         "If the problem continues, see the Tech Support FAQ at: \n"
-        "www.firestormviewer.org/support";
+        "support.easierit.org";
     forceDisconnect(message.str());
 
     LLApp::instance()->writeMiniDump();

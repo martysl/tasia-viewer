@@ -52,6 +52,24 @@
 - Single platform per run
 - Build order: Linux → Windows → macOS
 
+## Manual Release Procedure (saved)
+1. Wait for latest Linux + Windows branch runs to be `completed/success`.
+2. Get artifact IDs:
+   - `gh api repos/martysl/tasia-viewer/actions/runs/<RUN_ID>/artifacts`
+3. Download artifacts (resume allowed):
+   - `curl -fL -C - -H "Authorization: Bearer $TOKEN" -o /tmp/<name>.zip https://api.github.com/repos/martysl/tasia-viewer/actions/artifacts/<ARTIFACT_ID>/zip`
+4. Create/edit prereleases and upload assets:
+   - Linux tag format: `v8.0.1-<run_number>`
+   - Windows tag format: `v8.0.1-<run_number>-windows`
+   - `gh release create ... --prerelease`
+   - `gh release upload ... --clobber`
+5. Keep repo clean after publish:
+   - Delete old releases, keep only newest Linux + Windows.
+   - Delete older Actions runs for both feature branches, keep latest successful Linux + Windows runs.
+6. Post Discord webhook message with:
+   - release page links
+   - direct ZIP asset links
+
 ## 2026-05-18: GIPHY/welcome/loading feature branch
 
 ### Generated GIPHY key support

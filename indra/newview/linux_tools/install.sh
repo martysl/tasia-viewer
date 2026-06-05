@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Enhanced Firestorm Viewer Installation Script
+# Enhanced Tasia Viewer Installation Script
 # Features:
 #   - Creates a timestamped backup of existing installation
 #   - Allows installation with custom suffixes for parallel versions (e.g., beta, release, debug)
@@ -79,7 +79,7 @@ backup_previous_installation() {
     echo " - Backup created successfully."
 }
 
-# Function to install Firestorm Viewer to the specified directory
+# Function to install Tasia Viewer to the specified directory
 install_to_prefix() {
     local install_prefix="$1"
 
@@ -91,7 +91,7 @@ install_to_prefix() {
     # Create the installation directory
     mkdir -p "$install_prefix" || die "Failed to create installation directory: $install_prefix"
 
-    echo " - Installing Firestorm Viewer to $install_prefix"
+    echo " - Installing Tasia Viewer to $install_prefix"
 
     # Copy all files from the tarball to the installation directory
     cp -a "${tarball_path}/." "$install_prefix/" || die "Failed to complete the installation!"
@@ -101,8 +101,8 @@ install_to_prefix() {
 # Function for user-specific installation (non-root)
 homedir_install() {
     warn "You are not running as a privileged user, so you will only be able"
-    warn "to install the Firestorm Viewer in your home directory. If you"
-    warn "would like to install the Firestorm Viewer system-wide, please run"
+    warn "to install the Tasia Viewer in your home directory. If you"
+    warn "would like to install the Tasia Viewer system-wide, please run"
     warn "this script as the root user, or with the 'sudo' command."
     echo
 
@@ -178,21 +178,21 @@ parse_arguments() {
     done
 }
 
-# Function to download Firestorm Viewer (optional enhancement)
+# Function to download Tasia Viewer (optional enhancement)
 download_firestorm() {
-    # Define Firestorm Viewer download URL
+    # Define Tasia Viewer download URL
     # NOTE: Replace this URL with the actual download link as needed
     FIRESTORM_URL="https://firestormviewer.org/download/linux/firestorm.tar.gz"
 
     # Temporary download location
     TEMP_DOWNLOAD="/tmp/firestorm.tar.gz"
 
-    echo "Downloading Firestorm Viewer from $FIRESTORM_URL..."
-    wget -O "$TEMP_DOWNLOAD" "$FIRESTORM_URL" || die "Failed to download Firestorm Viewer!"
+    echo "Downloading Tasia Viewer from $FIRESTORM_URL..."
+    wget -O "$TEMP_DOWNLOAD" "$FIRESTORM_URL" || die "Failed to download Tasia Viewer!"
     echo "Download completed."
 
     # Extract the tarball to the run path
-    tar -xzf "$TEMP_DOWNLOAD" -C "$tarball_path" --strip-components=1 || die "Failed to extract Firestorm Viewer tarball!"
+    tar -xzf "$TEMP_DOWNLOAD" -C "$tarball_path" --strip-components=1 || die "Failed to extract Tasia Viewer tarball!"
     echo "Extraction completed."
 
     # Clean up the downloaded tarball
@@ -201,7 +201,7 @@ download_firestorm() {
 
 # Main installation workflow
 main() {
-    echo "Starting Firestorm Viewer installation script..."
+    echo "Starting Tasia Viewer installation script..."
 
     # Parse command-line arguments
     parse_arguments "$@"
@@ -211,7 +211,7 @@ main() {
     echo "  Custom Install Directory: ${CUSTOM_INSTALL_DIR:-None}"
     echo
 
-    # Optionally, download Firestorm Viewer if not already present
+    # Optionally, download Tasia Viewer if not already present
     # Uncomment the following line if you want the script to handle downloading
     # download_firestorm
 
@@ -222,7 +222,7 @@ main() {
         homedir_install
     fi
 
-    echo "Firestorm Viewer installation process completed successfully."
+    echo "Tasia Viewer installation process completed successfully."
 }
 
 # Execute the main function with all passed arguments

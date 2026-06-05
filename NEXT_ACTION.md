@@ -1,5 +1,6 @@
 # Next Action
 
+<<<<<<< HEAD
 ## Now: remote Tasia user config
 
 1. ✅ Implemented on Linux branch and started Linux build.
@@ -22,8 +23,21 @@ Example supported JSON fields per user:
 ```
 
 ## Now
-- Linux build: `26367560133`
-- Windows build: pending
+- Wait for builds #26180447827 (Linux) and #26180456294 (Windows) to complete
+- Verify the voice mic detection fix works
+=======
+## Current
+1. ✅ Latest releases published:
+   - Linux `v8.0.1-17`
+   - Windows `v8.0.1-44-windows`
+2. ✅ Old releases and old Actions run results cleaned up.
+3. ✅ Discord release announcement sent with direct ZIP links.
+>>>>>>> 43da2163ac (Rebrand to Tasia: channel name, URLs, auto revision)
+
+## Next
+1. Runtime-test both releases with real `config.json` entries (2+ users, different `tag_color`, different badge icons).
+2. Confirm nametag full-color behavior and profile badge visibility across grids.
+3. If stable, keep this as baseline release procedure.
 
 ## Blockers
 - None currently.

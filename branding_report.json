@@ -2,62 +2,197 @@
   "applied": true,
   "changes": [
     {
-      "path": "indra/newview/skins/default/xui/az/notifications.xml",
+      "path": "doc/building_linux.md",
       "hits": [
         {
-          "from": "Firestorm Viewer",
-          "to": "Tasia Viewer",
-          "count": 4
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/az/strings.xml",
-      "hits": [
-        {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 8
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/da/strings.xml",
-      "hits": [
-        {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 7
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/de/notifications.xml",
-      "hits": [
-        {
-          "from": "https://www.firestormviewer.org/support/",
-          "to": "mailto:009daw+viewersupport@gmail.com",
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
           "count": 2
-        },
-        {
-          "from": "Firestorm Viewer",
-          "to": "Tasia Viewer",
-          "count": 4
         }
       ]
     },
     {
-      "path": "indra/newview/skins/default/xui/de/strings.xml",
+      "path": "doc/building_windows.md",
       "hits": [
         {
-          "from": "https://www.firestormviewer.org/support",
-          "to": "mailto:009daw+viewersupport@gmail.com",
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
           "count": 1
         },
         {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 8
+          "from": "Firestorm viewer",
+          "to": "Tasia Viewer",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/llcommon/llerror.cpp",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/download",
+          "to": "https://github.com/martysl/tasia-viewer/releases",
+          "count": 1
+        },
+        {
+          "from": "https://www.firestormviewer.org/support",
+          "to": "https://support.easierit.org",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/llui/lltransutil.cpp",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/download",
+          "to": "https://github.com/martysl/tasia-viewer/releases",
+          "count": 2
+        },
+        {
+          "from": "https://www.firestormviewer.org/support",
+          "to": "https://support.easierit.org",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/llappviewer.cpp",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/support",
+          "to": "https://support.easierit.org",
+          "count": 2
+        },
+        {
+          "from": "www.firestormviewer.org/support",
+          "to": "support.easierit.org",
+          "count": 1
+        },
+        {
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 1
+        },
+        {
+          "from": "Firestorm has crashed",
+          "to": "Tasia Viewer has crashed",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/llpanelobject.cpp",
+      "hits": [
+        {
+          "from": "http://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/app_settings/settings.xml",
+      "hits": [
+        {
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/app_settings/settings_per_account.xml",
+      "hits": [
+        {
+          "from": "Firestorm viewer",
+          "to": "Tasia Viewer",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/installers/windows/installer_template.nsi",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/downloads",
+          "to": "https://github.com/martysl/tasia-viewer/releases",
+          "count": 1
+        },
+        {
+          "from": "https://www.firestormviewer.org/support",
+          "to": "https://support.easierit.org",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/installers/windows/lang_de.nsi",
+      "hits": [
+        {
+          "from": "https://www.firestormviewer.org/downloads",
+          "to": "https://github.com/martysl/tasia-viewer/releases",
+          "count": 1
+        },
+        {
+          "from": "https://www.firestormviewer.org/support/",
+          "to": "https://support.easierit.org",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/en/floater_about.xml",
+      "hits": [
+        {
+          "from": "Firestorm Viewer",
+          "to": "Tasia Viewer",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/en/floater_media_browser.xml",
+      "hits": [
+        {
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/en/floater_whitelist.xml",
+      "hits": [
+        {
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/en/menu_login.xml",
+      "hits": [
+        {
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/en/menu_viewer.xml",
+      "hits": [
+        {
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 3
+        },
+        {
+          "from": "wiki.firestormviewer.org",
+          "to": "i.let-us.cyou",
+          "count": 1
         }
       ]
     },
@@ -65,14 +200,34 @@
       "path": "indra/newview/skins/default/xui/en/notifications.xml",
       "hits": [
         {
-          "from": "https://www.firestormviewer.org/support/",
-          "to": "mailto:009daw+viewersupport@gmail.com",
-          "count": 3
+          "from": "https://www.firestormviewer.org/downloads",
+          "to": "https://github.com/martysl/tasia-viewer/releases",
+          "count": 1
         },
         {
-          "from": "Firestorm Viewer",
-          "to": "Tasia Viewer",
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
           "count": 4
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/en/floater_web_content.xml",
+      "hits": [
+        {
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/skins/default/xui/en/panel_preferences_setup.xml",
+      "hits": [
+        {
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 2
         }
       ]
     },
@@ -80,119 +235,39 @@
       "path": "indra/newview/skins/default/xui/en/strings.xml",
       "hits": [
         {
-          "from": "https://www.firestormviewer.org/support",
-          "to": "mailto:009daw+viewersupport@gmail.com",
-          "count": 1
-        },
-        {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 9
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/es/floater_quickprefs.xml",
-      "hits": [
-        {
-          "from": "Firestorm Viewer",
-          "to": "Tasia Viewer",
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
           "count": 1
         }
       ]
     },
     {
-      "path": "indra/newview/skins/default/xui/es/notifications.xml",
+      "path": "indra/newview/skins/default/xui/pl/floater_media_browser.xml",
       "hits": [
         {
-          "from": "https://www.firestormviewer.org/support/",
-          "to": "mailto:009daw+viewersupport@gmail.com",
-          "count": 1
-        },
-        {
-          "from": "Firestorm Viewer",
-          "to": "Tasia Viewer",
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
           "count": 1
         }
       ]
     },
     {
-      "path": "indra/newview/skins/default/xui/es/strings.xml",
+      "path": "indra/newview/skins/default/xui/pl/floater_web_content.xml",
       "hits": [
         {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 7
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/fr/notifications.xml",
-      "hits": [
-        {
-          "from": "https://www.firestormviewer.org/support/",
-          "to": "mailto:009daw+viewersupport@gmail.com",
-          "count": 1
-        },
-        {
-          "from": "Firestorm Viewer",
-          "to": "Tasia Viewer",
-          "count": 3
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/fr/strings.xml",
-      "hits": [
-        {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 8
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/it/notifications.xml",
-      "hits": [
-        {
-          "from": "Firestorm Viewer",
-          "to": "Tasia Viewer",
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
           "count": 2
         }
       ]
     },
     {
-      "path": "indra/newview/skins/default/xui/it/strings.xml",
+      "path": "indra/newview/skins/default/xui/pl/floater_whitelist.xml",
       "hits": [
         {
-          "from": "https://www.firestormviewer.org/support",
-          "to": "mailto:009daw+viewersupport@gmail.com",
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
           "count": 1
-        },
-        {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 8
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/ja/notifications.xml",
-      "hits": [
-        {
-          "from": "Firestorm Viewer",
-          "to": "Tasia Viewer",
-          "count": 3
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/ja/strings.xml",
-      "hits": [
-        {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 5
         }
       ]
     },
@@ -200,102 +275,62 @@
       "path": "indra/newview/skins/default/xui/pl/notifications.xml",
       "hits": [
         {
-          "from": "Firestorm Viewer",
-          "to": "Tasia Viewer",
+          "from": "https://www.firestormviewer.org/downloads",
+          "to": "https://github.com/martysl/tasia-viewer/releases",
+          "count": 1
+        },
+        {
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
           "count": 3
         }
       ]
     },
     {
-      "path": "indra/newview/skins/default/xui/pl/strings.xml",
+      "path": "indra/newview/skins/default/xui/pl/panel_preferences_setup.xml",
       "hits": [
         {
-          "from": "https://www.firestormviewer.org/support",
-          "to": "mailto:009daw+viewersupport@gmail.com",
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "indra/newview/linux_tools/client-readme.txt",
+      "hits": [
+        {
+          "from": "https://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
+          "count": 2
+        },
+        {
+          "from": "http://wiki.firestormviewer.org/",
+          "to": "https://i.let-us.cyou/",
           "count": 1
         },
         {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 9
+          "from": "wiki.firestormviewer.org",
+          "to": "i.let-us.cyou",
+          "count": 1
         }
       ]
     },
     {
-      "path": "indra/newview/skins/default/xui/pt/strings.xml",
-      "hits": [
-        {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 7
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/ru/notifications.xml",
+      "path": "indra/newview/linux_tools/install.sh",
       "hits": [
         {
           "from": "Firestorm Viewer",
           "to": "Tasia Viewer",
-          "count": 3
+          "count": 13
         }
       ]
     },
     {
-      "path": "indra/newview/skins/default/xui/ru/strings.xml",
+      "path": "indra/newview/linux_tools/refresh_desktop_app_entry.sh",
       "hits": [
         {
-          "from": "https://www.firestormviewer.org/support",
-          "to": "mailto:009daw+viewersupport@gmail.com",
-          "count": 1
-        },
-        {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 8
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/tr/strings.xml",
-      "hits": [
-        {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 7
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/default/xui/zh/strings.xml",
-      "hits": [
-        {
-          "from": "https://www.firestormviewer.org/support",
-          "to": "mailto:009daw+viewersupport@gmail.com",
-          "count": 1
-        },
-        {
-          "from": "support@secondlife.com",
-          "to": "009daw+viewersupport@gmail.com",
-          "count": 9
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/starlight/textures/textures.xml",
-      "hits": [
-        {
-          "from": "Firestorm viewer",
-          "to": "Tasia Viewer",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "path": "indra/newview/skins/starlightcui/textures/textures.xml",
-      "hits": [
-        {
-          "from": "Firestorm viewer",
+          "from": "Firestorm Viewer",
           "to": "Tasia Viewer",
           "count": 1
         }

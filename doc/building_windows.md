@@ -1,6 +1,6 @@
 # Build instructions for Windows
 
-This page describes all necessary steps to build the Firestorm viewer for Windows. For building instructions up to (and including) release 6.5.3, see the archived version for [building with Python 2.7](https://wiki.firestormviewer.org/archive:fs_compiling_firestorm_windows_py_27).
+This page describes all necessary steps to build the Tasia Viewer for Windows. For building instructions up to (and including) release 6.5.3, see the archived version for [building with Python 2.7](https://i.let-us.cyou/archive:fs_compiling_firestorm_windows_py_27).
 
 > [!WARNING]
 > Please note that we do not give support for compiling the viewer on your own. However, there is a self-compilers group in Second Life that can be joined to ask questions related to compiling the viewer: [Firestorm Self Compilers](https://tinyurl.com/firestorm-self-compilers)

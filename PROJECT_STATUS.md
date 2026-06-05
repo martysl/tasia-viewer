@@ -1,5 +1,6 @@
 # Project Status
 
+<<<<<<< HEAD
 ## 2026-05-24 Remote Tasia user config feature
 
 ## What is done
@@ -26,6 +27,77 @@
 
 ## Next exact action
 - Resolve Windows branch memory-file conflicts, push, and start Windows build.
+
+## What is done
+- GIPHY key obfuscation, welcome text client, GIPHY picker, YouTube/image previews — all working in prior clean builds
+- Previous clean builds (26135635543 Linux, 26135636272 Windows) completed successfully
+- **Cherry-picked LL commit be04175579** (#4358 "Fix Microphone in use task bar icon") on both branches:
+  - Gating updateSettings() with voiceEnabled check
+  - Setting init_recording_on_send=false at WebRTC level
+  - Proper SetAudioRecording() management
+  - Mute state machine fix (MUTE_INITIAL/MUTED/UNMUTED)
+- Pushed to both branches on GitHub
+=======
+## 2026-06-04: Session summary — routes.py fix, capability audit, notecard creation investigation
+>>>>>>> 43da2163ac (Rebrand to Tasia: channel name, URLs, auto revision)
+
+### What was done this session
+- **Fixed routes.py corruption**: auto-login code (`POST /api/login` equivalent) was accidentally orphaned after a debug edit. Restored `GET /api/status` to auto-login when not connected. Deployed fix to production via `docker cp`.
+- **Backed up all key source files**: `routes.py`, `login.py`, `session.py`, `udp.py`, `notecard.py`, `.env.example`, `requirements.txt`, `Dockerfile`, `docker-compose.yml`.
+- **Audited available capabilities from seed URL**:
+  - `EventQueueGet` — ✅ *Available*
+  - `NewFileAgentInventory` — ✅ *Available*
+  - `UpdateNotecardAgentInventory` — ✅ *Available*
+  - `MeshUploadFlag` — ✅ *Available*
+  - `CopyInventoryFromNotecard` — ✅ *Available*
+  - `CreateInventoryItem` — ❌ *Not available from seed*
+  - `UpdateInventoryItem` — ❌ *Not available*
+  - `FetchInventoryDescendents` — ❌ *Not available*
+- **Tested notecard creation approaches (all blocked):**
+  1. **Brand-new UUID + UpdateNotecardAgentInventory**: cap returns uploader URL, but uploader rejects with `NotFound` (AIS3 item doesn't exist).
+  2. **UDP CreateInventoryItem + UpdateNotecardAgentInventory**: UDP creates the item on sim. Cap returns uploader URL. Uploader calls AIS3 and gets 404 — UDP-created items **never sync to AIS3** even after 80+ seconds of retry with 5/15/25/35/45s backoff.
+  3. **NewFileAgentInventory with "notecard" type**: rejected server-side (`Invalid asset type: notecard`).
+  4. **UpdateNotecardAgentInventory without item_id**: returns `Invalid viewer parameters`.
+
+### Key findings
+- `EventQueueGet` IS available from seed — could be used to receive dynamic capabilities and events.
+- `CreateInventoryItem` cap is NOT available — this is the cap the viewer uses to create notecard-type items in AIS3 before uploading content.
+- UDP `CreateInventoryItem` creates items on the sim but they never appear in AIS3 (the inventory service that `UpdateNotecardAgentInventory` uploader validates against).
+- The notecard creation path is fundamentally blocked: no available cap creates a **notecard-type** item in AIS3.
+
+### What is broken
+- Notecard creation: all tested approaches fail.
+- Mesh upload: binary format mismatch remains.
+- EventQueueGet handler not implemented.
+- Discord bridge not enabled.
+
+### Next exact action
+- Notecard: either implement EventQueueGet to receive dynamic caps, or accept that notecard creation requires a different strategy (e.g., scripted in-world object, or another account giving a notecard).
+- Mesh upload: compare viewer's `writeModelToStream()` output with our LLSD binary.
+- Discord bridge: set `TASIA_DISCORD_BRIDGE_ENABLED=true`.
+
+---
+
+## 2026-05-25 release cleanup and publish
+
+### What is done
+- Implemented/fixed:
+  - full nametag color from remote `tag_color` (whole tag, not title-only)
+  - profile badge visibility fallback behavior
+- Released:
+  - Linux: `v8.0.1-17`
+  - Windows: `v8.0.1-44-windows`
+- Cleaned old GitHub releases and old Actions runs (kept only newest Linux + Windows publish set).
+- Posted release announcement to Discord webhook with release links and direct ZIP links.
+
+### What is broken
+- No known blocker in current released pair.
+
+### Exact last failing step
+- Earlier profile badge remote icon path did not render reliably; replaced with corrected release set above.
+
+### Next exact action
+- Runtime verification on both platforms with live `config.json` badge/title/color entries.
 
 ## Current Phase
 
