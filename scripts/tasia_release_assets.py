@@ -29,6 +29,16 @@ PLATFORM_PATTERNS = {
     "macos-arm": ["*macOS*ARM*.dmg", "*macOS*ARM*.zip", "*Apple*Silicon*.dmg"],
 }
 
+PATCH_IGNORE_PATTERNS = [
+    "*_Setup.exe",
+    "firestorm_setup_tmp.nsi",
+    "*.copy_touched",
+    "build_data.json",
+    "bin/build_data.json",
+    "app_settings/packages-info.txt",
+    "app_settings/contributors.txt",
+]
+
 
 @dataclass
 class Asset:
@@ -187,7 +197,10 @@ def file_hashes(root: Path) -> dict[str, str]:
     out: dict[str, str] = {}
     for path in root.rglob("*"):
         if path.is_file():
-            out[str(path.relative_to(root)).replace("\\", "/")] = sha256_file(path)
+            rel = str(path.relative_to(root)).replace("\\", "/")
+            if any(fnmatch.fnmatch(rel, pattern) for pattern in PATCH_IGNORE_PATTERNS):
+                continue
+            out[rel] = sha256_file(path)
     return out
 
 
