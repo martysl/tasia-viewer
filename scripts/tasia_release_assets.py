@@ -95,6 +95,42 @@ def write_manifest(assets: list[Asset], output: Path, *, version: str, repo: str
     output.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def find_platform_asset(root: Path, platform: str) -> Asset | None:
+    assets = [asset for asset in discover_assets(root) if asset.platform == platform]
+    if not assets:
+        return None
+    # Prefer archives that can be unpacked for file-level updater manifests.
+    unpackable = [a for a in assets if a.path.name.lower().endswith((".zip", ".tar.xz", ".tar.bz2", ".tgz", ".tar.gz"))]
+    return unpackable[0] if unpackable else assets[0]
+
+
+def write_file_manifest(root: Path, output: Path, *, platform: str, version: str, base_url: str) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    base = base_url.rstrip("/")
+    files = []
+    for path in sorted(p for p in root.rglob("*") if p.is_file()):
+        rel = path.relative_to(root).as_posix()
+        files.append(
+            {
+                "path": rel,
+                "size": path.stat().st_size,
+                "sha256": sha256_file(path),
+                "url": f"{base}/{platform}/files/{rel}",
+            }
+        )
+    manifest = {
+        "format": 1,
+        "type": "file-manifest",
+        "product": "Tasia Viewer",
+        "channel": "Tasia",
+        "platform": platform,
+        "version": version,
+        "files_base_url": f"{base}/{platform}/files",
+        "files": files,
+    }
+    output.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def extract_archive(archive: Path, dest: Path) -> None:
     dest.mkdir(parents=True, exist_ok=True)
     name = archive.name.lower()
@@ -153,23 +189,37 @@ def create_file_patch(old_archive: Path, new_archive: Path, output: Path) -> dic
         return metadata
 
 
-def upload_ftp(files: list[Path], *, host: str, user: str, password: str, remote_dir: str, tls: bool) -> None:
+def ensure_ftp_dir(ftp: ftplib.FTP, path: str) -> None:
+    for part in path.strip("/").split("/"):
+        if not part:
+            continue
+        try:
+            ftp.mkd(part)
+        except ftplib.error_perm:
+            pass
+        ftp.cwd(part)
+
+
+def upload_ftp(root: Path, *, host: str, user: str, password: str, remote_dir: str, tls: bool) -> list[str]:
+    files = [p for p in root.rglob("*") if p.is_file()]
+    uploaded: list[str] = []
     ftp_cls = ftplib.FTP_TLS if tls else ftplib.FTP
     with ftp_cls(host, timeout=60) as ftp:
         ftp.login(user=user, passwd=password)
         if tls and isinstance(ftp, ftplib.FTP_TLS):
             ftp.prot_p()
-        for part in remote_dir.strip("/").split("/"):
-            if not part:
-                continue
-            try:
-                ftp.mkd(part)
-            except ftplib.error_perm:
-                pass
-            ftp.cwd(part)
         for path in files:
+            rel = path.relative_to(root).as_posix()
+            ftp.cwd("/")
+            ensure_ftp_dir(ftp, remote_dir)
+            parent_path = Path(rel).parent
+            parent = "" if str(parent_path) == "." else parent_path.as_posix().strip("/")
+            if parent:
+                ensure_ftp_dir(ftp, parent)
             with path.open("rb") as f:
                 ftp.storbinary(f"STOR {path.name}", f)
+            uploaded.append(rel)
+    return uploaded
 
 
 def cmd_manifest(args: argparse.Namespace) -> None:
@@ -197,21 +247,41 @@ def cmd_patch(args: argparse.Namespace) -> None:
     print(json.dumps({"patches": patches}, indent=2))
 
 
+def cmd_unpacked(args: argparse.Namespace) -> None:
+    artifacts = Path(args.artifacts)
+    output = Path(args.output)
+    base_url = args.base_url.rstrip("/")
+    platforms = [p.strip() for p in args.platforms.split(",") if p.strip()]
+    result = []
+    for platform in platforms:
+        asset = find_platform_asset(artifacts, platform)
+        if not asset:
+            continue
+        files_dir = output / platform / "files"
+        manifest = output / platform / "manifest.json"
+        if files_dir.exists():
+            shutil.rmtree(files_dir)
+        files_dir.mkdir(parents=True, exist_ok=True)
+        extract_archive(asset.path, files_dir)
+        write_file_manifest(files_dir, manifest, platform=platform, version=args.version, base_url=base_url)
+        result.append({"platform": platform, "asset": asset.path.name, "manifest": str(manifest)})
+    print(json.dumps({"unpacked": result}, indent=2))
+
+
 def cmd_ftp(args: argparse.Namespace) -> None:
     required = ["TASIA_FTP_HOST", "TASIA_FTP_USER", "TASIA_FTP_PASSWORD", "TASIA_FTP_REMOTE_DIR"]
     missing = [name for name in required if not os.environ.get(name)]
     if missing:
         raise SystemExit(f"Missing FTP env vars: {', '.join(missing)}")
-    files = [p for p in Path(args.path).rglob("*") if p.is_file()]
-    upload_ftp(
-        files,
+    uploaded = upload_ftp(
+        Path(args.path),
         host=os.environ["TASIA_FTP_HOST"],
         user=os.environ["TASIA_FTP_USER"],
         password=os.environ["TASIA_FTP_PASSWORD"],
         remote_dir=os.environ["TASIA_FTP_REMOTE_DIR"],
         tls=os.environ.get("TASIA_FTP_TLS", "true").lower() != "false",
     )
-    print(json.dumps({"uploaded": [p.name for p in files]}, indent=2))
+    print(json.dumps({"uploaded": uploaded}, indent=2))
 
 
 def main() -> None:
@@ -233,6 +303,14 @@ def main() -> None:
     p.add_argument("--output", required=True)
     p.add_argument("--version", required=True)
     p.set_defaults(func=cmd_patch)
+
+    u = sub.add_parser("unpacked")
+    u.add_argument("--artifacts", required=True)
+    u.add_argument("--output", required=True)
+    u.add_argument("--version", required=True)
+    u.add_argument("--base-url", required=True)
+    u.add_argument("--platforms", default="linux,windows")
+    u.set_defaults(func=cmd_unpacked)
 
     f = sub.add_parser("ftp")
     f.add_argument("--path", required=True)
