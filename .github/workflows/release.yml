@@ -6,6 +6,18 @@ on:
       version:
         description: "Release version (e.g., 8.0.1.42)"
         required: true
+      previous_version:
+        description: "Previous release version for file-level hotfix packages (optional, e.g. 8.0.1.41)"
+        required: false
+        default: ""
+      upload_ftp:
+        description: "Upload release assets to FTP server"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 permissions:
   contents: write
@@ -289,10 +301,48 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout release scripts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      - name: Generate update manifest and checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          python3 scripts/tasia_release_assets.py manifest \
+            --artifacts artifacts \
+            --version "${{ inputs.version }}" \
+            --tag "v${{ inputs.version }}" \
+            --repo "${{ github.repository }}" \
+            --manifest release-assets/tasia-update.json \
+            --checksums release-assets/SHA256SUMS.txt
+
+      - name: Generate file-level hotfix packages
+        if: inputs.previous_version != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p previous-release release-assets/patches
+          gh release download "v${{ inputs.previous_version }}" \
+            --repo "${{ github.repository }}" \
+            --dir previous-release || {
+              echo "::warning::Could not download previous release v${{ inputs.previous_version }}; skipping hotfix packages."
+              exit 0
+            }
+          python3 scripts/tasia_release_assets.py patch \
+            --old previous-release \
+            --new artifacts \
+            --output release-assets/patches \
+            --version "${{ inputs.version }}"
 
       - name: Create GitHub Release
         env:
@@ -303,11 +353,11 @@ jobs:
           VERSION="${{ inputs.version }}"
           TAG="v${VERSION}"
 
-          # Gather release artifacts
+          # Gather release artifacts + generated manifest/checksums/patches
           ARTIFACTS=()
           while IFS= read -r -d '' f; do
             ARTIFACTS+=("$f")
-          done < <(find artifacts -type f -print0)
+          done < <(find artifacts release-assets -type f -print0)
 
           NOTES="$(mktemp)"
           cat > "$NOTES" <<EOF
@@ -319,6 +369,9 @@ jobs:
           Channel: Tasia
           FMOD: enabled
           KDU: removed
+
+          Update manifest: tasia-update.json
+          Checksums: SHA256SUMS.txt
           EOF
 
           if gh release view "$TAG" >/dev/null 2>&1; then
@@ -333,6 +386,21 @@ jobs:
               --notes-file "$NOTES" \
               --prerelease
           fi
+
+      - name: Upload release assets to FTP
+        if: inputs.upload_ftp == 'true'
+        shell: bash
+        env:
+          TASIA_FTP_HOST: ${{ secrets.TASIA_FTP_HOST }}
+          TASIA_FTP_USER: ${{ secrets.TASIA_FTP_USER }}
+          TASIA_FTP_PASSWORD: ${{ secrets.TASIA_FTP_PASSWORD }}
+          TASIA_FTP_REMOTE_DIR: ${{ secrets.TASIA_FTP_REMOTE_DIR }}
+          TASIA_FTP_TLS: ${{ secrets.TASIA_FTP_TLS }}
+        run: |
+          set -euo pipefail
+          mkdir -p ftp-upload
+          find artifacts release-assets -type f -exec cp {} ftp-upload/ \;
+          python3 scripts/tasia_release_assets.py ftp --path ftp-upload
 
       - name: Post to Discord
         env:
