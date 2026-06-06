@@ -143,6 +143,45 @@ def extract_archive(archive: Path, dest: Path) -> None:
     else:
         raise ValueError(f"Unsupported archive for patch generation: {archive}")
 
+    normalize_extracted_tree(dest)
+
+
+def is_archive(path: Path) -> bool:
+    return path.name.lower().endswith((".zip", ".tar.xz", ".tar.bz2", ".tgz", ".tar.gz"))
+
+
+def normalize_extracted_tree(dest: Path) -> None:
+    """Normalize CI artifacts before file comparison.
+
+    GitHub artifact downloads may wrap the real viewer package in an extra zip,
+    and Linux packages usually have a versioned top-level directory. Both would
+    otherwise make every file look changed between releases.
+    """
+    # If the archive extracts to exactly one nested archive, unwrap it.
+    entries = list(dest.iterdir())
+    if len(entries) == 1 and entries[0].is_file() and is_archive(entries[0]):
+        nested = entries[0]
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            extract_archive(nested, tmp)
+            shutil.rmtree(dest)
+            dest.mkdir(parents=True, exist_ok=True)
+            for item in tmp.iterdir():
+                shutil.move(str(item), dest / item.name)
+
+    # If the archive extracts to exactly one top-level directory, strip it.
+    entries = list(dest.iterdir())
+    if len(entries) == 1 and entries[0].is_dir():
+        top = entries[0]
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            for item in top.iterdir():
+                shutil.move(str(item), tmp / item.name)
+            shutil.rmtree(dest)
+            dest.mkdir(parents=True, exist_ok=True)
+            for item in tmp.iterdir():
+                shutil.move(str(item), dest / item.name)
+
 
 def file_hashes(root: Path) -> dict[str, str]:
     out: dict[str, str] = {}
