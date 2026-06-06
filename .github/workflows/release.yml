@@ -313,16 +313,40 @@ jobs:
 
       - name: Generate update manifest and checksums
         shell: bash
+        env:
+          TASIA_UPDATE_BASE_URL: ${{ secrets.TASIA_UPDATE_BASE_URL }}
         run: |
           set -euo pipefail
           mkdir -p release-assets
+          BASE_ARGS=()
+          if [ -n "${TASIA_UPDATE_BASE_URL:-}" ]; then
+            BASE_ARGS+=(--base-url "$TASIA_UPDATE_BASE_URL")
+          fi
           python3 scripts/tasia_release_assets.py manifest \
             --artifacts artifacts \
             --version "${{ inputs.version }}" \
             --tag "v${{ inputs.version }}" \
             --repo "${{ github.repository }}" \
             --manifest release-assets/tasia-update.json \
-            --checksums release-assets/SHA256SUMS.txt
+            --checksums release-assets/SHA256SUMS.txt \
+            "${BASE_ARGS[@]}"
+
+      - name: Generate unpacked updater files
+        shell: bash
+        env:
+          TASIA_UPDATE_BASE_URL: ${{ secrets.TASIA_UPDATE_BASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TASIA_UPDATE_BASE_URL:-}" ]; then
+            echo "::warning::TASIA_UPDATE_BASE_URL is not set; skipping unpacked updater file manifests."
+            exit 0
+          fi
+          python3 scripts/tasia_release_assets.py unpacked \
+            --artifacts artifacts \
+            --output updater-assets \
+            --version "${{ inputs.version }}" \
+            --base-url "$TASIA_UPDATE_BASE_URL" \
+            --platforms linux,windows
 
       - name: Generate file-level hotfix packages
         if: inputs.previous_version != ''
@@ -398,8 +422,12 @@ jobs:
           TASIA_FTP_TLS: ${{ secrets.TASIA_FTP_TLS }}
         run: |
           set -euo pipefail
-          mkdir -p ftp-upload
-          find artifacts release-assets -type f -exec cp {} ftp-upload/ \;
+          VERSION="${{ inputs.version }}"
+          mkdir -p "ftp-upload/releases/v${VERSION}"
+          find artifacts release-assets -type f -exec cp {} "ftp-upload/releases/v${VERSION}/" \;
+          if [ -d updater-assets ]; then
+            cp -a updater-assets/. ftp-upload/
+          fi
           python3 scripts/tasia_release_assets.py ftp --path ftp-upload
 
       - name: Post to Discord
