@@ -1594,9 +1594,36 @@ void LLPanelProfileSecondLife::fillTasiaUserData(const LLAvatarData* avatar_data
         account_info->setToolTip(tooltip);
     }
 
-    if (!setTasiaRemoteBadgeIcon(tasia_user.badge_icon, tooltip.empty() ? line : tooltip, tasia_user.badge_name))
+    auto get_tasia_badge_icon = [](const std::string& badge_name) -> std::string
     {
-        setBadgeRawTooltip("Profile_Badge_Team", tooltip.empty() ? line : tooltip, BadgeLocation::top);
+        if (badge_name == "Profile_Badge_Linden" ||
+            badge_name == "Profile_Badge_Beta" ||
+            badge_name == "Profile_Badge_Beta_Lifetime" ||
+            badge_name == "Profile_Badge_Lifetime" ||
+            badge_name == "Profile_Badge_Premium_Lifetime" ||
+            badge_name == "Profile_Badge_Pplus_Lifetime" ||
+            badge_name == "Profile_Badge_Team")
+        {
+            return badge_name;
+        }
+
+        std::string badge_lower = badge_name;
+        LLStringUtil::toLower(badge_lower);
+        if (badge_lower == "linden") return "Profile_Badge_Linden";
+        if (badge_lower == "beta") return "Profile_Badge_Beta";
+        if (badge_lower == "beta_lifetime") return "Profile_Badge_Beta_Lifetime";
+        if (badge_lower == "lifetime") return "Profile_Badge_Lifetime";
+        if (badge_lower == "premium") return "Profile_Badge_Premium_Lifetime";
+        if (badge_lower == "premium_plus" || badge_lower == "pplus") return "Profile_Badge_Pplus_Lifetime";
+        if (badge_lower == "team") return "Profile_Badge_Team";
+
+        return "Profile_Badge_Team";
+    };
+
+    const std::string badge_icon_name = get_tasia_badge_icon(tasia_user.badge_name);
+    if (!setTasiaRemoteBadgeIcon(tasia_user.badge_icon, tooltip.empty() ? line : tooltip, badge_icon_name))
+    {
+        setBadgeRawTooltip(badge_icon_name, tooltip.empty() ? line : tooltip, BadgeLocation::top);
     }
 }
 
