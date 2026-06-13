@@ -268,6 +268,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Ensure Strawberry Perl for quictls build (Windows)
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            export PATH="/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
+          fi
 
           NINJA_FLAG="${{ matrix.ninja_flag }}"
 
