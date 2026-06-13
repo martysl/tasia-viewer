@@ -541,7 +541,7 @@ public:
     {
         LLMediaCtrl::Params media_params;
         media_params.name = "tasia_image_preview_media";
-        media_params.rect = LLRect(10, 178, 330, 28);
+        media_params.rect = LLRect(10, 130, 330, 28);
         media_params.start_url = mURL;
         media_params.border_visible = true;
         media_params.focus_on_click = false;
@@ -550,20 +550,12 @@ public:
         mMedia->setTakeFocusOnClick(false);
         addChild(mMedia);
 
-        LLTextBox::Params url_params;
-        url_params.name = "tasia_image_preview_url";
-        url_params.rect = LLRect(10, 24, 330, 6);
-        url_params.initial_value = LLSD(mURL);
-        url_params.use_ellipses = true;
-        mURLText = LLUICtrlFactory::create<LLTextBox>(url_params);
-        addChild(mURLText);
-
         LLButton::Params open_params;
         open_params.name = "tasia_image_open";
-        open_params.label = "Open Image";
-        open_params.rect = LLRect(340, 98, 440, 74);
+        open_params.label = "Open in Viewer";
+        open_params.rect = LLRect(340, 98, 460, 74);
         mOpenButton = LLUICtrlFactory::create<LLButton>(open_params);
-        mOpenButton->setClickedCallback([this](LLUICtrl*, const LLSD&) { openURL(); });
+        mOpenButton->setClickedCallback([this](LLUICtrl*, const LLSD&) { openInViewer(); });
         addChild(mOpenButton);
     }
 
@@ -572,15 +564,11 @@ public:
         LLPanel::reshape(width, height, called_from_parent);
         if (mMedia)
         {
-            mMedia->setRect(LLRect(10, height - 10, llmax(120, width - 120), 28));
-        }
-        if (mURLText)
-        {
-            mURLText->setRect(LLRect(10, 24, llmax(120, width - 120), 6));
+            mMedia->setRect(LLRect(10, height - 10, llmax(120, width - 130), 28));
         }
         if (mOpenButton)
         {
-            mOpenButton->setRect(LLRect(width - 110, 98, width - 10, 74));
+            mOpenButton->setRect(LLRect(width - 110, height - 34, width - 10, height - 58));
         }
     }
 
@@ -589,21 +577,32 @@ private:
     {
         LLPanel::Params params;
         params.name = "tasia_image_preview";
-        params.rect = LLRect(0, 188, 440, 0);
+        params.rect = LLRect(0, 140, 460, 0);
         params.mouse_opaque = true;
         params.background_visible = true;
         params.has_border = true;
         return params;
     }
 
-    void openURL()
+    void openInViewer()
     {
-        LLWeb::loadURLExternal(mURL);
+        LLFloaterWebContent::Params params;
+        params.url = mURL;
+        params.target = "tasia_image_viewer";
+        params.id = "tasia_image_viewer";
+        params.window_class = "web_content";
+        params.show_chrome = true;
+        params.allow_address_entry = false;
+        params.allow_back_forward_navigation = false;
+        params.trusted_content = false;
+        params.show_page_title = true;
+        params.clean_browser = true;
+        params.preferred_media_size.setValue(LLRect(0, 0, 800, 600));
+        LLFloaterReg::showInstance("web_content", params);
     }
 
     std::string mURL;
     LLMediaCtrl* mMedia = nullptr;
-    LLTextBox* mURLText = nullptr;
     LLButton* mOpenButton = nullptr;
 };
 
@@ -617,23 +616,15 @@ public:
     {
         LLTextBox::Params title_params;
         title_params.name = "tasia_youtube_preview_title";
-        title_params.rect = LLRect(10, 72, 400, 52);
+        title_params.rect = LLRect(10, 54, 400, 36);
         title_params.initial_value = LLSD("YouTube video");
         mTitle = LLUICtrlFactory::create<LLTextBox>(title_params);
         addChild(mTitle);
 
-        LLTextBox::Params url_params;
-        url_params.name = "tasia_youtube_preview_url";
-        url_params.rect = LLRect(10, 45, 400, 27);
-        url_params.initial_value = LLSD(mURL);
-        url_params.use_ellipses = true;
-        mURLText = LLUICtrlFactory::create<LLTextBox>(url_params);
-        addChild(mURLText);
-
         LLButton::Params play_params;
         play_params.name = "tasia_youtube_play";
         play_params.label = "Play in Viewer";
-        play_params.rect = LLRect(410, 76, 530, 52);
+        play_params.rect = LLRect(410, 58, 530, 36);
         mPlayButton = LLUICtrlFactory::create<LLButton>(play_params);
         mPlayButton->setClickedCallback([this](LLUICtrl*, const LLSD&) { openPlayer(); });
         addChild(mPlayButton);
@@ -641,7 +632,7 @@ public:
         LLButton::Params open_params;
         open_params.name = "tasia_youtube_open";
         open_params.label = "Open YouTube";
-        open_params.rect = LLRect(410, 43, 530, 19);
+        open_params.rect = LLRect(410, 30, 530, 8);
         mOpenButton = LLUICtrlFactory::create<LLButton>(open_params);
         mOpenButton->setClickedCallback([this](LLUICtrl*, const LLSD&) { openURL(); });
         addChild(mOpenButton);
@@ -652,19 +643,15 @@ public:
         LLPanel::reshape(width, height, called_from_parent);
         if (mTitle)
         {
-            mTitle->setRect(LLRect(10, height - 10, llmax(160, width - 130), height - 30));
-        }
-        if (mURLText)
-        {
-            mURLText->setRect(LLRect(10, height - 37, llmax(160, width - 130), height - 55));
+            mTitle->setRect(LLRect(10, height - 10, llmax(160, width - 130), height - 28));
         }
         if (mPlayButton)
         {
-            mPlayButton->setRect(LLRect(width - 120, height - 10, width - 10, height - 34));
+            mPlayButton->setRect(LLRect(width - 120, height - 10, width - 10, height - 32));
         }
         if (mOpenButton)
         {
-            mOpenButton->setRect(LLRect(width - 120, height - 43, width - 10, height - 67));
+            mOpenButton->setRect(LLRect(width - 120, height - 38, width - 10, height - 60));
         }
     }
 
@@ -673,7 +660,7 @@ private:
     {
         LLPanel::Params params;
         params.name = "tasia_youtube_preview";
-        params.rect = LLRect(0, 82, 530, 0);
+        params.rect = LLRect(0, 66, 530, 0);
         params.mouse_opaque = true;
         params.background_visible = true;
         params.has_border = true;
@@ -705,7 +692,6 @@ private:
     std::string mURL;
     std::string mPlayerURL;
     LLTextBox* mTitle = nullptr;
-    LLTextBox* mURLText = nullptr;
     LLButton* mPlayButton = nullptr;
     LLButton* mOpenButton = nullptr;
 };
