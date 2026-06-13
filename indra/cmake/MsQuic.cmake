@@ -21,14 +21,7 @@ FetchContent_Declare(
   GIT_SHALLOW    FALSE
 )
 
-# On Windows, quictls/OpenSSL configure requires a full Perl installation
-# with the Locale::Maketext::Simple module. Prefer Strawberry Perl over
-# MSYS2 Perl (Git for Windows), which lacks this module.
-if (WINDOWS AND EXISTS "C:/Strawberry/perl/bin/perl.exe")
-    set(Perl_EXECUTABLE "C:/Strawberry/perl/bin/perl.exe"
-        CACHE FILEPATH "Perl (Strawberry Perl for quictls)" FORCE)
-    message(STATUS "MsQuic: using Strawberry Perl for quictls build")
-endif()
+
 
 set(_msquic_saved_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}")
 set(_msquic_saved_C_FLAGS_MINSIZEREL     "${CMAKE_C_FLAGS_MINSIZEREL}")

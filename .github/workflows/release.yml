@@ -217,13 +217,12 @@ jobs:
           echo "TASIA_DISPLAY_VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
           echo "TASIA_BUILD_NUMBER=${{ github.run_number }}" >> "$GITHUB_ENV"
 
-      - name: Ensure Strawberry Perl path for MsQuic quictls (Windows)
+      - name: Install missing Perl module Locale::Maketext::Simple for quictls (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          echo "C:/Strawberry/perl/bin" >> "$GITHUB_PATH"
-          echo "C:/Strawberry/c/bin" >> "$GITHUB_PATH"
-          echo "Perl: $(perl -v | head -1)"
+          echo 'yes' | cpan -fi Locale::Maketext::Simple 2>&1 | tail -5
+          perl -MLocale::Maketext::Simple -e "print \"OK\n\""
 
       - name: Configure ${{ matrix.platform }}
         shell: bash
@@ -268,11 +267,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Ensure Strawberry Perl for quictls build (Windows)
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            export PATH="/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
-          fi
-
           NINJA_FLAG="${{ matrix.ninja_flag }}"
 
           autobuild build \
