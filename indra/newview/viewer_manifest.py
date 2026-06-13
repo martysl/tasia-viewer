@@ -1555,7 +1555,7 @@ class Darwin_x86_64_Manifest(ViewerManifest):
 
                 icon_path = self.icon_path()
                 with self.prefix(src=icon_path) :
-                    self.path("firestorm_icon.icns")
+                    self.path("tasia_icon.icns")
 
                 self.path("Firestorm.nib")
                 # Translations
@@ -2065,7 +2065,7 @@ class LinuxManifest(ViewerManifest):
         self.path("licenses-linux.txt","licenses.txt")
         self.path("VivoxAUP.txt")
         self.path("LGPL-license.txt")
-        self.path("res/firestorm_icon.png","firestorm_icon.png")
+        self.path("res/tasia_icon.png","tasia_icon.png")
         with self.prefix("linux_tools"):
             self.path("client-readme.txt","README-linux.txt")
             self.path("FIRESTORM_DESKTOPINSTALL.txt","FIRESTORM_DESKTOPINSTALL.txt")
