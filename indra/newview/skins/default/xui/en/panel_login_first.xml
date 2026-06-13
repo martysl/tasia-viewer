@@ -128,7 +128,7 @@
             width="200"
             height="32"
             left="262"
-            max_length_chars="16"
+            max_length_chars="32"
             name="password_edit"
             label="Password"
             text_pad_left="8"

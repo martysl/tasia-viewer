@@ -11,11 +11,7 @@ set(QUIC_BUILD_PERF     OFF CACHE BOOL "" FORCE)
 set(QUIC_ENABLE_LOGGING OFF CACHE BOOL "" FORCE)
 set(QUIC_BUILD_SHARED   OFF CACHE BOOL "" FORCE)
 
-if (WINDOWS)
-  set(QUIC_TLS_LIB "schannel" CACHE STRING "" FORCE)
-else ()
-  set(QUIC_TLS_LIB "quictls" CACHE STRING "" FORCE)
-endif ()
+set(QUIC_TLS_LIB "quictls" CACHE STRING "" FORCE)
 
 FetchContent_Declare(
   msquic

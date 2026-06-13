@@ -84,7 +84,7 @@
 
 #include "llsdserialize.h"
 
-const S32 MAX_PASSWORD_SL = 16;
+const S32 MAX_PASSWORD_SL = 32;
 const S32 MAX_PASSWORD_OPENSIM = 255;
 
 FSPanelLogin *FSPanelLogin::sInstance = NULL;

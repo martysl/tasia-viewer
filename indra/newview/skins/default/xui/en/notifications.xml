@@ -2701,6 +2701,15 @@ Teleport failed.
   <tag>fail</tag>
   </notification>
 
+  <notification
+   icon="alertmodal.tga"
+   name="TeleportQuicFallback"
+   type="alertmodal">
+    <unique/>
+QUIC connection could not be established after 3 attempts.
+Using standard UDP connection instead.
+  </notification>
+
   <!-- Teleport failure modes not delivered via the generic mechanism
        above (for example, delivered as an AlertMessage on
        region-crossing :( ) - these paths should really be merged

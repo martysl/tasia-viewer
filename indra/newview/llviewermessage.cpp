@@ -3556,7 +3556,7 @@ namespace
 
         LL_WARNS("Messaging") << "QUIC circuit to " << host
                               << " failed: " << reason
-                              << " (per spec there is no LLUDP fallback)"
+                              << " (cannot fall back to LLUDP mid-session)"
                               << LL_ENDL;
 
         if (gAgent.getTeleportState() != LLAgent::TELEPORT_NONE)
@@ -3691,22 +3691,35 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 
     if (quic_port > 0 && !quic_host.empty())
     {
+        constexpr S32 MAX_QUIC_RETRIES = 3;
         std::string quic_err;
-        if (!gMessageSystem->enableQuicCircuit(sim_host, quic_host, quic_port, true, &quic_err))
+        bool quic_ok = false;
+        for (S32 attempt = 1; attempt <= MAX_QUIC_RETRIES; ++attempt)
         {
-            LL_WARNS("Messaging") << "TeleportFinish: QUIC enable failed for " << sim_host
-                                  << " (host=" << quic_host << " port=" << quic_port
-                                  << "): " << quic_err
-                                  << "; per spec NOT falling back to LLUDP." << LL_ENDL;
-            LLSD args;
-            args["REASON"] = quic_err.empty()
-                ? std::string("Could not establish QUIC connection to the destination simulator")
-                : quic_err;
-            LLNotificationsUtil::add("CouldNotTeleportReason", args);
-            gAgent.setTeleportState(LLAgent::TELEPORT_NONE);
-            return;
+            quic_ok = gMessageSystem->enableQuicCircuit(sim_host, quic_host, quic_port, true, &quic_err);
+            if (quic_ok) break;
+            LL_WARNS("Messaging") << "TeleportFinish: QUIC enable attempt " << attempt
+                                  << "/" << MAX_QUIC_RETRIES << " failed for " << sim_host
+                                  << ": " << quic_err << LL_ENDL;
+            if (attempt < MAX_QUIC_RETRIES)
+            {
+                ms_sleep(100);
+            }
         }
-        gMessageSystem->setCircuitTimeoutCallback(sim_host, on_quic_circuit_failed_vm, NULL);
+
+        if (quic_ok)
+        {
+            gMessageSystem->setCircuitTimeoutCallback(sim_host, on_quic_circuit_failed_vm, NULL);
+        }
+        else
+        {
+            LL_WARNS("Messaging") << "TeleportFinish: QUIC failed after " << MAX_QUIC_RETRIES
+                                  << " attempts, falling back to LLUDP." << LL_ENDL;
+            LLSD args;
+            args["REASON"] = LLStringUtil::null;
+            LLNotificationsUtil::add("TeleportQuicFallback", args);
+            gMessageSystem->enableCircuit(sim_host, true);
+        }
     }
     else
     {
@@ -4121,20 +4134,32 @@ void process_crossed_region(LLMessageSystem* msg, void**)
                               << LL_ENDL;
         if (quic_port > 0 && !quic_host.empty())
         {
+            constexpr S32 MAX_QUIC_RETRIES = 3;
             std::string quic_err;
-            if (!msg->enableQuicCircuit(sim_host, quic_host, quic_port, true, &quic_err))
+            bool quic_ok = false;
+            for (S32 attempt = 1; attempt <= MAX_QUIC_RETRIES; ++attempt)
             {
-                LL_WARNS("Messaging") << "CrossedRegion: QUIC enable failed for " << sim_host
-                                      << ": " << quic_err
-                                      << "; per spec NOT falling back to LLUDP." << LL_ENDL;
-                LLSD args;
-                args["REASON"] = quic_err.empty()
-                    ? std::string("Could not establish QUIC connection to the destination simulator")
-                    : quic_err;
-                LLNotificationsUtil::add("CouldNotTeleportReason", args);
-                return;
+                quic_ok = msg->enableQuicCircuit(sim_host, quic_host, quic_port, true, &quic_err);
+                if (quic_ok) break;
+                LL_WARNS("Messaging") << "CrossedRegion: QUIC enable attempt " << attempt
+                                      << "/" << MAX_QUIC_RETRIES << " failed for " << sim_host
+                                      << ": " << quic_err << LL_ENDL;
+                if (attempt < MAX_QUIC_RETRIES)
+                {
+                    ms_sleep(100);
+                }
             }
-            msg->setCircuitTimeoutCallback(sim_host, on_quic_circuit_failed_vm, NULL);
+
+            if (quic_ok)
+            {
+                msg->setCircuitTimeoutCallback(sim_host, on_quic_circuit_failed_vm, NULL);
+            }
+            else
+            {
+                LL_WARNS("Messaging") << "CrossedRegion: QUIC failed after " << MAX_QUIC_RETRIES
+                                      << " attempts, falling back to LLUDP." << LL_ENDL;
+                msg->enableCircuit(sim_host, true);
+            }
         }
         else
         {
