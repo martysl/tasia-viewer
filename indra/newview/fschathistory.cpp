@@ -591,7 +591,7 @@ private:
         params.target = "tasia_image_viewer";
         params.id = "tasia_image_viewer";
         params.window_class = "web_content";
-        params.show_chrome = true;
+        params.show_chrome = false;
         params.allow_address_entry = false;
         params.allow_back_forward_navigation = false;
         params.trusted_content = false;
@@ -674,9 +674,9 @@ private:
         params.target = "tasia_youtube_player";
         params.id = "tasia_youtube_player";
         params.window_class = "web_content";
-        params.show_chrome = true;
+        params.show_chrome = false;
         params.allow_address_entry = false;
-        params.allow_back_forward_navigation = true;
+        params.allow_back_forward_navigation = false;
         params.trusted_content = false;
         params.show_page_title = true;
         params.clean_browser = true;
