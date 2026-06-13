@@ -137,7 +137,7 @@
       <line_editor
           follows="left|bottom"
           height="22"
-          max_length_chars="16"
+          max_length_chars="32"
           name="password_edit"
           is_password="true" 
           select_on_focus="true"
