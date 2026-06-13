@@ -21,6 +21,26 @@ FetchContent_Declare(
   GIT_SHALLOW    FALSE
 )
 
+# On Windows, prefer Strawberry Perl over MSYS2 Perl (Git for Windows)
+# so that quictls/OpenSSL configure script has all required Perl modules.
+if (WINDOWS)
+    find_program(MSQUIC_PERL perl
+        PATHS "C:/Strawberry/perl/bin" "C:/Strawberry/c/bin"
+        NO_DEFAULT_PATH)
+    if (MSQUIC_PERL)
+        set(Perl_EXECUTABLE "${MSQUIC_PERL}" CACHE FILEPATH
+            "Perl interpreter (Strawberry Perl for quictls)" FORCE)
+        message(STATUS "MsQuic: using Strawberry Perl at ${MSQUIC_PERL}")
+    else()
+        # Fallback: try to find any perl with the needed module
+        find_program(MSQUIC_PERL perl)
+        if (MSQUIC_PERL)
+            set(Perl_EXECUTABLE "${MSQUIC_PERL}" CACHE FILEPATH
+                "Perl interpreter" FORCE)
+        endif()
+    endif()
+endif()
+
 set(_msquic_saved_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}")
 set(_msquic_saved_C_FLAGS_MINSIZEREL     "${CMAKE_C_FLAGS_MINSIZEREL}")
 set(_msquic_saved_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
