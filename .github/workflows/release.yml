@@ -217,6 +217,14 @@ jobs:
           echo "TASIA_DISPLAY_VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
           echo "TASIA_BUILD_NUMBER=${{ github.run_number }}" >> "$GITHUB_ENV"
 
+      - name: Ensure Strawberry Perl path for MsQuic quictls (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "C:/Strawberry/perl/bin" >> "$GITHUB_PATH"
+          echo "C:/Strawberry/c/bin" >> "$GITHUB_PATH"
+          echo "Perl: $(perl -v | head -1)"
+
       - name: Configure ${{ matrix.platform }}
         shell: bash
         env:
