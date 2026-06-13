@@ -145,6 +145,14 @@ jobs:
           echo "TASIA_DISPLAY_VERSION=8.0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
           echo "TASIA_BUILD_NUMBER=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
 
+      - name: Ensure Strawberry Perl is first for MsQuic quictls build
+        shell: bash
+        run: |
+          echo "C:/Strawberry/perl/bin" >> "$GITHUB_PATH"
+          echo "C:/Strawberry/c/bin" >> "$GITHUB_PATH"
+          echo "Perl version: $(perl -v | head -1)"
+          echo "Perl path: $(where perl)"
+
       - name: Configure Windows with FMOD
         shell: bash
         env:
