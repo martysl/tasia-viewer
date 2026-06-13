@@ -187,6 +187,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Ensure Strawberry Perl is found before MSYS2 Perl for quictls build
+          export PATH="/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
           autobuild build \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
