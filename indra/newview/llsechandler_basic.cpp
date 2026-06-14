@@ -1366,8 +1366,8 @@ void LLSecAPIBasicHandler::_readProtectedData(unsigned char *unique_id, U32 id_l
             LLTHROW(LLProtectedDataException("Unable to allocate protected data cipher context."));
         }
 
-        const EVP_CIPHER* cipher = EVP_rc4();
-        if (!cipher || EVP_DecryptInit_ex(ctx, cipher, NULL, salt, NULL) != 1)
+        const EVP_CIPHER* rc4_cipher = EVP_rc4();
+        if (!rc4_cipher || EVP_DecryptInit_ex(ctx, rc4_cipher, NULL, salt, NULL) != 1)
         {
             EVP_CIPHER_CTX_free(ctx);
             LLTHROW(LLProtectedDataException("Unable to initialize protected data cipher."));
