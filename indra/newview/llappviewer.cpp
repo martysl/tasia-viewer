@@ -1336,7 +1336,6 @@ bool LLAppViewer::init()
     try
     {
         initializeSecHandler();
-        LLTasiaUserConfig::requestOnce();
     }
     catch (LLProtectedDataException& ex)
     {

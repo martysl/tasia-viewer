@@ -37,6 +37,7 @@
 
 #include <boost/bind.hpp>
 #include <cstdlib>
+#include <exception>
 #include <map>
 #include <sstream>
 
@@ -288,13 +289,32 @@ void LLTasiaUserConfig::requestOnce()
     const U32 timeout_seconds = static_cast<U32>(llclamp(static_cast<S32>(timeout_setting + 0.999f), 1, 30));
     const U32 max_bytes = llclamp(gSavedSettings.getU32("TasiaRemoteUserConfigMaxBytes"), MIN_CONFIG_BYTES, MAX_CONFIG_BYTES);
 
-    LLCoros::instance().launch("LLTasiaUserConfig::fetchCoro",
-        boost::bind(&LLTasiaUserConfig::fetchCoro, url, timeout_seconds, max_bytes));
+    try
+    {
+        LL_INFOS("TasiaConfig") << "Starting remote user config fetch from " << url << LL_ENDL;
+        LLCoros::instance().launch("LLTasiaUserConfig::fetchCoro",
+            boost::bind(&LLTasiaUserConfig::fetchCoro, url, timeout_seconds, max_bytes));
+    }
+    catch (const std::exception& ex)
+    {
+        LL_WARNS("TasiaConfig") << "Remote user config fetch could not be started: " << ex.what() << LL_ENDL;
+        sLoaded = true;
+    }
+    catch (...)
+    {
+        LL_WARNS("TasiaConfig") << "Remote user config fetch could not be started: unknown exception" << LL_ENDL;
+        sLoaded = true;
+    }
 }
 
 // static
 bool LLTasiaUserConfig::getUser(const LLUUID& agent_id, User& user)
 {
+    if (!sRequested && gSecAPIHandler)
+    {
+        requestOnce();
+    }
+
     if (agent_id.isNull())
     {
         return false;
