@@ -222,17 +222,8 @@ jobs:
         shell: bash
         run: |
           curl -sL -o /tmp/nasm.zip "https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip"
-          python3 -c "
-import zipfile, pathlib
-z = zipfile.ZipFile('/tmp/nasm.zip')
-z.extractall('/tmp/nasm')
-exe = list(pathlib.Path('/tmp/nasm').rglob('nasm.exe'))
-if exe[0].parent:
-    (pathlib.Path.home() / 'nasm_path').write_text(str(exe[0].parent))
-    print('NASM:', exe[0])
-"
-          echo "$(cat ~/nasm_path)" >> "$GITHUB_PATH"
-          echo "NASM: $(which nasm)"
+          python3 -c "import zipfile,pathlib;z=zipfile.ZipFile('/tmp/nasm.zip');z.extractall('/tmp/nasm');exe=list(pathlib.Path('/tmp/nasm').rglob('nasm.exe'));p=str(exe[0].parent) if exe else '';(pathlib.Path.home()/'_np').write_text(p);print('NASM:',p)"
+          echo "$(cat ~/_np)" >> "$GITHUB_PATH"
 
       - name: Configure ${{ matrix.platform }}
         shell: bash
