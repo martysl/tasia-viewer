@@ -139,9 +139,8 @@ jobs:
         shell: bash
         run: |
           curl -sL -o /tmp/nasm.zip "https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip"
-          python3 -c "import zipfile,pathlib;z=zipfile.ZipFile('/tmp/nasm.zip');z.extractall('/tmp/nasm');exe=list(pathlib.Path('/tmp/nasm').rglob('nasm.exe'));p=str(exe[0].parent) if exe else '';(pathlib.Path.home()/'_np').write_text(p);print('NASM:',p)"
-          NP="$(cat ~/_np)"
-          echo "$NP" >> "$GITHUB_PATH"
+          python3 -c "import zipfile,pathlib,sys;z=zipfile.ZipFile('/tmp/nasm.zip');z.extractall('/tmp/nasm');exe=list(pathlib.Path('/tmp/nasm').rglob('nasm.exe'));sys.exit(1) if not exe else None;pathlib.Path.home().joinpath('_np').write_text(str(exe[0].parent))"
+          cat ~/_np >> "$GITHUB_PATH"
 
       - name: Set Tasia build metadata
         shell: bash
