@@ -138,9 +138,21 @@ jobs:
       - name: Install NASM for quictls/OpenSSL assembly optimization
         shell: bash
         run: |
-          curl -sL -o /tmp/nasm.zip "https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip"
-          python3 -c "import zipfile,pathlib,sys;z=zipfile.ZipFile('/tmp/nasm.zip');z.extractall('/tmp/nasm');exe=list(pathlib.Path('/tmp/nasm').rglob('nasm.exe'));sys.exit(1) if not exe else None;pathlib.Path.home().joinpath('_np').write_text(str(exe[0].parent))"
-          cat ~/_np >> "$GITHUB_PATH"
+          set -euo pipefail
+          NASM_URL="https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip"
+          NASM_ROOT="C:/tools/nasm"
+          NASM_ROOT_POSIX="/c/tools/nasm"
+          rm -rf "$NASM_ROOT_POSIX"
+          mkdir -p "$NASM_ROOT_POSIX"
+          curl -fsSL -o /tmp/nasm.zip "$NASM_URL"
+          NASM_ZIP_WIN="$(cygpath -w /tmp/nasm.zip)"
+          powershell -NoLogo -NoProfile -Command "Expand-Archive -LiteralPath '$NASM_ZIP_WIN' -DestinationPath 'C:\\tools\\nasm' -Force"
+          NASM_DIR_POSIX="$(dirname "$(find "$NASM_ROOT_POSIX" -name nasm.exe -type f | head -n 1)")"
+          test -n "$NASM_DIR_POSIX"
+          NASM_DIR_WIN="$(cygpath -w "$NASM_DIR_POSIX")"
+          echo "$NASM_DIR_WIN" >> "$GITHUB_PATH"
+          echo "NASM_DIR=$NASM_DIR_POSIX" >> "$GITHUB_ENV"
+          "$NASM_DIR_POSIX/nasm.exe" -v
 
       - name: Set Tasia build metadata
         shell: bash
@@ -155,13 +167,17 @@ jobs:
       - name: Set up Strawberry Perl + NASM for MsQuic quictls build
         shell: bash
         run: |
+          set -euo pipefail
           # Strawberry Perl has all required Perl modules (Locale::Maketext::Simple etc.)
           # Put it first in PATH so quictls OpenSSL Configure can use it.
           # NASM is also needed for OpenSSL assembly optimization.
           echo "C:/Strawberry/perl/bin" >> "$GITHUB_PATH"
           echo "C:/Strawberry/c/bin" >> "$GITHUB_PATH"
+          export PATH="${NASM_DIR:-/c/tools/nasm}:/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
           echo "Perl: $(perl -v | head -1)"
-          echo "NASM: $(which nasm)"
+          perl -MLocale::Maketext::Simple -e "print qq(Locale::Maketext::Simple ok\n)"
+          echo "NASM: $(command -v nasm)"
+          nasm -v
 
       - name: Configure Windows with FMOD
         shell: bash
@@ -198,7 +214,9 @@ jobs:
         run: |
           set -euo pipefail
           # Strawberry Perl for quictls OpenSSL Configure (has required Perl modules)
-          export PATH="/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
+          export PATH="${NASM_DIR:-/c/tools/nasm}:/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
+          command -v perl
+          command -v nasm
           autobuild build \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \

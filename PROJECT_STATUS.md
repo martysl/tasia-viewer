@@ -1,5 +1,56 @@
 # Project Status
 
+## 2026-06-14 EOD — QUIC/quictls/CI build fight
+
+### 2026-06-14 follow-up — keep Windows quictls, fix NASM visibility
+
+Mom rejected Windows `schannel` fallback because older Windows must keep QUIC support.
+Current patch keeps `QUIC_TLS_LIB=quictls` globally and fixes the Windows CI toolchain instead:
+
+- `.github/workflows/build-windows.yml`
+  - Downloads NASM to `C:/tools/nasm`.
+  - Converts the NASM path with `cygpath -w` before writing to `GITHUB_PATH`.
+  - Saves POSIX `NASM_DIR` to `GITHUB_ENV`.
+  - Exports `NASM_DIR` before Strawberry Perl in the MsQuic build step.
+  - Verifies `Locale::Maketext::Simple`, `perl`, and `nasm` before build.
+- `.github/workflows/release.yml`
+  - Applies the same NASM path fix to release builds.
+
+Validation done locally:
+- `git diff --check`: passed
+- workflow text checks: passed
+- PyYAML parse for `build-windows.yml` and `release.yml`: passed
+
+Next exact action:
+- Push this patch to the Windows branch and run Windows CI.
+- If OpenSSL still says `NASM not found`, inspect the failed step and pass NASM path directly to the OpenSSL/MsQuic environment.
+
+### State before Mom's sleep
+
+Windows build is **still failing** with quictls (Strawberry Perl + NASM) on CI.
+Approach tried (all failed):
+1. `Perl_EXECUTABLE` in MsQuic.cmake → cmake var doesn't reach ninja build
+2. Strawberry Perl via PATH export → `Locale::Maketext::Simple` found, but OpenSSL Configure fails ("NASM not found")
+3. CPAN install of Locale::Maketext::Simple → CPAN itself broken (same module missing)
+4. MSYS2 pacman → not available in Git for Windows
+5. NASM download via Python → YAML syntax broke multi-line Python, then single-line Python exit(1) broke step
+
+### Current Windows QUIC policy
+Windows must keep `quictls`; do not revert to `schannel` unless Mom explicitly accepts losing QUIC support on older Windows.
+
+### What works
+- Linux build: passes with quictls 🎉
+- Both branches: all patches pushed (QUIC fallback with 3 retries, quictls on Linux, password 32 chars, badge fallback, YouTube/image viewer, icon rename, launcher)
+- QUIC teleport fallback to UDP works
+
+### What's broken
+- Windows CI: quictls Strawberry Perl + NASM chain fails
+- Windows release: cannot build with quictls yet
+
+### Next action
+- Push current NASM/Strawberry Perl CI fix.
+- Start Windows CI and inspect MsQuic/OpenSSL output if it still fails.
+
 <<<<<<< HEAD
 ## 2026-05-24 Remote Tasia user config feature
 

@@ -1,43 +1,19 @@
 # Next Action
 
-<<<<<<< HEAD
-## Now: remote Tasia user config
-
-1. ✅ Implemented on Linux branch and started Linux build.
-2. Cherry-pick same commit to Windows branch.
-3. Push Windows branch and start Windows build.
-4. Create/verify server file: `https://i.let-us.cyou/hg/config.json` (currently HTTP 404).
-
-Example supported JSON fields per user:
-
-```json
-{
-  "uuid": "uuid_here",
-  "custom_title": ":heart: Mom :heart:",
-  "badge_name": "Developer",
-  "badge_icon": "https://placehold.co/200x50?text=Developer&font=Poppins",
-  "profile_text": "EasierIT Developer",
-  "tooltip": "Official EasierIT Staff",
-  "tag_color": "#ff66cc"
-}
-```
-
-## Now
-- Wait for builds #26180447827 (Linux) and #26180456294 (Windows) to complete
-- Verify the voice mic detection fix works
-=======
 ## Current
-1. ✅ Latest releases published:
-   - Linux `v8.0.1-17`
-   - Windows `v8.0.1-44-windows`
-2. ✅ Old releases and old Actions run results cleaned up.
-3. ✅ Discord release announcement sent with direct ZIP links.
->>>>>>> 43da2163ac (Rebrand to Tasia: channel name, URLs, auto revision)
+
+Windows must keep `quictls` for older Windows QUIC support. Do not revert Windows to `schannel` unless Mom explicitly accepts losing older-Windows QUIC.
 
 ## Next
-1. Runtime-test both releases with real `config.json` entries (2+ users, different `tag_color`, different badge icons).
-2. Confirm nametag full-color behavior and profile badge visibility across grids.
-3. If stable, keep this as baseline release procedure.
+
+1. Push current NASM/Strawberry Perl CI fix on `feature/tasia-giphy-welcome-loading-windows`.
+2. Start Windows GitHub Actions build.
+3. If CI fails, inspect the exact MsQuic/OpenSSL failure:
+   - confirm Strawberry Perl is first in `PATH`
+   - confirm `NASM_DIR` points to the directory containing `nasm.exe`
+   - confirm OpenSSL Configure sees `nasm`
+4. After Windows passes, mirror the workflow fix to any release branch/tag flow as needed.
 
 ## Blockers
-- None currently.
+
+- Waiting for CI verification after pushing this patch.
