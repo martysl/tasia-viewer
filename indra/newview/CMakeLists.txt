@@ -2024,6 +2024,14 @@ if (WINDOWS)
         "${CMAKE_CURRENT_SOURCE_DIR}/icons/${ICON_PATH}/tasia_icon.ico"
         "${CMAKE_CURRENT_SOURCE_DIR}/res/tasia_icon.ico"
       )
+    # Compatibility alias: some generated/stale Windows resource files may still
+    # reference firestorm_icon.ico. Keep the file available while Tasia-branded
+    # resources move to tasia_icon.ico.
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/icons/${ICON_PATH}/tasia_icon.ico"
+        "${CMAKE_CURRENT_SOURCE_DIR}/res/firestorm_icon.ico"
+      )
     execute_process(
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/icons/${ICON_PATH}/firestorm_256.BMP"
@@ -2069,6 +2077,7 @@ if (WINDOWS)
         res/lltoolzoomin.cur
         res/lltoolzoomout.cur
         res/tasia_icon.BMP
+        res/firestorm_icon.ico
         res/tasia_icon.ico
         res-sdl/tasia_icon.BMP
         res/resource.h
