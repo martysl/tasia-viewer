@@ -1290,31 +1290,32 @@ void LLSecAPIBasicHandler::init()
         // <FS:Testy> Duplicate line
         //mProtectedDataFilename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS,
         //                                                  "bin_conf.dat");
-        std::string store_file = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS,
-                                                        "CA.pem");
-
-
-        LL_INFOS("SECAPI") << "Loading user certificate store from " << store_file << LL_ENDL;
-        mStore = new LLBasicCertificateStore(store_file);
-
         // grab the application ca-bundle.crt file that contains the well-known certs shipped
         // with the product
         std::string ca_file_path = gDirUtilp->getCAFile();
         LL_INFOS("SECAPI") << "Loading application certificate store from " << ca_file_path << LL_ENDL;
-        LLPointer<LLBasicCertificateStore> app_ca_store = new LLBasicCertificateStore(ca_file_path);
+        mStore = new LLBasicCertificateStore(ca_file_path);
+        LL_INFOS("SECAPI") << "Application certificate store initialized" << LL_ENDL;
 
-        // push the applicate CA files into the store, therefore adding any new CA certs that
-        // updated
-        for(LLCertificateVector::iterator i = app_ca_store->begin();
-            i != app_ca_store->end();
+        std::string store_file = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS,
+                                                        "CA.pem");
+        LL_INFOS("SECAPI") << "Loading user certificate store from " << store_file << LL_ENDL;
+        LLPointer<LLBasicCertificateStore> user_ca_store = new LLBasicCertificateStore(store_file);
+        LL_INFOS("SECAPI") << "Merging user certificate store" << LL_ENDL;
+
+        for(LLCertificateVector::iterator i = user_ca_store->begin();
+            i != user_ca_store->end();
             i++)
         {
             mStore->add(*i);
         }
+        LL_INFOS("SECAPI") << "Certificate stores initialized" << LL_ENDL;
 
     }
+    LL_INFOS("SECAPI") << "Reading protected data store" << LL_ENDL;
     _readProtectedData(); // initialize mProtectedDataMap
                           // may throw LLProtectedDataException if saved datamap is not decryptable
+    LL_INFOS("SECAPI") << "Protected data store initialized" << LL_ENDL;
 }
 LLSecAPIBasicHandler::~LLSecAPIBasicHandler()
 {
