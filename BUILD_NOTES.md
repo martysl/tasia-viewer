@@ -1,5 +1,20 @@
 # Build Notes
 
+## 2026-06-14 manual prerelease v8.0.1.78484
+
+- Release: https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78484
+- Published manually from latest successful CI artifacts.
+- Linux artifact:
+  - Run: `27484208646`
+  - Commit: `121b8d66b8474d4f484b962eacfcf1dd9f7d56a3`
+  - Asset: `TasiaOS-Releasex64-8-0-1-78484.tar.xz`
+- Windows artifact:
+  - Run: `27495917464`
+  - Commit: `f4410fa68a16ac9dfdbde9b400945078e4f3ca66`
+  - Asset: `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`
+- Checksum asset: `SHA256SUMS.txt`
+- Local staging directory used: `/tmp/opencode/tasia-manual-release/`
+
 ## 2026-05-24: Remote Tasia user config
 
 - New files:

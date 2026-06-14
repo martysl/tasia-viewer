@@ -2,18 +2,18 @@
 
 ## Current
 
+Manual prerelease `v8.0.1.78484` is published:
+
+https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78484
+
 Windows must keep `quictls` for older Windows QUIC support. Do not revert Windows to `schannel` unless Mom explicitly accepts losing older-Windows QUIC.
 
 ## Next
 
-1. Push current NASM/Strawberry Perl CI fix on `feature/tasia-giphy-welcome-loading-windows`.
-2. Start Windows GitHub Actions build.
-3. If CI fails, inspect the exact MsQuic/OpenSSL failure:
-   - confirm Strawberry Perl is first in `PATH`
-   - confirm `NASM_DIR` points to the directory containing `nasm.exe`
-   - confirm OpenSSL Configure sees `nasm`
-4. After Windows passes, mirror the workflow fix to any release branch/tag flow as needed.
+1. Runtime-test `v8.0.1.78484` Linux package.
+2. Runtime-test `v8.0.1.78484` Windows package.
+3. If runtime checks pass, use this as the current public prerelease.
 
 ## Blockers
 
-- Waiting for CI verification after pushing this patch.
+- None for publishing. Runtime verification still needed.

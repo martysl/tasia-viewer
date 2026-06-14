@@ -1,5 +1,24 @@
 # Project Status
 
+## 2026-06-14 manual release v8.0.1.78484
+
+What is done:
+- Latest successful Linux and Windows CI artifacts were downloaded and published manually as a GitHub prerelease.
+- Release URL: https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78484
+- Linux source run: `27484208646`, commit `121b8d66b8474d4f484b962eacfcf1dd9f7d56a3`
+- Windows source run: `27495917464`, commit `f4410fa68a16ac9dfdbde9b400945078e4f3ca66`
+- Uploaded assets:
+  - `TasiaOS-Releasex64-8-0-1-78484.tar.xz`
+  - `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`
+  - `SHA256SUMS.txt`
+
+What was verified:
+- GitHub release exists and is marked prerelease.
+- All three assets are present with expected sizes.
+
+Next exact action:
+- Runtime-test the Linux and Windows packages from release `v8.0.1.78484`.
+
 ## 2026-06-14 EOD — QUIC/quictls/CI build fight
 
 ### 2026-06-14 follow-up — keep Windows quictls, fix NASM visibility
