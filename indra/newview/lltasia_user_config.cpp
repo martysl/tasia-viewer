@@ -54,6 +54,7 @@ typedef std::map<std::string, LLTasiaUserConfig::User> user_map_t;
 
 bool sRequested = false;
 bool sLoaded = false;
+bool sInFlight = false;
 user_map_t sUsers;
 
 std::string cleanText(std::string value, std::size_t max_len)
@@ -258,7 +259,19 @@ bool LLTasiaUserConfig::User::hasProfileBadge() const
 // static
 void LLTasiaUserConfig::requestOnce()
 {
-    if (sRequested)
+    request(false);
+}
+
+// static
+void LLTasiaUserConfig::requestRefresh()
+{
+    request(true);
+}
+
+// static
+void LLTasiaUserConfig::request(bool force_refresh)
+{
+    if (sInFlight || (sRequested && !force_refresh))
     {
         return;
     }
@@ -270,10 +283,13 @@ void LLTasiaUserConfig::requestOnce()
     }
 
     sRequested = true;
+    sInFlight = true;
+    sLoaded = false;
 
     if (!gSavedSettings.getBOOL("TasiaRemoteUserConfigEnabled"))
     {
         sLoaded = true;
+        sInFlight = false;
         return;
     }
 
@@ -282,6 +298,7 @@ void LLTasiaUserConfig::requestOnce()
     if (url.empty())
     {
         sLoaded = true;
+        sInFlight = false;
         return;
     }
 
@@ -299,22 +316,19 @@ void LLTasiaUserConfig::requestOnce()
     {
         LL_WARNS("TasiaConfig") << "Remote user config fetch could not be started: " << ex.what() << LL_ENDL;
         sLoaded = true;
+        sInFlight = false;
     }
     catch (...)
     {
         LL_WARNS("TasiaConfig") << "Remote user config fetch could not be started: unknown exception" << LL_ENDL;
         sLoaded = true;
+        sInFlight = false;
     }
 }
 
 // static
 bool LLTasiaUserConfig::getUser(const LLUUID& agent_id, User& user)
 {
-    if (!sRequested && gSecAPIHandler)
-    {
-        requestOnce();
-    }
-
     if (agent_id.isNull())
     {
         return false;
@@ -345,30 +359,47 @@ bool LLTasiaUserConfig::isLoaded()
 // static
 void LLTasiaUserConfig::fetchCoro(std::string url, U32 timeout_seconds, U32 max_bytes)
 {
-    LLCore::HttpRequest::ptr_t http_request(new LLCore::HttpRequest);
-    LLCoreHttpUtil::HttpCoroutineAdapter::ptr_t http_adapter(
-        new LLCoreHttpUtil::HttpCoroutineAdapter("TasiaUserConfigFetch", LLCore::HttpRequest::DEFAULT_POLICY_ID));
-    LLCore::HttpHeaders::ptr_t http_headers(new LLCore::HttpHeaders);
-    LLCore::HttpOptions::ptr_t http_options(new LLCore::HttpOptions);
-
-    http_options->setTimeout(timeout_seconds);
-    http_options->setTransferTimeout(timeout_seconds);
-    http_options->setRetries(0);
-
-    std::ostringstream range;
-    range << "bytes=0-" << (max_bytes - 1);
-    http_headers->append(HTTP_OUT_HEADER_ACCEPT, "application/json, */*;q=0.1");
-    http_headers->append(HTTP_OUT_HEADER_RANGE, range.str());
-
-    LLSD response = http_adapter->getJsonAndSuspend(http_request, url, http_options, http_headers);
-    LLSD http_results = response[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS];
-    LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(http_results);
-    if (!status)
+    try
     {
-        LL_WARNS("TasiaConfig") << "Remote user config fetch failed: " << status.toString() << LL_ENDL;
-        sLoaded = true;
-        return;
-    }
+        LLCore::HttpRequest::ptr_t http_request(new LLCore::HttpRequest);
+        LLCoreHttpUtil::HttpCoroutineAdapter::ptr_t http_adapter(
+            new LLCoreHttpUtil::HttpCoroutineAdapter("TasiaUserConfigFetch", LLCore::HttpRequest::DEFAULT_POLICY_ID));
+        LLCore::HttpHeaders::ptr_t http_headers(new LLCore::HttpHeaders);
+        LLCore::HttpOptions::ptr_t http_options(new LLCore::HttpOptions);
 
-    applyConfig(response);
+        http_options->setTimeout(timeout_seconds);
+        http_options->setTransferTimeout(timeout_seconds);
+        http_options->setRetries(0);
+
+        std::ostringstream range;
+        range << "bytes=0-" << (max_bytes - 1);
+        http_headers->append(HTTP_OUT_HEADER_ACCEPT, "application/json, */*;q=0.1");
+        http_headers->append(HTTP_OUT_HEADER_RANGE, range.str());
+
+        LLSD response = http_adapter->getJsonAndSuspend(http_request, url, http_options, http_headers);
+        LLSD http_results = response[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS];
+        LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(http_results);
+        if (!status)
+        {
+            LL_WARNS("TasiaConfig") << "Remote user config fetch failed: " << status.toString() << LL_ENDL;
+            sLoaded = true;
+            sInFlight = false;
+            return;
+        }
+
+        applyConfig(response);
+        sInFlight = false;
+    }
+    catch (const std::exception& ex)
+    {
+        LL_WARNS("TasiaConfig") << "Remote user config fetch failed with exception: " << ex.what() << LL_ENDL;
+        sLoaded = true;
+        sInFlight = false;
+    }
+    catch (...)
+    {
+        LL_WARNS("TasiaConfig") << "Remote user config fetch failed with unknown exception" << LL_ENDL;
+        sLoaded = true;
+        sInFlight = false;
+    }
 }

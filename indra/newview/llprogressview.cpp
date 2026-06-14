@@ -32,6 +32,7 @@
 #include <vector>
 
 #include "lltasia_welcome_client.h"
+#include "lltasia_user_config.h"
 
 #include "indra_constants.h"
 #include "llmath.h"
@@ -396,9 +397,11 @@ void LLProgressView::setVisible(bool visible)
         mTasiaWelcomeRenderedLine.clear();
         mTasiaWelcomeLastName.clear();
         mWelcomeRequested = false;
+        mTasiaUserConfigRequestedThisScreen = false;
         ++mWelcomeRequestId;
         setMessageText(mServerMessage);
         requestWelcomeMessage();
+        requestTasiaUserConfigRefresh();
         maybeStartLoadingYouTube();
     }
 }
@@ -559,6 +562,7 @@ void LLProgressView::setText(const std::string& text)
 void LLProgressView::setPercent(const F32 percent)
 {
     mProgressBar->setValue(percent);
+    requestTasiaUserConfigRefresh();
 }
 
 void LLProgressView::setMessageText(const std::string& msg)
@@ -663,6 +667,20 @@ void LLProgressView::requestWelcomeMessage()
     const S32 request_id = ++mWelcomeRequestId;
     LLTasiaWelcomeClient::requestLine(
         boost::bind(&LLProgressView::onWelcomeMessageFetched, request_id, _1));
+}
+
+void LLProgressView::requestTasiaUserConfigRefresh()
+{
+    if (mTasiaUserConfigRequestedThisScreen || !getVisible())
+    {
+        return;
+    }
+
+    LLTasiaUserConfig::requestRefresh();
+    if (LLTasiaUserConfig::isRequested())
+    {
+        mTasiaUserConfigRequestedThisScreen = true;
+    }
 }
 
 void LLProgressView::maybeStartLoadingYouTube()

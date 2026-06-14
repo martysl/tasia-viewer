@@ -48,11 +48,13 @@ public:
     };
 
     static void requestOnce();
+    static void requestRefresh();
     static bool getUser(const LLUUID& agent_id, User& user);
     static bool isRequested();
     static bool isLoaded();
 
 private:
+    static void request(bool force_refresh);
     static void fetchCoro(std::string url, U32 timeout_seconds, U32 max_bytes);
 };
 

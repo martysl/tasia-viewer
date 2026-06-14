@@ -113,6 +113,7 @@ protected:
     bool mWelcomeRequested = false;
     bool mHasTasiaWelcomeMessage = false;
     bool mLoadingYouTubeActive = false;
+    bool mTasiaUserConfigRequestedThisScreen = false;
     S32 mWelcomeRequestId = 0;
 
     // The LLEventStream mUpdateEvents depends upon this class being a singleton
@@ -123,6 +124,7 @@ protected:
     bool handleUpdate(const LLSD& event_data);
     static void onIdle(void* user_data);
     void requestWelcomeMessage();
+    void requestTasiaUserConfigRefresh();
     void setMessageText(const std::string& msg);
     void setTasiaWelcomeMessage(const std::string& msg);
     void refreshTasiaWelcomeMessage();
