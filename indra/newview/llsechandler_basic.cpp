@@ -1361,9 +1361,17 @@ void LLSecAPIBasicHandler::_readProtectedData(unsigned char *unique_id, U32 id_l
 
         // read in the rest of the file.
         EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-        // todo: ctx error handling
+        if (!ctx)
+        {
+            LLTHROW(LLProtectedDataException("Unable to allocate protected data cipher context."));
+        }
 
-        EVP_DecryptInit(ctx, EVP_rc4(), salt, NULL);
+        const EVP_CIPHER* cipher = EVP_rc4();
+        if (!cipher || EVP_DecryptInit_ex(ctx, cipher, NULL, salt, NULL) != 1)
+        {
+            EVP_CIPHER_CTX_free(ctx);
+            LLTHROW(LLProtectedDataException("Unable to initialize protected data cipher."));
+        }
         // allocate memory:
         std::string decrypted_data;
 
@@ -1371,9 +1379,13 @@ void LLSecAPIBasicHandler::_readProtectedData(unsigned char *unique_id, U32 id_l
             // read data as a block:
             protected_data_stream.read((char *)buffer, BUFFER_READ_SIZE);
 
-            EVP_DecryptUpdate(ctx, decrypted_buffer, &decrypted_length,
-                              buffer, (int)protected_data_stream.gcount());
-            decrypted_data.append((const char *)decrypted_buffer, (int)protected_data_stream.gcount());
+            if (EVP_DecryptUpdate(ctx, decrypted_buffer, &decrypted_length,
+                                  buffer, (int)protected_data_stream.gcount()) != 1)
+            {
+                EVP_CIPHER_CTX_free(ctx);
+                LLTHROW(LLProtectedDataException("Unable to decrypt protected data store."));
+            }
+            decrypted_data.append((const char *)decrypted_buffer, decrypted_length);
         }
 
         // RC4 is a stream cipher, so we don't bother to EVP_DecryptFinal, as there is
