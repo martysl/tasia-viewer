@@ -135,6 +135,12 @@ jobs:
           cmake --version
           where cl
 
+      - name: Install NASM for quictls/OpenSSL assembly optimization
+        shell: bash
+        run: |
+          choco install nasm --no-progress -y 2>&1 | tail -3
+          where nasm
+
       - name: Set Tasia build metadata
         shell: bash
         run: |
@@ -145,11 +151,16 @@ jobs:
           echo "TASIA_DISPLAY_VERSION=8.0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
           echo "TASIA_BUILD_NUMBER=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
 
-      - name: Install missing Perl module Locale::Maketext::Simple for quictls
+      - name: Set up Strawberry Perl + NASM for MsQuic quictls build
         shell: bash
         run: |
-          echo 'yes' | cpan -fi Locale::Maketext::Simple 2>&1 | tail -5
-          perl -MLocale::Maketext::Simple -e "print \"OK\n\""
+          # Strawberry Perl has all required Perl modules (Locale::Maketext::Simple etc.)
+          # Put it first in PATH so quictls OpenSSL Configure can use it.
+          # NASM is also needed for OpenSSL assembly optimization.
+          echo "C:/Strawberry/perl/bin" >> "$GITHUB_PATH"
+          echo "C:/Strawberry/c/bin" >> "$GITHUB_PATH"
+          echo "Perl: $(perl -v | head -1)"
+          echo "NASM: $(which nasm)"
 
       - name: Configure Windows with FMOD
         shell: bash
@@ -185,6 +196,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Strawberry Perl for quictls OpenSSL Configure (has required Perl modules)
+          export PATH="/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
           autobuild build \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \

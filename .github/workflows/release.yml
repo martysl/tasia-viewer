@@ -217,12 +217,12 @@ jobs:
           echo "TASIA_DISPLAY_VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
           echo "TASIA_BUILD_NUMBER=${{ github.run_number }}" >> "$GITHUB_ENV"
 
-      - name: Install missing Perl module Locale::Maketext::Simple for quictls (Windows)
+      - name: Install NASM for quictls/OpenSSL assembly (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          echo 'yes' | cpan -fi Locale::Maketext::Simple 2>&1 | tail -5
-          perl -MLocale::Maketext::Simple -e "print \"OK\n\""
+          choco install nasm --no-progress -y 2>&1 | tail -3
+          where nasm
 
       - name: Configure ${{ matrix.platform }}
         shell: bash
@@ -267,6 +267,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Strawberry Perl for quictls OpenSSL Configure (has required modules)
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            export PATH="/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
+          fi
+
           NINJA_FLAG="${{ matrix.ninja_flag }}"
 
           autobuild build \
