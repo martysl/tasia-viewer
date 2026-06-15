@@ -6,8 +6,10 @@ Update 2026-06-15:
 - Windows asset was replaced from local zip `/home/marty/src/Tasia-Viewer-Windows-FMOD.zip`.
 - Live release asset: `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`
 - It was replaced again after login failed with `SSL_PEER_CERTIFICATE` / “best effort”. The CA bundle inside the zip was patched with the explicit Let's Encrypt R12 intermediate for `i.let-us.cyou` compatibility with the bundled Windows libcurl/OpenSSL.
-- Size: `280507065` bytes
-- SHA256: `fcbb3a4914057f084b6ec398cda06cc5cd3bc97713314dea682a5867649ad910`
+- The CA-only patch was not enough. Build `815213467e` adds a targeted CoreHttp SSL verification exception for trusted `https://i.let-us.cyou/` and `https://i.let-us.cyou:8002/` endpoints.
+- The release Windows asset was replaced with the successful artifact from CI run `27574206454`.
+- Size: `461590419` bytes
+- SHA256: `373138c008d0dd7fb51f78641a230abdc8bb145952c271979af36559e41fb94f`
 - `SHA256SUMS.txt` was regenerated and uploaded with `--clobber`.
 
 - Release: https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78484
