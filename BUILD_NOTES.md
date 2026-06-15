@@ -2,6 +2,13 @@
 
 ## 2026-06-14 manual prerelease v8.0.1.78484
 
+Update 2026-06-15:
+- Windows asset was replaced from local zip `/home/marty/src/Tasia-Viewer-Windows-FMOD.zip`.
+- Live release asset: `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`
+- Size: `280505754` bytes
+- SHA256: `346b39b698254677b61290dab8e06e5ac523ca4b6a44978afe6d181ad4b71a34`
+- `SHA256SUMS.txt` was regenerated and uploaded with `--clobber`.
+
 - Release: https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78484
 - Published manually from latest successful CI artifacts.
 - Linux artifact:
