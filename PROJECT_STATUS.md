@@ -5,8 +5,10 @@
 Update 2026-06-15:
 - Replaced the Windows release asset in `v8.0.1.78484` with `/home/marty/src/Tasia-Viewer-Windows-FMOD.zip`.
 - Published asset name remains `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`.
-- New Windows asset size: `280505754` bytes.
-- New Windows SHA256: `346b39b698254677b61290dab8e06e5ac523ca4b6a44978afe6d181ad4b71a34`.
+- Replaced it again after login failed with `SSL_PEER_CERTIFICATE` / “best effort” because Windows viewer rejected `https://i.let-us.cyou:8002/` and Tasia HTTPS endpoints.
+- The live Windows zip now has `ca-bundle.crt` patched with the explicit Let's Encrypt R12 intermediate for older bundled Windows libcurl/OpenSSL verification.
+- New Windows asset size: `280507065` bytes.
+- New Windows SHA256: `fcbb3a4914057f084b6ec398cda06cc5cd3bc97713314dea682a5867649ad910`.
 - `SHA256SUMS.txt` was replaced to match the live release assets.
 
 What is done:
