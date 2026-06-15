@@ -558,20 +558,6 @@ HttpStatus HttpOpRequest::prepareRequest(HttpService * service)
         last_modified = mReqOptions->getLastModified(); // <FS:Ansariel> GetIfModified request
     }
 
-    // Tasia/OpenSim compatibility: the bundled Windows libcurl/OpenSSL stack can
-    // reject the Let's Encrypt chain for i.let-us.cyou even when the current CA
-    // bundle verifies it elsewhere. Keep verification enabled globally, but do
-    // not block I-Grid login and Tasia-hosted welcome/config endpoints on this
-    // known trusted host.
-    if (mReqURL.rfind("https://i.let-us.cyou/", 0) == 0 ||
-        mReqURL.rfind("https://i.let-us.cyou:8002/", 0) == 0)
-    {
-        LL_WARNS("CoreHttp") << "Disabling SSL verification for trusted Tasia/I-Grid endpoint: "
-                             << mReqURL << LL_ENDL;
-        sslPeerV = 0L;
-        sslHostV = 0L;
-    }
-
     check_curl_easy_setopt(mCurlHandle, CURLOPT_FOLLOWLOCATION, follow_redirect);
 
     check_curl_easy_setopt(mCurlHandle, CURLOPT_SSL_VERIFYPEER, sslPeerV);

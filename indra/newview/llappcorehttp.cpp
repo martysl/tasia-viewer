@@ -545,6 +545,23 @@ LLCore::HttpStatus LLAppCoreHttp::sslVerify(const std::string &url,
     try
     {
         X509_STORE_CTX *ctx = static_cast<X509_STORE_CTX *>(appdata);
+
+        // Let OpenSSL/libcurl perform normal public-CA chain validation first.
+        // The viewer's legacy LLBasicCertificateStore validator is useful for
+        // viewer-managed/user-trusted certs, but it does not always handle modern
+        // public CA chains the same way OpenSSL does (for example current
+        // Let's Encrypt intermediates). If native verification succeeds, keep
+        // the connection fully verified and do not run the legacy fallback.
+        if (X509_verify_cert(ctx) == 1)
+        {
+            return result;
+        }
+
+        const int openssl_error = X509_STORE_CTX_get_error(ctx);
+        LL_WARNS("Init") << "Native OpenSSL certificate validation failed for " << url
+                          << ": " << X509_verify_cert_error_string(openssl_error)
+                          << "; trying viewer certificate store fallback" << LL_ENDL;
+
         LLPointer<LLCertificateStore> store = gSecAPIHandler->getCertificateStore("");
         LLPointer<LLCertificateChain> chain = gSecAPIHandler->getCertificateChain(ctx);
         LLSD validation_params = LLSD::emptyMap();
