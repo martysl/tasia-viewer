@@ -1327,6 +1327,17 @@ LLSecAPIBasicHandler::~LLSecAPIBasicHandler()
 
 void LLSecAPIBasicHandler::_readProtectedData(unsigned char *unique_id, U32 id_len)
 {
+#if LL_WINDOWS
+    // Windows quictls builds can crash inside the legacy OpenSSL RC4 protected
+    // data path during startup. Do not let saved-password storage take the
+    // viewer down: start with an empty protected map instead. Users may need to
+    // re-enter saved credentials, but the viewer can open normally.
+    LL_WARNS("SECAPI") << "Skipping legacy RC4 protected data read on Windows; starting with empty protected data store: "
+                        << mProtectedDataFilename << LL_ENDL;
+    mProtectedDataMap = LLSD::emptyMap();
+    return;
+#endif
+
     // attempt to load the file into our map
     LLPointer<LLSDParser> parser = new LLSDXMLParser();
     llifstream protected_data_stream(mProtectedDataFilename.c_str(),
@@ -1427,6 +1438,15 @@ void LLSecAPIBasicHandler::_readProtectedData()
 
 void LLSecAPIBasicHandler::_writeProtectedData()
 {
+#if LL_WINDOWS
+    // Keep Windows quictls builds away from the legacy OpenSSL RC4 protected
+    // data writer as well. This avoids reintroducing the same crash path after
+    // credentials are changed in-session.
+    LL_WARNS("SECAPI") << "Skipping legacy RC4 protected data write on Windows: "
+                        << mProtectedDataFilename << LL_ENDL;
+    return;
+#endif
+
     std::ostringstream formatted_data_ostream;
     U8 salt[STORE_SALT_SIZE];
     U8 buffer[BUFFER_READ_SIZE];
