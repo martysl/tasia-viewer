@@ -199,13 +199,27 @@ void LLAppCoreHttp::init()
                          << LL_ENDL;
     }
 
-    // Set up SSL Verification call back.
-    status = LLCore::HttpRequest::setStaticPolicyOption(LLCore::HttpRequest::PO_SSL_VERIFY_CALLBACK,
-                                                        LLCore::HttpRequest::GLOBAL_POLICY_ID,
-                                                        sslVerify, NULL);
-    if (!status)
+    // Let libcurl/OpenSSL perform standard public-CA verification by default.
+    // The legacy viewer certificate callback is only needed when the user has a
+    // custom CA.pem store. Installing it unconditionally replaces OpenSSL's
+    // normal chain builder and can reject otherwise-valid modern public CA
+    // chains on Windows.
+    const std::string user_ca_file = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "CA.pem");
+    if (LLFile::isfile(user_ca_file))
     {
-        LL_WARNS("Init") << "Failed to set SSL Verification.  Reason:  " << status.toString() << LL_ENDL;
+        LL_INFOS("Init") << "User certificate store found; enabling viewer SSL verification callback: "
+                         << user_ca_file << LL_ENDL;
+        status = LLCore::HttpRequest::setStaticPolicyOption(LLCore::HttpRequest::PO_SSL_VERIFY_CALLBACK,
+                                                            LLCore::HttpRequest::GLOBAL_POLICY_ID,
+                                                            sslVerify, NULL);
+        if (!status)
+        {
+            LL_WARNS("Init") << "Failed to set SSL Verification.  Reason:  " << status.toString() << LL_ENDL;
+        }
+    }
+    else
+    {
+        LL_INFOS("Init") << "No user certificate store found; using native libcurl/OpenSSL SSL verification" << LL_ENDL;
     }
 
     // Set up Default SSL Verification option.
