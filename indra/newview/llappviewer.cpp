@@ -952,7 +952,11 @@ bool LLAppViewer::init()
 
     LL_INFOS("InitInfo") << "LLCore::Http initialized." << LL_ENDL ;
 
+#if !LL_WINDOWS
     LLQuicGlobal::instance().initialize(gDirUtilp->getCAFile());
+#else
+    LL_INFOS("InitInfo") << "Deferring MsQuic initialization on Windows until simulator QUIC circuit setup" << LL_ENDL;
+#endif
 
     LLMachineID::init();
 
