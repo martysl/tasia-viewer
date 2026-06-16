@@ -362,6 +362,16 @@ bool HttpLibcurl::completeRequest(CURLM * multi_handle, CURL * handle, CURLcode 
     if (op->mStatus)
     {
         op->mStatus = HttpStatus(HttpStatus::EXT_CURL_EASY, status);
+        if (status != CURLE_OK)
+        {
+            long ssl_verify_result = 0L;
+            curl_easy_getinfo(handle, CURLINFO_SSL_VERIFYRESULT, &ssl_verify_result);
+            LL_WARNS(LOG_CORE) << "libcurl request failed: url=" << op->mReqURL
+                               << " curl=" << status << " (" << curl_easy_strerror(status) << ")"
+                               << " ssl_verify_result=" << ssl_verify_result
+                               << " error_buffer='" << op->mCurlErrorBuffer << "'"
+                               << LL_ENDL;
+        }
     }
     if (op->mStatus)
     {

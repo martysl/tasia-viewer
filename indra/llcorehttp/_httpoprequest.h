@@ -203,6 +203,7 @@ public:
     // Transport data
     bool                mCurlActive;
     CURL *              mCurlHandle;
+    char                mCurlErrorBuffer[CURL_ERROR_SIZE];
     HttpService *       mCurlService;
     curl_slist *        mCurlHeaders;
     size_t              mCurlBodyPos;
@@ -241,4 +242,3 @@ curl_slist * append_headers_to_slist(const HttpHeaders::ptr_t &, curl_slist * sl
 }   // end namespace LLCore
 
 #endif  // _LLCORE_HTTP_OPREQUEST_H_
-

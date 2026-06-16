@@ -139,6 +139,7 @@ HttpOpRequest::HttpOpRequest()
       mReqOptions(),
       mCurlActive(false),
       mCurlHandle(NULL),
+      mCurlErrorBuffer(),
       mCurlService(NULL),
       mCurlHeaders(NULL),
       mCurlBodyPos(0),
@@ -515,6 +516,8 @@ HttpStatus HttpOpRequest::prepareRequest(HttpService * service)
     check_curl_easy_setopt(mCurlHandle, CURLOPT_NOPROGRESS, 1);
     check_curl_easy_setopt(mCurlHandle, CURLOPT_URL, mReqURL.c_str());
     check_curl_easy_setopt(mCurlHandle, CURLOPT_PRIVATE, getHandle());
+    mCurlErrorBuffer[0] = '\0';
+    check_curl_easy_setopt(mCurlHandle, CURLOPT_ERRORBUFFER, mCurlErrorBuffer);
 
 // <FS:ND/> Newer versions of curl are stricter with checkinng Cotent-Encoding: header
 // Aws returns Content-Encoding: binary/octet-stream which is no valid scheme defined by HTTP/1.1 (compress,deflate, gzip)
