@@ -15,6 +15,8 @@ if (WIN32)
     # corrupt libcurl/OpenSSL HTTPS handshakes. A DLL keeps quictls symbols
     # private to msquic.dll while preserving QUIC support on older Windows.
     set(QUIC_BUILD_SHARED ON CACHE BOOL "" FORCE)
+    set(QUIC_STATIC_LINK_CRT OFF CACHE BOOL "" FORCE)
+    set(QUIC_STATIC_LINK_PARTIAL_CRT OFF CACHE BOOL "" FORCE)
 else ()
     set(QUIC_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 endif ()
