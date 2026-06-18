@@ -12,6 +12,14 @@ Update 2026-06-15:
 - SHA256: `373138c008d0dd7fb51f78641a230abdc8bb145952c271979af36559e41fb94f`
 - `SHA256SUMS.txt` was regenerated and uploaded with `--clobber`.
 
+Update 2026-06-18:
+- Windows asset was replaced from Mom-provided ready zip `/home/marty/win/Tasia Viewer 8.0.1.78484.zip`.
+- The zip already had no setup exe and included `msquic.dll`.
+- Live release asset: `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`
+- Size: `284631553` bytes
+- SHA256: `6dfb8e64e5e55fd50765ca25befa360a2f7f45db5ffe0ba9ee09ee34ea3763a7`
+- `SHA256SUMS.txt` was regenerated and uploaded with `--clobber`.
+
 - Release: https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78484
 - Published manually from latest successful CI artifacts.
 - Linux artifact:
