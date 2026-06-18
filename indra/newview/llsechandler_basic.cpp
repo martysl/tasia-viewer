@@ -47,9 +47,14 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <iostream>
+#include <iterator>
 #include <iomanip>
 #include <time.h>
 #include "llmachineid.h"
+
+#if LL_WINDOWS
+#include <wincrypt.h>
+#endif
 
 #include "lospoof.h"
 
@@ -58,6 +63,11 @@ static const std::string DEFAULT_CREDENTIAL_STORAGE = "credential";
 // 128 bits of salt data...
 #define STORE_SALT_SIZE 16
 #define BUFFER_READ_SIZE 256
+
+#if LL_WINDOWS
+static const std::string WINDOWS_DPAPI_STORE_MAGIC = "TASIA_DPAPI_PROTECTED_DATA_V1\n";
+#endif
+
 std::string cert_string_from_asn1_string(ASN1_STRING* value);
 std::string cert_string_from_octet_string(ASN1_OCTET_STRING* value);
 
@@ -1328,13 +1338,66 @@ LLSecAPIBasicHandler::~LLSecAPIBasicHandler()
 void LLSecAPIBasicHandler::_readProtectedData(unsigned char *unique_id, U32 id_len)
 {
 #if LL_WINDOWS
-    // Windows quictls builds can crash inside the legacy OpenSSL RC4 protected
-    // data path during startup. Do not let saved-password storage take the
-    // viewer down: start with an empty protected map instead. Users may need to
-    // re-enter saved credentials, but the viewer can open normally.
-    LL_WARNS("SECAPI") << "Skipping legacy RC4 protected data read on Windows; starting with empty protected data store: "
-                        << mProtectedDataFilename << LL_ENDL;
+    (void)unique_id;
+    (void)id_len;
+
     mProtectedDataMap = LLSD::emptyMap();
+
+    llifstream protected_data_stream(mProtectedDataFilename.c_str(), llifstream::binary);
+    if (protected_data_stream.fail())
+    {
+        LL_INFOS("SECAPI") << "No Windows DPAPI protected data store found: "
+                            << mProtectedDataFilename << LL_ENDL;
+        return;
+    }
+
+    std::string encrypted_data((std::istreambuf_iterator<char>(protected_data_stream)),
+                               std::istreambuf_iterator<char>());
+    if (encrypted_data.empty())
+    {
+        return;
+    }
+
+    if (encrypted_data.compare(0, WINDOWS_DPAPI_STORE_MAGIC.size(), WINDOWS_DPAPI_STORE_MAGIC) != 0)
+    {
+        LL_WARNS("SECAPI") << "Ignoring legacy non-DPAPI protected data store on Windows; it will be replaced on next save: "
+                            << mProtectedDataFilename << LL_ENDL;
+        return;
+    }
+
+    encrypted_data.erase(0, WINDOWS_DPAPI_STORE_MAGIC.size());
+    if (encrypted_data.empty())
+    {
+        return;
+    }
+
+    DATA_BLOB encrypted_blob;
+    encrypted_blob.cbData = static_cast<DWORD>(encrypted_data.size());
+    encrypted_blob.pbData = reinterpret_cast<BYTE*>(&encrypted_data[0]);
+
+    DATA_BLOB decrypted_blob;
+    ZeroMemory(&decrypted_blob, sizeof(decrypted_blob));
+
+    if (!CryptUnprotectData(&encrypted_blob, NULL, NULL, NULL, NULL, 0, &decrypted_blob))
+    {
+        DWORD error = GetLastError();
+        LL_WARNS("SECAPI") << "Unable to decrypt Windows DPAPI protected data store; starting empty. GetLastError="
+                            << error << LL_ENDL;
+        return;
+    }
+
+    std::string decrypted_data(reinterpret_cast<char*>(decrypted_blob.pbData), decrypted_blob.cbData);
+    LocalFree(decrypted_blob.pbData);
+
+    LLPointer<LLSDParser> parser = new LLSDXMLParser();
+    std::istringstream parse_stream(decrypted_data);
+    if (parser->parse(parse_stream, mProtectedDataMap, LLSDSerialize::SIZE_UNLIMITED) == LLSDParser::PARSE_FAILURE)
+    {
+        LLTHROW(LLProtectedDataException("Windows DPAPI protected data store cannot be parsed."));
+    }
+
+    LL_INFOS("SECAPI") << "Loaded Windows DPAPI protected data store: "
+                        << mProtectedDataFilename << LL_ENDL;
     return;
 #endif
 
@@ -1439,10 +1502,59 @@ void LLSecAPIBasicHandler::_readProtectedData()
 void LLSecAPIBasicHandler::_writeProtectedData()
 {
 #if LL_WINDOWS
-    // Keep Windows quictls builds away from the legacy OpenSSL RC4 protected
-    // data writer as well. This avoids reintroducing the same crash path after
-    // credentials are changed in-session.
-    LL_WARNS("SECAPI") << "Skipping legacy RC4 protected data write on Windows: "
+    if(mProtectedDataMap.isUndefined())
+    {
+        LLFile::remove(mProtectedDataFilename);
+        return;
+    }
+
+    std::ostringstream formatted_data_ostream;
+    LLSDSerialize::toXML(mProtectedDataMap, formatted_data_ostream);
+    std::string formatted_data = formatted_data_ostream.str();
+
+    DATA_BLOB plaintext_blob;
+    plaintext_blob.cbData = static_cast<DWORD>(formatted_data.size());
+    plaintext_blob.pbData = formatted_data.empty() ? NULL : reinterpret_cast<BYTE*>(&formatted_data[0]);
+
+    DATA_BLOB encrypted_blob;
+    ZeroMemory(&encrypted_blob, sizeof(encrypted_blob));
+
+    if (!CryptProtectData(&plaintext_blob,
+                          L"Tasia Viewer protected data store",
+                          NULL,
+                          NULL,
+                          NULL,
+                          0,
+                          &encrypted_blob))
+    {
+        DWORD error = GetLastError();
+        LLTHROW(LLProtectedDataException(STRINGIZE("Unable to encrypt Windows DPAPI protected data store. GetLastError=" << error)));
+    }
+
+    std::string tmp_filename = mProtectedDataFilename + ".tmp";
+    llofstream protected_data_stream(tmp_filename.c_str(), std::ios_base::binary);
+    if (!protected_data_stream.good())
+    {
+        LocalFree(encrypted_blob.pbData);
+        LLTHROW(LLProtectedDataException("Unable to open Windows DPAPI protected data store for writing."));
+    }
+
+    protected_data_stream.write(WINDOWS_DPAPI_STORE_MAGIC.data(), WINDOWS_DPAPI_STORE_MAGIC.size());
+    protected_data_stream.write(reinterpret_cast<const char*>(encrypted_blob.pbData), encrypted_blob.cbData);
+    protected_data_stream.close();
+    LocalFree(encrypted_blob.pbData);
+
+    if(((   (LLFile::isfile(mProtectedDataFilename) != 0)
+         && (LLFile::remove(mProtectedDataFilename) != 0)))
+       || (LLFile::rename(tmp_filename, mProtectedDataFilename)))
+    {
+        LL_WARNS("SECAPI") << "Could not overwrite Windows DPAPI protected data store: "
+                            << mProtectedDataFilename << LL_ENDL;
+        LLFile::remove(tmp_filename);
+        LLTHROW(LLProtectedDataException("Could not overwrite Windows DPAPI protected data store."));
+    }
+
+    LL_INFOS("SECAPI") << "Saved Windows DPAPI protected data store: "
                         << mProtectedDataFilename << LL_ENDL;
     return;
 #endif
