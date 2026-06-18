@@ -683,6 +683,7 @@ class Windows_x86_64_Manifest(ViewerManifest):
             # WebRTC libraries
             for libfile in (
                     'llwebrtc.dll',
+                    'msquic.dll',
             ):
                 self.path(libfile)
 

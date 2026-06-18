@@ -9,7 +9,15 @@ set(QUIC_BUILD_TOOLS    OFF CACHE BOOL "" FORCE)
 set(QUIC_BUILD_TEST     OFF CACHE BOOL "" FORCE)
 set(QUIC_BUILD_PERF     OFF CACHE BOOL "" FORCE)
 set(QUIC_ENABLE_LOGGING OFF CACHE BOOL "" FORCE)
-set(QUIC_BUILD_SHARED   OFF CACHE BOOL "" FORCE)
+if (WIN32)
+    # Keep MsQuic/quictls isolated from the viewer process on Windows.
+    # Static quictls pulls a second OpenSSL into the final viewer binary and can
+    # corrupt libcurl/OpenSSL HTTPS handshakes. A DLL keeps quictls symbols
+    # private to msquic.dll while preserving QUIC support on older Windows.
+    set(QUIC_BUILD_SHARED ON CACHE BOOL "" FORCE)
+else ()
+    set(QUIC_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+endif ()
 
 set(QUIC_TLS_LIB "quictls" CACHE STRING "" FORCE)
 
@@ -31,6 +39,7 @@ set(_msquic_saved_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG}")
 set(_msquic_saved_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL}")
 set(_msquic_saved_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 set(_msquic_saved_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE}")
+set(_msquic_saved_BUILD_SHARED_LIBS        "${BUILD_SHARED_LIBS}")
 
 FetchContent_MakeAvailable(msquic)
 
@@ -42,6 +51,7 @@ set(CMAKE_CXX_FLAGS_DEBUG          "${_msquic_saved_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_MINSIZEREL     "${_msquic_saved_CXX_FLAGS_MINSIZEREL}")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${_msquic_saved_CXX_FLAGS_RELWITHDEBINFO}")
 set(CMAKE_CXX_FLAGS_RELEASE        "${_msquic_saved_CXX_FLAGS_RELEASE}")
+set(BUILD_SHARED_LIBS              "${_msquic_saved_BUILD_SHARED_LIBS}")
 
 if (UNIX AND NOT APPLE)
     find_program(MSQUIC_NM_EXE nm)
