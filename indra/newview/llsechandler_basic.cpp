@@ -54,6 +54,9 @@
 
 #if LL_WINDOWS
 #include <wincrypt.h>
+#ifdef X509_NAME
+#undef X509_NAME
+#endif
 #endif
 
 #include "lospoof.h"
@@ -1399,7 +1402,7 @@ void LLSecAPIBasicHandler::_readProtectedData(unsigned char *unique_id, U32 id_l
     LL_INFOS("SECAPI") << "Loaded Windows DPAPI protected data store: "
                         << mProtectedDataFilename << LL_ENDL;
     return;
-#endif
+#else
 
     // attempt to load the file into our map
     LLPointer<LLSDParser> parser = new LLSDXMLParser();
@@ -1473,6 +1476,7 @@ void LLSecAPIBasicHandler::_readProtectedData(unsigned char *unique_id, U32 id_l
             LLTHROW(LLProtectedDataException("Config file cannot be decrypted."));
         }
     }
+#endif
 }
 
 void LLSecAPIBasicHandler::_readProtectedData()
@@ -1557,7 +1561,7 @@ void LLSecAPIBasicHandler::_writeProtectedData()
     LL_INFOS("SECAPI") << "Saved Windows DPAPI protected data store: "
                         << mProtectedDataFilename << LL_ENDL;
     return;
-#endif
+#else
 
     std::ostringstream formatted_data_ostream;
     U8 salt[STORE_SALT_SIZE];
@@ -1661,6 +1665,7 @@ void LLSecAPIBasicHandler::_writeProtectedData()
         // Decided throwing an exception here was overkill until we figure out why this happens
         //LLTHROW(LLProtectedDataException("Error writing Protected Data Store"));
     }
+#endif
 }
 
 // instantiate a certificate from a pem string
