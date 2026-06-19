@@ -20,6 +20,15 @@ Update 2026-06-18:
 - SHA256: `6dfb8e64e5e55fd50765ca25befa360a2f7f45db5ffe0ba9ee09ee34ea3763a7`
 - `SHA256SUMS.txt` was regenerated and uploaded with `--clobber`.
 
+Update 2026-06-19:
+- Windows asset was replaced with successful CI artifact from run `27797678311` / commit `609f46857dac93c19051b2bfe2dd37b91de40b17`.
+- Repacked zip removed `TasiaOS-Releasex64-8-0-1-94_Setup.exe`.
+- Verified `msquic.dll` and `TasiaOS-Releasex64.exe` remain and no `*_Setup.exe` remains.
+- Live release asset: `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`
+- Size: `281675846` bytes
+- SHA256: `f9c1d0ebe5c99818c0b2264ecc81f01045e9d895885c173ae96a77556a3891d6`
+- `SHA256SUMS.txt` was regenerated and uploaded with `--clobber`.
+
 - Release: https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78484
 - Published manually from latest successful CI artifacts.
 - Linux artifact:
