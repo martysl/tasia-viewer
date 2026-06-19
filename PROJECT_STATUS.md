@@ -14,7 +14,7 @@
 
 ### What was last attempted
 - PHP syntax checks for `server/tasiafeed/owner.php`, `index.php`, and `post.php`.
-- Checked Linux CI run `27823224410`.
+- Pushed the server-side TasiaFeed PHP patch; no viewer rebuild is required for this PHP-only change.
 
 ### Exact last failing step
 - None for the current focused patch; latest checked CI succeeded.
@@ -25,7 +25,7 @@
 - Keep Windows `quictls`/MsQuic support; do not switch Windows to `schannel` unless Mom explicitly approves losing older Windows QUIC support.
 
 ### Next exact action
-- Commit and push the TasiaFeed owner-page patch on `feature/tasia-giphy-welcome-loading-linux`.
+- Deploy/sync `server/tasiafeed/owner.php`, `server/tasiafeed/index.php`, and `server/tasiafeed/post.php` to the live TasiaFeed PHP host if Mom wants it live now.
 
 <<<<<<< HEAD
 ## 2026-05-24 Remote Tasia user config feature

@@ -1,13 +1,12 @@
 # Next Action
 
 ## Current
-1. Commit and push the TasiaFeed owner-page patch on `feature/tasia-giphy-welcome-loading-linux`.
-2. If Mom wants deployment, upload/sync `server/tasiafeed/owner.php` plus updated `index.php`/`post.php` to `https://apps.easierit.org/igrid/feed/`.
-3. If continuing Linux upload UX, investigate true OS file drag/drop via lower-level Linux window/drop-event plumbing.
+1. Deploy/sync `server/tasiafeed/owner.php` plus updated `index.php`/`post.php` to `https://apps.easierit.org/igrid/feed/` if Mom wants it live now.
+2. If continuing Linux upload UX, investigate true OS file drag/drop via lower-level Linux window/drop-event plumbing.
 
 ## Latest verified
-- Linux clipboard image upload CI run `27823224410`: success.
 - PHP syntax checks passed for TasiaFeed `owner.php`, `index.php`, and `post.php`.
+- This TasiaFeed fix is PHP-only and does not require a viewer build.
 
 <<<<<<< HEAD
 ## Now: remote Tasia user config

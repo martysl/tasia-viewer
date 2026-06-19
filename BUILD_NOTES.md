@@ -10,7 +10,7 @@
   - `php -l server/tasiafeed/owner.php`
   - `php -l server/tasiafeed/index.php`
   - `php -l server/tasiafeed/post.php`
-- Linux clipboard upload CI run `27823224410` completed successfully.
+- This is a server-side PHP change; no viewer rebuild is required.
 
 ## 2026-05-24: Remote Tasia user config
 
