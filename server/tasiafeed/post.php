@@ -50,7 +50,7 @@ htmlHeader($title);
     <?php endif; ?>
 
     <table>
-        <?php if ($post['avatar_name']): ?><tr><th>Avatar</th><td><?= htmlspecialchars($post['avatar_name']) ?></td></tr><?php endif; ?>
+        <?php if ($post['avatar_name']): ?><tr><th>Avatar</th><td><?php if (!empty($post['user_uuid'])): ?><a href="owner.php?id=<?= rawurlencode($post['user_uuid']) ?>"><?= htmlspecialchars($post['avatar_name']) ?></a><?php else: ?><?= htmlspecialchars($post['avatar_name']) ?><?php endif; ?></td></tr><?php endif; ?>
         <?php if ($post['grid_name']): ?><tr><th>Grid</th><td><?= htmlspecialchars($post['grid_name']) ?></td></tr><?php endif; ?>
         <?php if ($post['region_name']): ?><tr><th>Region</th><td><?= htmlspecialchars($post['region_name']) ?></td></tr><?php endif; ?>
         <?php if ($post['position']): ?><tr><th>Position</th><td><?= htmlspecialchars($post['position']) ?></td></tr><?php endif; ?>

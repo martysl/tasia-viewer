@@ -1,5 +1,17 @@
 # Build Notes
 
+## 2026-06-19: TasiaFeed owner page
+
+- Added `server/tasiafeed/owner.php`.
+- Supported query parameters: `id` or `uuid`, both matching `posts.user_uuid`.
+- Owner pages show public, non-hidden snapshots only.
+- Feed/post avatar names now link to `owner.php?id=<user_uuid>` when `user_uuid` exists.
+- Focused checks passed:
+  - `php -l server/tasiafeed/owner.php`
+  - `php -l server/tasiafeed/index.php`
+  - `php -l server/tasiafeed/post.php`
+- Linux clipboard upload CI run `27823224410` completed successfully.
+
 ## 2026-05-24: Remote Tasia user config
 
 - New files:

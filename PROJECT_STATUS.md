@@ -1,5 +1,32 @@
 # Project Status
 
+## 2026-06-19 Current status
+
+### What is done
+- Linux clipboard image upload CI run `27823224410` completed successfully.
+- Added missing TasiaFeed owner page at `server/tasiafeed/owner.php`.
+- Linked avatar names to owner pages from `server/tasiafeed/index.php` and `server/tasiafeed/post.php` when `user_uuid` is available.
+- Owner page lists public, non-hidden posts for one `user_uuid`, with pagination and feed/post links.
+
+### What is broken
+- No known blocker in the focused TasiaFeed owner-page patch.
+- True external OS file drag/drop into the Linux upload floater remains unimplemented; clipboard paste is the current supported path.
+
+### What was last attempted
+- PHP syntax checks for `server/tasiafeed/owner.php`, `index.php`, and `post.php`.
+- Checked Linux CI run `27823224410`.
+
+### Exact last failing step
+- None for the current focused patch; latest checked CI succeeded.
+
+### What must not be changed
+- Keep FSData service URLs pointing to `phoenixviewer.com/app/fsdata`.
+- Do not disable SSL verification as a release fix.
+- Keep Windows `quictls`/MsQuic support; do not switch Windows to `schannel` unless Mom explicitly approves losing older Windows QUIC support.
+
+### Next exact action
+- Commit and push the TasiaFeed owner-page patch on `feature/tasia-giphy-welcome-loading-linux`.
+
 <<<<<<< HEAD
 ## 2026-05-24 Remote Tasia user config feature
 

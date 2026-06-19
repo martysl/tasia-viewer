@@ -16,7 +16,7 @@ $maxPage = max(1, (int)ceil($total / ITEMS_PER_PAGE));
 
 // Fetch posts
 $stmt = $db->prepare('
-    SELECT token, thumbname, title, avatar_name, grid_name, created_at
+    SELECT token, thumbname, title, avatar_name, grid_name, user_uuid, created_at
     FROM posts
     WHERE visibility = "public" AND hidden = 0
     ORDER BY created_at DESC
@@ -40,7 +40,7 @@ if (empty($posts)): ?>
         </a>
         <div class="info">
             <div class="title"><a href="post.php?id=<?= rawurlencode($post['token']) ?>"><?= htmlspecialchars($post['title'] ?: 'Untitled') ?></a></div>
-            <div class="meta">by <?= htmlspecialchars($post['avatar_name'] ?: 'Unknown') ?> on <?= htmlspecialchars($post['grid_name'] ?: 'Unknown') ?></div>
+            <div class="meta">by <?php if (!empty($post['user_uuid'])): ?><a href="owner.php?id=<?= rawurlencode($post['user_uuid']) ?>"><?= htmlspecialchars($post['avatar_name'] ?: 'Unknown') ?></a><?php else: ?><?= htmlspecialchars($post['avatar_name'] ?: 'Unknown') ?><?php endif; ?> on <?= htmlspecialchars($post['grid_name'] ?: 'Unknown') ?></div>
             <div class="meta"><?= htmlspecialchars(gmdate('Y-m-d H:i', strtotime($post['created_at']))) ?></div>
         </div>
     </div>
