@@ -902,7 +902,7 @@ public:
 private:
     void setStatus(const std::string& message)
     {
-        childSetText("status_text", message);
+        getChild<LLUICtrl>("status_text")->setValue(message);
     }
 
     void onClose()
