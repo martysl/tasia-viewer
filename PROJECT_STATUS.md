@@ -1,5 +1,34 @@
 # Project Status
 
+## 2026-06-20 manual prerelease v8.0.1.78497
+
+### What is done
+- Published prerelease: https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78497
+- Linux clipboard image upload is included and runtime-tested by Mom.
+- Windows clipboard image upload is included from successful Windows CI.
+- Clipboard uploads normalize images to PNG, resize down to max `2048x2048`, then open the normal texture upload preview.
+- Windows zip was repacked to remove `TasiaOS-Releasex64-8-0-1-96_Setup.exe` to save space.
+- Verified Windows zip still contains `TasiaOS-Releasex64.exe` and `msquic.dll`; no setup exe remains.
+
+### Release assets
+- `TasiaOS-Releasex64-8-0-1-78497.tar.xz`
+  - Size: `200454972`
+  - SHA256: `90c79ce24a6a16ad10313382c41b26d65b44553a82315ecb19a7a97c4a738a17`
+- `Tasia-Viewer-Windows-FMOD-8-0-1-78497.zip`
+  - Size: `281684615`
+  - SHA256: `9b29843a69d1832b6a5db1198f166db4476e28ff4ce6d43ce206e32a8bb72f3c`
+- `SHA256SUMS.txt`
+
+### Source builds
+- Linux: run `27867582030`, commit `e16c34ab705f5a07972ca9ad98acb3f8b876cb50`
+- Windows: run `27875889710`, commit `1f634395c10934f19fd25103a55629240781cf66`
+
+### What is broken
+- No known release packaging blocker.
+
+### Next exact action
+- Runtime-test Windows clipboard image upload from release `v8.0.1.78497`.
+
 ## 2026-06-14 manual release v8.0.1.78484
 
 Update 2026-06-15:

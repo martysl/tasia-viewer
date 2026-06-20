@@ -1,5 +1,26 @@
 # Build Notes
 
+## 2026-06-20 manual prerelease v8.0.1.78497
+
+- Release: https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78497
+- Published manually from latest successful Linux and Windows CI artifacts.
+- Linux artifact:
+  - Run: `27867582030`
+  - Commit: `e16c34ab705f5a07972ca9ad98acb3f8b876cb50`
+  - Asset: `TasiaOS-Releasex64-8-0-1-78497.tar.xz`
+  - Size: `200454972`
+  - SHA256: `90c79ce24a6a16ad10313382c41b26d65b44553a82315ecb19a7a97c4a738a17`
+- Windows artifact:
+  - Run: `27875889710`
+  - Commit: `1f634395c10934f19fd25103a55629240781cf66`
+  - Asset: `Tasia-Viewer-Windows-FMOD-8-0-1-78497.zip`
+  - Size: `281684615`
+  - SHA256: `9b29843a69d1832b6a5db1198f166db4476e28ff4ce6d43ce206e32a8bb72f3c`
+- Repacked Windows zip removed `TasiaOS-Releasex64-8-0-1-96_Setup.exe`.
+- Verified Windows zip still contains `TasiaOS-Releasex64.exe` and `msquic.dll`; no setup exe remains.
+- `SHA256SUMS.txt` was generated and uploaded.
+- Local staging directory used: `/tmp/opencode/tasia-release-20260620/`
+
 ## 2026-06-14 manual prerelease v8.0.1.78484
 
 Update 2026-06-15:
