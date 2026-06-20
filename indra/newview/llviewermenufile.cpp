@@ -34,6 +34,7 @@
 #include "llagentcamera.h"
 #include "llaudioengine.h"
 #include "llfilepicker.h"
+#include "llfloater.h"
 #include "llfloaterreg.h"
 #include "llbuycurrencyhtml.h"
 #include "llfloatermap.h"
@@ -69,11 +70,16 @@
 #include "llfloaterbuycurrency.h"
 #include "llviewerassetupload.h"
 
+#include <cstdlib>
+#include <fstream>
+#include <sstream>
+
 // linden libraries
 #include "llnotificationsutil.h"
 #include "llsdserialize.h"
 #include "llsdutil.h"
 #include "llstring.h"
+#include "lltimer.h"
 #include "lltransactiontypes.h"
 #include "lluuid.h"
 #include "llvorbisencode.h"
@@ -81,6 +87,16 @@
 
 // system libraries
 #include <boost/tokenizer.hpp>
+
+#if LL_WINDOWS
+#include "llwin32headers.h"
+#endif
+
+#if LL_LINUX
+#include <signal.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#endif
 
 #include "llinventorydefines.h"
 
@@ -821,6 +837,692 @@ class LLFileUploadImage : public view_listener_t
     }
 };
 
+namespace
+{
+std::string shell_quote(const std::string& value)
+{
+    std::string quoted("'");
+    for (char ch : value)
+    {
+        if (ch == '\'')
+        {
+            quoted += "'\\''";
+        }
+        else
+        {
+            quoted += ch;
+        }
+    }
+    quoted += "'";
+    return quoted;
+}
+
+bool file_has_content(const std::string& filename)
+{
+    llstat stat_info;
+    return LLFile::stat(filename, &stat_info) == 0 && stat_info.st_size > 0;
+}
+
+bool read_text_file(const std::string& filename, std::string& content)
+{
+    std::ifstream input(filename.c_str(), std::ios::in | std::ios::binary);
+    if (!input.is_open())
+    {
+        return false;
+    }
+
+    std::ostringstream buffer;
+    buffer << input.rdbuf();
+    content = buffer.str();
+    return !content.empty();
+}
+
+void remove_if_exists(const std::string& filename)
+{
+    if (gDirUtilp->fileExists(filename))
+    {
+        LLFile::remove(filename);
+    }
+}
+
+int run_clipboard_helper_script(const std::string& script, const std::string& desc)
+{
+#if LL_LINUX
+    const pid_t pid = fork();
+    if (pid < 0)
+    {
+        LL_WARNS("UploadClipboard") << "Failed to fork clipboard helper: " << desc << LL_ENDL;
+        return -1;
+    }
+    if (pid == 0)
+    {
+        execl("/bin/sh", "sh", "-c", script.c_str(), static_cast<char*>(NULL));
+        _exit(127);
+    }
+
+    int status = 0;
+    for (S32 i = 0; i < 30; ++i)
+    {
+        const pid_t result = waitpid(pid, &status, WNOHANG);
+        if (result == pid)
+        {
+            if (WIFEXITED(status))
+            {
+                return WEXITSTATUS(status);
+            }
+            if (WIFSIGNALED(status))
+            {
+                return 128 + WTERMSIG(status);
+            }
+            return -3;
+        }
+        if (result < 0)
+        {
+            LL_WARNS("UploadClipboard") << "Clipboard helper wait failed: " << desc << LL_ENDL;
+            return -1;
+        }
+        ms_sleep(50);
+    }
+
+    LL_WARNS("UploadClipboard") << "Clipboard helper timed out: " << desc << LL_ENDL;
+    kill(pid, SIGKILL);
+    waitpid(pid, &status, 0);
+    return -2;
+#else
+    return -1;
+#endif
+}
+
+bool run_clipboard_command_to_file(const std::string& filename, const std::string& mime_type)
+{
+#if LL_LINUX
+    remove_if_exists(filename);
+    const std::string output = shell_quote(filename);
+    const std::string mime = shell_quote(mime_type);
+    const std::string script =
+        "unset LD_LIBRARY_PATH LD_PRELOAD; "
+        "PATH=/usr/local/bin:/usr/bin:/bin:$PATH; export PATH; "
+        "run_with_timeout() { if command -v timeout >/dev/null 2>&1; then timeout 1s \"$@\"; else \"$@\"; fi; }; "
+        "found=0; "
+        "for helper in wl-paste /usr/bin/wl-paste /usr/local/bin/wl-paste xclip /usr/bin/xclip /usr/local/bin/xclip; do "
+            "if ! command -v \"$helper\" >/dev/null 2>&1; then continue; fi; "
+            "found=1; "
+            "case \"$helper\" in "
+                "*wl-paste) run_with_timeout \"$helper\" --no-newline --type " + mime + " > " + output + " 2>/dev/null && test -s " + output + " && exit 0 ;; "
+                "*xclip) run_with_timeout \"$helper\" -selection clipboard -t " + mime + " -o > " + output + " 2>/dev/null && test -s " + output + " && exit 0 ;; "
+            "esac; "
+        "done; "
+        "if test \"$found\" = 0; then exit 127; fi; "
+        "exit 1";
+    const int rc = run_clipboard_helper_script(script, "Tasia clipboard read " + mime_type);
+    // Some viewer/runtime code may reap child processes before waitpid() sees
+    // them. Treat a non-empty output file as authoritative success.
+    const bool success = file_has_content(filename);
+    LL_INFOS("UploadClipboard") << "Clipboard read type " << mime_type
+                                 << " rc=" << rc
+                                 << " success=" << success << LL_ENDL;
+    return success;
+#else
+    return false;
+#endif
+}
+
+void log_clipboard_targets()
+{
+#if LL_LINUX
+    const std::string targets_filename = gDirUtilp->getTempFilename() + ".targets.txt";
+    const std::string output = shell_quote(targets_filename);
+    const std::string script =
+        "unset LD_LIBRARY_PATH LD_PRELOAD; "
+        "PATH=/usr/local/bin:/usr/bin:/bin:$PATH; export PATH; "
+        "run_with_timeout() { if command -v timeout >/dev/null 2>&1; then timeout 1s \"$@\"; else \"$@\"; fi; }; "
+        "{ "
+            "if command -v wl-paste >/dev/null 2>&1; then "
+                "printf 'wl-paste types:\n'; run_with_timeout wl-paste --list-types 2>/dev/null || true; "
+            "fi; "
+            "if command -v xclip >/dev/null 2>&1; then "
+                "printf 'xclip TARGETS:\n'; run_with_timeout xclip -selection clipboard -t TARGETS -o 2>/dev/null || true; "
+            "fi; "
+        "} > " + output;
+    const int rc = run_clipboard_helper_script(script, "Tasia clipboard target list");
+
+    std::string targets;
+    if (read_text_file(targets_filename, targets))
+    {
+        LLStringUtil::replaceChar(targets, '\n', '|');
+        LL_INFOS("UploadClipboard") << "Available clipboard targets: " << targets << LL_ENDL;
+    }
+    else
+    {
+        LL_WARNS("UploadClipboard") << "Unable to list clipboard targets rc=" << rc << LL_ENDL;
+    }
+    remove_if_exists(targets_filename);
+#endif
+}
+
+bool convert_clipboard_image_to_png(const std::string& input_filename, std::string& output_filename)
+{
+#if LL_LINUX
+    output_filename = gDirUtilp->getTempFilename() + ".png";
+    remove_if_exists(output_filename);
+
+    const std::string input = shell_quote(input_filename);
+    const std::string output = shell_quote(output_filename);
+    const std::string script =
+        "unset LD_LIBRARY_PATH LD_PRELOAD; "
+        "PATH=/usr/local/bin:/usr/bin:/bin:$PATH; export PATH; "
+        "run_with_timeout() { if command -v timeout >/dev/null 2>&1; then timeout 5s \"$@\"; else \"$@\"; fi; }; "
+        "if command -v magick >/dev/null 2>&1; then "
+            "run_with_timeout magick " + input + " -resize '2048x2048>' " + output + " >/dev/null 2>&1 && test -s " + output + " && exit 0; "
+        "fi; "
+        "if command -v convert >/dev/null 2>&1; then "
+            "run_with_timeout convert " + input + " -resize '2048x2048>' " + output + " >/dev/null 2>&1 && test -s " + output + " && exit 0; "
+        "fi; "
+        "if command -v ffmpeg >/dev/null 2>&1; then "
+            "run_with_timeout ffmpeg -y -v error -i " + input + " " + output + " >/dev/null 2>&1 && test -s " + output + " && exit 0; "
+        "fi; "
+        "if command -v dwebp >/dev/null 2>&1; then "
+            "run_with_timeout dwebp " + input + " -o " + output + " >/dev/null 2>&1 && test -s " + output + " && exit 0; "
+        "fi; "
+        "exit 1";
+    const int rc = run_clipboard_helper_script(script, "Tasia clipboard image conversion");
+    // See run_clipboard_command_to_file(): output file is authoritative.
+    const bool success = file_has_content(output_filename);
+    LL_INFOS("UploadClipboard") << "Clipboard image PNG conversion rc=" << rc
+                                 << " success=" << success << LL_ENDL;
+    if (!success)
+    {
+        remove_if_exists(output_filename);
+        output_filename.clear();
+    }
+    return success;
+#else
+    return false;
+#endif
+}
+
+bool normalize_viewer_image_to_png(const std::string& input_filename, std::string& output_filename)
+{
+    std::string ext = gDirUtilp->getExtension(input_filename);
+    LLStringUtil::toLower(ext);
+    const U32 codec = LLImageBase::getCodecFromExtension(ext);
+    if (codec == IMG_CODEC_INVALID)
+    {
+        LL_WARNS("UploadClipboard") << "Unsupported clipboard image extension: " << ext << LL_ENDL;
+        return false;
+    }
+
+    LLPointer<LLImageFormatted> image = LLImageFormatted::createFromType(codec);
+    if (image.isNull() || !image->load(input_filename))
+    {
+        LL_WARNS("UploadClipboard") << "Failed to load clipboard image: " << input_filename << LL_ENDL;
+        return false;
+    }
+
+    LLPointer<LLImageRaw> raw_image = new LLImageRaw;
+    if (!image->decode(raw_image, 0.0f))
+    {
+        LL_WARNS("UploadClipboard") << "Failed to decode clipboard image: " << input_filename << LL_ENDL;
+        return false;
+    }
+
+    const S32 max_dim = 2048;
+    const S32 width = raw_image->getWidth();
+    const S32 height = raw_image->getHeight();
+    if (width <= 0 || height <= 0)
+    {
+        return false;
+    }
+
+    if (width > max_dim || height > max_dim)
+    {
+        S32 new_width = width;
+        S32 new_height = height;
+        if (width >= height)
+        {
+            new_width = max_dim;
+            new_height = llmax(1, (height * max_dim) / width);
+        }
+        else
+        {
+            new_height = max_dim;
+            new_width = llmax(1, (width * max_dim) / height);
+        }
+        raw_image->scale(new_width, new_height);
+    }
+
+    LLPointer<LLImagePNG> png_image = new LLImagePNG;
+    if (!png_image->encode(raw_image, 0.0f))
+    {
+        LL_WARNS("UploadClipboard") << "Failed to encode clipboard image as PNG" << LL_ENDL;
+        return false;
+    }
+
+    output_filename = gDirUtilp->getTempFilename() + ".png";
+    remove_if_exists(output_filename);
+    if (!png_image->save(output_filename) || !file_has_content(output_filename))
+    {
+        LL_WARNS("UploadClipboard") << "Failed to save normalized clipboard PNG: " << output_filename << LL_ENDL;
+        remove_if_exists(output_filename);
+        output_filename.clear();
+        return false;
+    }
+
+    return true;
+}
+
+#if LL_WINDOWS
+bool write_bytes_to_file(const std::string& filename, const void* data, size_t size)
+{
+    if (!data || size == 0)
+    {
+        return false;
+    }
+
+    std::ofstream output(filename.c_str(), std::ios::out | std::ios::binary);
+    if (!output.is_open())
+    {
+        return false;
+    }
+    output.write(static_cast<const char*>(data), static_cast<std::streamsize>(size));
+    return output.good();
+}
+
+bool save_windows_clipboard_registered_format(UINT format, const std::string& filename)
+{
+    HANDLE handle = GetClipboardData(format);
+    if (!handle)
+    {
+        return false;
+    }
+
+    const SIZE_T size = GlobalSize(handle);
+    const void* data = GlobalLock(handle);
+    if (!data || size == 0)
+    {
+        if (data)
+        {
+            GlobalUnlock(handle);
+        }
+        return false;
+    }
+
+    const bool ok = write_bytes_to_file(filename, data, static_cast<size_t>(size));
+    GlobalUnlock(handle);
+    return ok && file_has_content(filename);
+}
+
+DWORD get_dib_pixel_offset(const BITMAPINFOHEADER* header, SIZE_T dib_size)
+{
+    if (!header || dib_size < sizeof(BITMAPINFOHEADER) || header->biSize < sizeof(BITMAPINFOHEADER) || header->biSize > dib_size)
+    {
+        return 0;
+    }
+
+    DWORD offset = header->biSize;
+    if (header->biSize == sizeof(BITMAPINFOHEADER) && header->biCompression == BI_BITFIELDS)
+    {
+        offset += 3 * sizeof(DWORD);
+    }
+
+    DWORD color_count = header->biClrUsed;
+    if (color_count == 0 && header->biBitCount <= 8)
+    {
+        color_count = 1u << header->biBitCount;
+    }
+    offset += color_count * sizeof(RGBQUAD);
+
+    return offset <= dib_size ? offset : 0;
+}
+
+bool save_windows_clipboard_dib_as_bmp(UINT format, const std::string& filename)
+{
+    HANDLE handle = GetClipboardData(format);
+    if (!handle)
+    {
+        return false;
+    }
+
+    const SIZE_T dib_size = GlobalSize(handle);
+    const void* dib_data = GlobalLock(handle);
+    if (!dib_data || dib_size < sizeof(BITMAPINFOHEADER))
+    {
+        if (dib_data)
+        {
+            GlobalUnlock(handle);
+        }
+        return false;
+    }
+
+    const BITMAPINFOHEADER* header = static_cast<const BITMAPINFOHEADER*>(dib_data);
+    const DWORD pixel_offset = get_dib_pixel_offset(header, dib_size);
+    if (pixel_offset == 0)
+    {
+        GlobalUnlock(handle);
+        return false;
+    }
+
+    BITMAPFILEHEADER file_header = {};
+    file_header.bfType = 0x4D42; // BM
+    file_header.bfOffBits = sizeof(BITMAPFILEHEADER) + pixel_offset;
+    file_header.bfSize = sizeof(BITMAPFILEHEADER) + static_cast<DWORD>(dib_size);
+
+    std::ofstream output(filename.c_str(), std::ios::out | std::ios::binary);
+    if (!output.is_open())
+    {
+        GlobalUnlock(handle);
+        return false;
+    }
+    output.write(reinterpret_cast<const char*>(&file_header), sizeof(file_header));
+    output.write(static_cast<const char*>(dib_data), static_cast<std::streamsize>(dib_size));
+    const bool ok = output.good();
+    GlobalUnlock(handle);
+    return ok && file_has_content(filename);
+}
+
+bool run_windows_clipboard_image_command(std::string& filename)
+{
+    if (!OpenClipboard(NULL))
+    {
+        LL_WARNS("UploadClipboard") << "OpenClipboard failed, error=" << GetLastError() << LL_ENDL;
+        return false;
+    }
+
+    std::string captured_filename;
+    const UINT png_format = RegisterClipboardFormatA("PNG");
+    if (png_format && IsClipboardFormatAvailable(png_format))
+    {
+        captured_filename = gDirUtilp->getTempFilename() + ".png";
+        if (!save_windows_clipboard_registered_format(png_format, captured_filename))
+        {
+            remove_if_exists(captured_filename);
+            captured_filename.clear();
+        }
+    }
+
+    if (captured_filename.empty() && IsClipboardFormatAvailable(CF_DIBV5))
+    {
+        captured_filename = gDirUtilp->getTempFilename() + ".bmp";
+        if (!save_windows_clipboard_dib_as_bmp(CF_DIBV5, captured_filename))
+        {
+            remove_if_exists(captured_filename);
+            captured_filename.clear();
+        }
+    }
+
+    if (captured_filename.empty() && IsClipboardFormatAvailable(CF_DIB))
+    {
+        captured_filename = gDirUtilp->getTempFilename() + ".bmp";
+        if (!save_windows_clipboard_dib_as_bmp(CF_DIB, captured_filename))
+        {
+            remove_if_exists(captured_filename);
+            captured_filename.clear();
+        }
+    }
+
+    CloseClipboard();
+
+    if (captured_filename.empty())
+    {
+        LL_WARNS("UploadClipboard") << "No supported Windows clipboard image format found" << LL_ENDL;
+        return false;
+    }
+
+    std::string normalized_filename;
+    if (!normalize_viewer_image_to_png(captured_filename, normalized_filename))
+    {
+        remove_if_exists(captured_filename);
+        return false;
+    }
+
+    remove_if_exists(captured_filename);
+    filename = normalized_filename;
+    LL_INFOS("UploadClipboard") << "Windows clipboard image captured to " << filename << LL_ENDL;
+    return true;
+}
+#endif
+
+int hex_value(char ch)
+{
+    if (ch >= '0' && ch <= '9') return ch - '0';
+    if (ch >= 'a' && ch <= 'f') return 10 + ch - 'a';
+    if (ch >= 'A' && ch <= 'F') return 10 + ch - 'A';
+    return -1;
+}
+
+std::string percent_decode(const std::string& value)
+{
+    std::string decoded;
+    decoded.reserve(value.size());
+
+    for (std::string::size_type i = 0; i < value.size(); ++i)
+    {
+        if (value[i] == '%' && i + 2 < value.size())
+        {
+            const int high = hex_value(value[i + 1]);
+            const int low = hex_value(value[i + 2]);
+            if (high >= 0 && low >= 0)
+            {
+                decoded.push_back(static_cast<char>((high << 4) | low));
+                i += 2;
+                continue;
+            }
+        }
+        decoded.push_back(value[i]);
+    }
+
+    return decoded;
+}
+
+bool is_supported_clipboard_image_file(const std::string& filename)
+{
+    if (!gDirUtilp->fileExists(filename))
+    {
+        return false;
+    }
+
+    std::string ext = gDirUtilp->getExtension(filename);
+    LLStringUtil::toLower(ext);
+    return ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp" || ext == "tga";
+}
+
+bool parse_clipboard_file_uri_line(std::string line, std::string& filename)
+{
+    LLStringUtil::trim(line);
+    if (line.empty() || line[0] == '#')
+    {
+        return false;
+    }
+
+    // Some file managers use x-special/gnome-copied-files:
+    // first line is "copy" or "cut", following lines are file:// URIs.
+    if (line == "copy" || line == "cut")
+    {
+        return false;
+    }
+
+    const std::string file_prefix("file://");
+    if (line.compare(0, file_prefix.size(), file_prefix) == 0)
+    {
+        line = line.substr(file_prefix.size());
+        const std::string localhost_prefix("localhost/");
+        if (line.compare(0, localhost_prefix.size(), localhost_prefix) == 0)
+        {
+            line = line.substr(std::string("localhost").size());
+        }
+        filename = percent_decode(line);
+        return is_supported_clipboard_image_file(filename);
+    }
+
+    filename = percent_decode(line);
+    return is_supported_clipboard_image_file(filename);
+}
+
+bool extract_clipboard_image_file(const std::string& clipboard_text, std::string& filename)
+{
+    std::istringstream lines(clipboard_text);
+    std::string line;
+    while (std::getline(lines, line))
+    {
+        if (!line.empty() && line[line.size() - 1] == '\r')
+        {
+            line.erase(line.size() - 1);
+        }
+        if (parse_clipboard_file_uri_line(line, filename))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool run_clipboard_image_command(std::string& filename)
+{
+#if LL_LINUX
+    struct ClipboardMime
+    {
+        const char* mMimeType;
+        const char* mExtension;
+        bool mNeedsPngConversion;
+    };
+
+    static const ClipboardMime image_mimes[] =
+    {
+        { "image/png",  ".png",  true  },
+        { "image/jpeg", ".jpg",  true  },
+        { "image/jpg",  ".jpg",  true  },
+        { "image/bmp",  ".bmp",  true  },
+        { "image/webp", ".webp", true  }
+    };
+
+    log_clipboard_targets();
+
+    for (const ClipboardMime& mime : image_mimes)
+    {
+        filename = gDirUtilp->getTempFilename() + mime.mExtension;
+        if (run_clipboard_command_to_file(filename, mime.mMimeType))
+        {
+            if (mime.mNeedsPngConversion)
+            {
+                std::string converted_filename;
+                if (convert_clipboard_image_to_png(filename, converted_filename))
+                {
+                    remove_if_exists(filename);
+                    filename = converted_filename;
+                    return true;
+                }
+                LL_WARNS("UploadClipboard") << "Clipboard image type " << mime.mMimeType
+                                            << " was found but could not be converted to PNG" << LL_ENDL;
+                remove_if_exists(filename);
+                continue;
+            }
+            return true;
+        }
+        remove_if_exists(filename);
+    }
+
+    static const char* file_mimes[] =
+    {
+        "text/uri-list",
+        "x-special/gnome-copied-files",
+        "text/plain"
+    };
+
+    for (const char* mime : file_mimes)
+    {
+        const std::string text_filename = gDirUtilp->getTempFilename() + ".txt";
+        if (run_clipboard_command_to_file(text_filename, mime))
+        {
+            std::string clipboard_text;
+            if (read_text_file(text_filename, clipboard_text) && extract_clipboard_image_file(clipboard_text, filename))
+            {
+                remove_if_exists(text_filename);
+                return true;
+            }
+        }
+        remove_if_exists(text_filename);
+    }
+#endif
+#if LL_WINDOWS
+    return run_windows_clipboard_image_command(filename);
+#endif
+    return false;
+}
+}
+
+class LLFloaterUploadClipboard final : public LLFloater
+{
+public:
+    explicit LLFloaterUploadClipboard(const LLSD& key)
+        : LLFloater(key)
+    {
+    }
+
+    bool postBuild() override
+    {
+        childSetAction("paste_btn", boost::bind(&LLFloaterUploadClipboard::onPaste, this));
+        childSetAction("close_btn", boost::bind(&LLFloaterUploadClipboard::onClose, this));
+        return true;
+    }
+
+    bool handleKeyHere(KEY key, MASK mask) override
+    {
+        if (key == 'V' && (mask & MASK_CONTROL))
+        {
+            onPaste();
+            return true;
+        }
+        return LLFloater::handleKeyHere(key, mask);
+    }
+
+private:
+    void setStatus(const std::string& message)
+    {
+        getChild<LLUICtrl>("status_text")->setValue(message);
+    }
+
+    void onClose()
+    {
+        closeFloater(false);
+    }
+
+    void onPaste()
+    {
+#if LL_LINUX || LL_WINDOWS
+        if (gAgentCamera.cameraMouselook())
+        {
+            gAgentCamera.changeCameraToDefault();
+        }
+
+        std::string filename;
+        if (!run_clipboard_image_command(filename))
+        {
+            setStatus("No supported image found. Use Copy Image, or copy a PNG/JPEG/BMP/TGA file. Requires wl-paste or xclip in PATH.");
+            return;
+        }
+
+        setStatus("Clipboard image captured. Opening upload preview...");
+        LLFloaterReg::showInstance("upload_image", LLSD(filename));
+#else
+        setStatus("Clipboard image upload is currently implemented for Linux and Windows builds.");
+#endif
+    }
+};
+
+class LLFileUploadClipboard : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata) override
+    {
+        if (gAgentCamera.cameraMouselook())
+        {
+            gAgentCamera.changeCameraToDefault();
+        }
+        LLFloaterReg::showInstance("upload_clipboard");
+        return true;
+    }
+};
+
 class LLFileUploadModel : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
@@ -1513,6 +2215,7 @@ class FSFileEnableImportWindlightBulk : public view_listener_t
 void init_menu_file()
 {
     view_listener_t::addCommit(new LLFileUploadImage(), "File.UploadImage");
+    view_listener_t::addCommit(new LLFileUploadClipboard(), "File.UploadClipboard");
     view_listener_t::addCommit(new LLFileUploadSound(), "File.UploadSound");
     view_listener_t::addCommit(new LLFileUploadAnim(), "File.UploadAnim");
     view_listener_t::addCommit(new LLFileUploadModel(), "File.UploadModel");
@@ -1543,4 +2246,9 @@ void init_menu_file()
     // </FS:Ansariel>
 
     // "File.SaveTexture" moved to llpanelmaininventory so that it can be properly handled.
+}
+
+void register_file_menu_floaters()
+{
+    LLFloaterReg::add("upload_clipboard", "floater_upload_clipboard.xml", &LLFloaterReg::build<LLFloaterUploadClipboard>, "upload");
 }
