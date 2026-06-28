@@ -2514,8 +2514,9 @@ void LLWindowSDL::hideCursorUntilMouseMove()
 
 //
 // LLSplashScreenSDL - I don't think we'll bother to implement this; it's
-// fairly obsolete at this point.
+// fairly obsolete at this point. (SDL2 builds use llwindowsdl2.cpp version.)
 //
+#if !LL_SDL2
 LLSplashScreenSDL::LLSplashScreenSDL()
 {
 }
@@ -2535,6 +2536,7 @@ void LLSplashScreenSDL::updateImpl(const std::string& mesg)
 void LLSplashScreenSDL::hideImpl()
 {
 }
+#endif
 
 
 

@@ -29,6 +29,8 @@
 
 #if LL_MESA_HEADLESS
 #include "llwindowmesaheadless.h"
+#elif LL_SDL2
+#include "llwindowsdl2.h"
 #elif LL_SDL
 #include "llwindowsdl.h"
 #elif LL_WINDOWS
@@ -351,8 +353,10 @@ bool LLSplashScreen::isVisible()
 // static
 LLSplashScreen *LLSplashScreen::create()
 {
-#if LL_MESA_HEADLESS || LL_SDL  // !!! *FIX: (?)
+#if LL_MESA_HEADLESS
     return 0;
+#elif LL_SDL
+    return new LLSplashScreenSDL;
 #elif LL_WINDOWS
     return new LLSplashScreenWin32;
 #elif LL_DARWIN
