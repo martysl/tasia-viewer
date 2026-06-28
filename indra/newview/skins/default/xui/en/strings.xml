@@ -18,12 +18,13 @@
 	<string name="APP_NAME_ABBR">FS</string>
 
 	<!-- starting up -->
-	<string name="StartupDetectingHardware">Detecting hardware...</string>
-	<string name="StartupLoading">Loading [APP_NAME]...</string>
-	<string name="StartupClearingCache">Clearing cache...</string>
-	<string name="StartupClearingTextureCache">Clearing texture cache...</string>
-	<string name="StartupInitializingTextureCache">Initializing texture cache...</string>
-	<string name="StartupRequireDriverUpdate">Graphics initialization failed. Please update your graphics driver!</string>
+	<string name="StartupDetectingHardware">> DETECTING HARDWARE...</string>
+	<string name="StartupLoading">> LOADING [APP_NAME] VIEWER...</string>
+	<string name="StartupClearingCache">> CLEARING CACHE...</string>
+	<string name="StartupClearingTextureCache">> CLEARING TEXTURE CACHE...</string>
+	<string name="StartupInitializingTextureCache">> INITIALIZING TEXTURE CACHE...</string>
+	<string name="StartupRequireDriverUpdate">! ERROR: Graphics initialization failed. Please update your graphics driver!</string>
+	<string name="StartupWelcome">>> TASIA VIEWER READY — WELCOME</string>
 
 	<!-- about dialog/support string-->
 	<string name="AboutHeader">
