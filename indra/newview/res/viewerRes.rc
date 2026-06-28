@@ -62,12 +62,13 @@ IDI_LCD_LL_ICON         ICON                    "firestorm_icon.ico"
 // Dialog
 //
 
-SPLASHSCREEN DIALOG  32, 32, 264, 34
+SPLASHSCREEN DIALOG  32, 32, 400, 60
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
-    ICON            IDI_LL_ICON,IDC_STATIC,7,7,20,20
-    LTEXT           "Loading Firestorm ...",666,36,13,211,8
+    ICON            IDI_LL_ICON,IDC_STATIC,10,10,32,32
+    LTEXT           "TASIA VIEWER",667,50,10,200,14
+    LTEXT           ">> LOADING...",666,50,30,300,14
 END
 
 

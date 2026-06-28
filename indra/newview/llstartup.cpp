@@ -1336,6 +1336,10 @@ bool idle_startup()
 
         show_debug_menus();
 
+        // Show welcome message before hiding splash
+        LLSplashScreen::update(LLTrans::getString("StartupWelcome"));
+        ms_sleep(1500);
+
         // Hide the splash screen
         LL_DEBUGS("AppInit") << "Hide the splash screen and show window" << LL_ENDL;
         LLSplashScreen::hide();

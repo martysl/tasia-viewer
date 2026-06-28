@@ -267,6 +267,15 @@ public:
     /*virtual*/ void showImpl();
     /*virtual*/ void updateImpl(const std::string& mesg);
     /*virtual*/ void hideImpl();
+
+private:
+#if LL_X11
+    void* mDisplay;   // Display*
+    unsigned long mWindow;   // Window
+    unsigned long mGC;       // GC
+    int mWindowWidth;
+    int mWindowHeight;
+#endif
 };
 
 S32 OSMessageBoxSDL(const std::string& text, const std::string& caption, U32 type);

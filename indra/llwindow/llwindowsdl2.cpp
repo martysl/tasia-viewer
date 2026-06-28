@@ -2357,27 +2357,148 @@ void LLWindowSDL::hideCursorUntilMouseMove()
 }
 
 //
-// LLSplashScreenSDL - I don't think we'll bother to implement this; it's
-// fairly obsolete at this point.
+// LLSplashScreenSDL - X11-based splash screen with progress bar
 //
 LLSplashScreenSDL::LLSplashScreenSDL()
 {
+#if LL_X11
+    mDisplay = NULL;
+    mWindow = None;
+    mGC = None;
+    mWindowWidth = 0;
+    mWindowHeight = 0;
+#endif
 }
 
 LLSplashScreenSDL::~LLSplashScreenSDL()
 {
+#if LL_X11
+    if (mDisplay)
+    {
+        if (mWindow)
+        {
+            XDestroyWindow((Display*)mDisplay, (Window)mWindow);
+            mWindow = None;
+        }
+        XCloseDisplay((Display*)mDisplay);
+        mDisplay = NULL;
+    }
+#endif
 }
 
 void LLSplashScreenSDL::showImpl()
 {
+#if LL_X11
+    Display* dpy = XOpenDisplay(NULL);
+    if (!dpy) return;
+    mDisplay = (void*)dpy;
+
+    int screen = DefaultScreen(dpy);
+    Window root = RootWindow(dpy, screen);
+
+    // Window size
+    int width = 420, height = 110;
+
+    // Create simple window
+    XSetWindowAttributes attrs;
+    attrs.background_pixel = 0x0A0E14;  // Dark blue-black
+    attrs.override_redirect = True;
+    unsigned long mask = CWBackPixel | CWOverrideRedirect;
+
+    Window win = XCreateWindow(dpy, root,
+        0, 0, width, height, 0,
+        CopyFromParent, InputOutput, CopyFromParent,
+        mask, &attrs);
+
+    if (!win) return;
+    mWindow = (unsigned long)win;
+
+    // Set title
+    XStoreName(dpy, win, "TASIA VIEWER");
+
+    // Center window
+    XWindowAttributes root_attrs;
+    XGetWindowAttributes(dpy, root, &root_attrs);
+    int x = (root_attrs.width - width) / 2;
+    int y = (root_attrs.height - height) / 2;
+    XMoveWindow(dpy, win, x, y);
+
+    // GC for drawing
+    XGCValues gc_values;
+    GC gc = XCreateGC(dpy, win, 0, &gc_values);
+    mGC = (unsigned long)gc;
+
+    // Show window
+    XMapWindow(dpy, win);
+    XFlush(dpy);
+
+    mWindowWidth = width;
+    mWindowHeight = height;
+#endif
 }
 
 void LLSplashScreenSDL::updateImpl(const std::string& mesg)
 {
+#if LL_X11
+    if (!mDisplay || !mWindow) return;
+    Display* dpy = (Display*)mDisplay;
+    Window win = (Window)mWindow;
+    GC gc = (GC)mGC;
+
+    // Clear window
+    XClearWindow(dpy, win);
+
+    // Draw title "TASIA VIEWER"
+    XSetForeground(dpy, gc, 0x55CCFF);  // Cyan
+    XDrawString(dpy, win, gc, 15, 30, "TASIA VIEWER", 12);
+
+    // Draw stage message
+    XSetForeground(dpy, gc, 0xCCCCCC);  // Light gray
+    std::string display_mesg = mesg.substr(0, 60);
+    XDrawString(dpy, win, gc, 15, 50, display_mesg.c_str(), display_mesg.length());
+
+    // Draw progress bar background
+    int bar_x = 15, bar_y = 70;
+    int bar_w = mWindowWidth - 30, bar_h = 14;
+    XSetForeground(dpy, gc, 0x222222);  // Dark gray
+    XFillRectangle(dpy, win, gc, bar_x, bar_y, bar_w, bar_h);
+
+    // Draw progress bar fill based on stage
+    int fill_w = 0;
+    if (mesg.find("WELCOME") != std::string::npos || mesg.find("READY") != std::string::npos)
+        fill_w = bar_w;
+    else if (mesg.find("TEXTURE") != std::string::npos)
+        fill_w = bar_w * 75 / 100;
+    else if (mesg.find("CACHE") != std::string::npos)
+        fill_w = bar_w * 50 / 100;
+    else if (mesg.find("HARDWARE") != std::string::npos)
+        fill_w = bar_w * 30 / 100;
+    else  // initial LOADING
+        fill_w = bar_w * 10 / 100;
+
+    XSetForeground(dpy, gc, 0x3399FF);  // Blue
+    XFillRectangle(dpy, win, gc, bar_x, bar_y, fill_w, bar_h);
+
+    // Draw border around progress bar
+    XSetForeground(dpy, gc, 0x4488CC);
+    XDrawRectangle(dpy, win, gc, bar_x, bar_y, bar_w, bar_h);
+
+    XFlush(dpy);
+#endif
 }
 
 void LLSplashScreenSDL::hideImpl()
 {
+#if LL_X11
+    if (mDisplay && mWindow)
+    {
+        XDestroyWindow((Display*)mDisplay, (Window)mWindow);
+        mWindow = None;
+        mGC = None;
+        XCloseDisplay((Display*)mDisplay);
+        mDisplay = NULL;
+    }
+#endif
 }
 
 S32 OSMessageBoxSDL(const std::string& text, const std::string& caption, U32 type)
