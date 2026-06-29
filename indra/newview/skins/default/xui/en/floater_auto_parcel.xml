@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater
+    name="auto_parcel"
+    title="Auto Parcel Group Titles"
+    width="420"
+    height="400"
+    can_minimize="false"
+    can_resize="false">
+
+    <text
+        name="current_parcel_label"
+        type="string"
+        length="1"
+        follows="left|top"
+        height="20"
+        left="10"
+        top="10"
+        width="400">
+        Current parcel:
+    </text>
+
+    <text
+        name="current_parcel_name"
+        type="string"
+        length="1"
+        follows="left|top"
+        height="20"
+        left="10"
+        top="30"
+        width="400"
+        font.style="BOLD"
+        font.size="Large"
+        text_color="EmphasisColor">
+    </text>
+
+    <text
+        name="add_label"
+        type="string"
+        length="1"
+        follows="left|top"
+        height="20"
+        left="10"
+        top="65"
+        width="400">
+        Add rule for this parcel:
+    </text>
+
+    <button
+        name="add_current_btn"
+        label="Add Current Parcel"
+        follows="left|top"
+        height="20"
+        left="10"
+        top="85"
+        width="180">
+    </button>
+
+    <text
+        name="rules_label"
+        type="string"
+        length="1"
+        follows="left|top"
+        height="20"
+        left="10"
+        top="120"
+        width="400"
+        font.style="BOLD">
+        Auto Parcel Rules:
+    </text>
+
+    <scroll_list
+        name="rules_list"
+        follows="left|top|right|bottom"
+        height="200"
+        left="10"
+        top="140"
+        width="400"
+        multi_select="false">
+
+        <columns>
+            <column
+                name="parcel_name"
+                label="Parcel Name"
+                width="180" />
+            <column
+                name="group_name"
+                label="Group"
+                width="120" />
+            <column
+                name="role_name"
+                label="Role"
+                width="100" />
+        </columns>
+    </scroll_list>
+
+    <button
+        name="delete_btn"
+        label="Delete Selected"
+        follows="left|bottom"
+        height="20"
+        left="10"
+        bottom="10"
+        width="120">
+    </button>
+
+    <button
+        name="refresh_btn"
+        label="Refresh"
+        follows="left|bottom"
+        height="20"
+        left="140"
+        bottom="10"
+        width="80">
+    </button>
+
+    <check_box
+        name="auto_parcel_enabled"
+        label="Enable Auto Parcel Change"
+        follows="right|bottom"
+        height="16"
+        left="235"
+        bottom="12"
+        width="175" />
+</floater>
