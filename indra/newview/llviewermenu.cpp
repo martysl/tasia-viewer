@@ -12358,6 +12358,43 @@ class FSObjectExportCollada : public view_listener_t
 };
 // </FS:CR>
 
+// TASIA: Rigged mesh DAE export
+#include "fsdaeexporter.h"
+#include "llfilepicker.h"
+class FSObjectExportRiggedDAE : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+    {
+        LLViewerObject* objectp = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+        if (!objectp) return true;
+
+        LLFilePickerReplyThread::startPicker(
+            boost::bind(&FSObjectExportRiggedDAE::onFileSelected, objectp->getID(), _1),
+            LLFilePicker::FFSAVE_COLLADA,
+            "dae"
+        );
+        return true;
+    }
+
+    static void onFileSelected(const LLUUID& object_id, const std::vector<std::string>& filenames)
+    {
+        if (filenames.empty()) return;
+
+        LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+        if (!object || object->getID() != object_id) return;
+
+        bool success = FSDAEExporter::exportRiggedMesh(filenames[0], object);
+        if (success)
+        {
+            LL_INFOS("DAEExport") << "Exported rigged mesh to " << filenames[0] << LL_ENDL;
+        }
+        else
+        {
+            LL_WARNS("DAEExport") << "Failed to export rigged mesh" << LL_ENDL;
+        }
+    }
+};
+
 // <FS:Zi> Make sure to call this before any of the UI is set up, so all text editors can
 //         pick up the menu properly.
 void initialize_edit_menu()
@@ -13215,6 +13252,7 @@ void initialize_menus()
     // <FS:Techwolf Lupindo> export
     view_listener_t::addMenu(new FSObjectExport(), "Object.Export");
     view_listener_t::addMenu(new FSObjectExportCollada(), "Object.ExportCollada");
+    view_listener_t::addMenu(new FSObjectExportRiggedDAE(), "Object.ExportRiggedDAE");
     enable.add("Object.EnableExport", boost::bind(&enable_export_object));
     // </FS:Techwolf Lupindo>
 
