@@ -1147,7 +1147,7 @@ void LLAgent::changeParcels()
     if (auto_parcel_enabled)
     {
         LLViewerParcelMgr* mgr = LLViewerParcelMgr::getInstance();
-        LLParcel* parcel = mgr->getParcel();
+        LLParcel* parcel = mgr->mAgentParcel;
         if (parcel)
         {
             std::string parcel_name = parcel->getName();
