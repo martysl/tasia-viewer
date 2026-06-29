@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/tasia-giphy-welcome-loading-linux
+      - tasia_linux_sl
   workflow_dispatch:
     inputs:
       publish_release:
