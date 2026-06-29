@@ -1462,10 +1462,10 @@ You need to enter either the Username or both the First and Last name of your av
   </notification>
   
    <notification
-    name="GridBlockedSL"
+    name="GridBlockedNonSL"
     type="alertmodal">
     <tag>fail</tag>
-Second Life grids are not supported by Tasia Viewer. This viewer is configured for I-Grid/OpenSim only.
+This viewer is a Second Life-only version. The grid "[GRID]" is not supported.
    </notification>
 
    <notification

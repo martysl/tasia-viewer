@@ -585,10 +585,10 @@ void LLGridManager::addGrid(GridEntry* grid_entry,  AddState state)
             state = FAIL;
         }
 
-        // Block Second Life grids
-        if (state != FAIL && isSLGrid(grid))
+        // Block non-Second Life grids (SL-only version)
+        if (state != FAIL && !isSLGrid(grid))
         {
-            LLNotificationsUtil::add("GridBlockedSL");
+            LLNotificationsUtil::add("GridBlockedNonSL");
             state = FAIL;
         }
 
@@ -1308,16 +1308,16 @@ bool LLGridManager::isInSLBeta()
     return (EGridPlatform == GP_SLBETA);
 }
 
-// For OpenSim
+// For OpenSim — blocked in SL-only version
 bool LLGridManager::isInOpenSim()
 {
-    return (EGridPlatform == GP_OPENSIM || EGridPlatform == GP_AURORA);
+    return false;
 }
 
-// For Aurora Sim
+// For Aurora Sim — blocked in SL-only version
 bool LLGridManager::isInAuroraSim()
 {
-    return (EGridPlatform == GP_AURORA);
+    return false;
 }
 
 bool LLGridManager::isSLGrid(const std::string& grid)
