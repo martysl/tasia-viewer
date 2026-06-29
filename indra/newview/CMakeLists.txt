@@ -131,6 +131,7 @@ set(viewer_SOURCE_FILES
     fsfloatergrouptitles.cpp
     fsfloaterautoparcel.cpp
     fsfloaterimport.cpp
+    fsdaeexporter.cpp
     fsfloaterim.cpp
     fsfloaterimcontainer.cpp
     fsfloaternearbychat.cpp
@@ -990,6 +991,7 @@ set(viewer_HEADER_FILES
     fsfloaterplacedetails.h
     fsfloaterposer.h
     fsfloaterposestand.h
+    fsdaeexporter.h
     fsfloaterprotectedfolders.h
     fsfloaterradar.h
     fsfloatersearch.h
