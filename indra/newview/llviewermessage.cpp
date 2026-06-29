@@ -2528,8 +2528,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
     msg->getStringFast(_PREHASH_MessageBlock, _PREHASH_Message, message);
     msg->getU32Fast(_PREHASH_MessageBlock, _PREHASH_ParentEstateID, parent_estate_id);
 
+    EInstantMessage im_dialog = (EInstantMessage)d;
+
     // TasiaCrypt: decrypt incoming IM if it's an encrypted message
-    if (dialog == IM_NOTHING_SPECIAL && LLTasiaCrypt::isTasiaCryptMessage(message))
+    if (im_dialog == IM_NOTHING_SPECIAL && LLTasiaCrypt::isTasiaCryptMessage(message))
     {
         std::string decrypted = LLTasiaCrypt::instance().decrypt(from_id, message);
         if (!decrypted.empty())
@@ -2544,7 +2546,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
     }
 
     // TasiaCrypt: handle incoming public key exchange
-    if (dialog == IM_NOTHING_SPECIAL && !offline && message.compare(0, 14, "TASIACRYPT_KEY:") == 0)
+    if (im_dialog == IM_NOTHING_SPECIAL && !offline && message.compare(0, 14, "TASIACRYPT_KEY:") == 0)
     {
         std::string their_key = message.substr(14);
         LLTasiaCrypt::instance().handlePublicKey(from_id, their_key);
@@ -2554,7 +2556,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
     }
 
     // Check for TasiaCrypt key exchange: if sender uses Tasia and we don't have a key yet, send ours
-    if (dialog == IM_NOTHING_SPECIAL && !offline && from_id.notNull() && message.compare(0, 14, "TASIACRYPT_KEY:") != 0)
+    if (im_dialog == IM_NOTHING_SPECIAL && !offline && from_id.notNull() && message.compare(0, 14, "TASIACRYPT_KEY:") != 0)
     {
         LLTasiaCrypt& crypt = LLTasiaCrypt::instance();
         if (!crypt.hasKeyFor(from_id))

@@ -12370,7 +12370,7 @@ class FSObjectExportRiggedDAE : public view_listener_t
 
         LLFilePickerReplyThread::startPicker(
             boost::bind(&FSObjectExportRiggedDAE::onFileSelected, objectp->getID(), _1),
-            LLFilePicker::FFSAVE_COLLADA,
+            FFSAVE_COLLADA,
             "dae"
         );
         return true;
