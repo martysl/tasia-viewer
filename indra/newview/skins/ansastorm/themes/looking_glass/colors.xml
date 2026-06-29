@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<colors>
+	<!--
+	Looking Glass Theme
+	Windows 7 Aero Glass inspired colors — opaque backgrounds for readability,
+	glass borders and accents for the Aero feel.
+	-->
+
+	<!-- Text — full white for readability -->
+	<color name="TextFgColor" reference="White" />
+	<color name="TextFgReadOnlyColor" reference="LtGray_75" />
+	<color name="TextFgTentativeColor" reference="LtGray_75" />
+	<color name="TextBgFocusColor" value="0.10 0.13 0.18 1.0" />
+	<color name="TextBgReadOnlyColor" value="0.12 0.15 0.20 1.0" />
+	<color name="TextBgWriteableColor" value="0.10 0.13 0.18 1.0" />
+	<color name="TextCursorColor" reference="White" />
+	<color name="TextDefaultColor" value="0.35 0.65 0.90 1" />
+	<color name="TextLinkColor" value="0.45 0.70 0.95 1" />
+
+	<!-- Line editor — solid dark background for input fields -->
+	<color name="LineEditorBgColor" value="0.08 0.10 0.14 1.0" />
+	<color name="LineEditorFgColor" value="0.90 0.92 0.95 1" />
+
+	<!-- Combo box — readable dropdowns -->
+	<color name="ComboBoxBgColor" value="0.08 0.10 0.14 1.0" />
+	<color name="ComboBoxFgColor" value="0.90 0.92 0.95 1" />
+	<color name="ComboBoxListBgColor" value="0.10 0.13 0.18 1.0" />
+
+	<!-- Window backgrounds — opaque -->
+	<color name="WindowBackgroundInactive" value="0.12 0.15 0.22 1.0" />
+	<color name="WindowBackgroundActive" value="0.14 0.18 0.26 1.0" />
+	<color name="WindowBackgroundOpaque" value="0.10 0.13 0.20 1.0" />
+
+	<!-- Panel backgrounds — mostly opaque with slight glass feel -->
+	<color name="PanelBackground" value="0.12 0.16 0.24 0.96" />
+	<color name="PanelBackgroundLight" value="0.14 0.18 0.26 0.94" />
+	<color name="PanelBorder" value="0.35 0.58 0.82 0.75" />
+
+	<!-- Slider / control -->
+	<color name="SliderBackgroundColor" value="0.08 0.10 0.16 1.0" />
+	<color name="SliderThumbColor" value="0.40 0.60 0.85 1.0" />
+	<color name="SliderThumbDisabled" value="0.30 0.35 0.40 0.60" />
+
+	<!-- Button — Aero glass blue/teal, not grey -->
+	<color name="ButtonImageColor" reference="SL-White" />
+	<color name="ButtonLabelColor" reference="White" />
+	<color name="ButtonLabelColor" value="0.95 0.95 0.98 1" />
+	<color name="ButtonDisabledColor" value="0.20 0.25 0.35 0.50" />
+	<color name="ButtonHoverColor" value="0.40 0.65 0.90 0.75" />
+	<color name="ButtonPressedColor" value="0.25 0.45 0.70 0.85" />
+	<color name="ButtonBorderColor" value="0.45 0.68 0.90 0.60" />
+
+	<!-- Selection / highlight -->
+	<color name="SelectionColor" value="0.38 0.58 0.82 0.55" />
+	<color name="HighlightColor" value="0.38 0.58 0.82 0.40" />
+	<color name="HighlightLightColor" value="0.42 0.62 0.85 0.30" />
+
+	<!-- Scrollbar -->
+	<color name="ScrollbarThumbColor" value="0.38 0.58 0.82 0.65" />
+	<color name="ScrollbarTrackColor" value="0.08 0.10 0.16 0.60" />
+	<color name="ScrollbarArrowColor" value="0.70 0.70 0.70 0.60" />
+
+	<!-- Chat -->
+	<color name="BackgroundChatColor" value="0.08 0.10 0.16 0.92" />
+	<color name="ChatHistoryTextColor" value="0.90 0.92 0.95 1" />
+	<color name="SystemChatColor" value="0.65 0.82 1.0 1" />
+	<color name="ObjectChatColor" value="0.55 0.72 0.92 1" />
+	<color name="OwnerChatColor" value="0.72 0.90 1.0 1" />
+	<color name="ChatBubbleColor" value="0.10 0.14 0.22 0.95" />
+	<color name="ChatBubbleTextColor" value="0.90 0.92 0.95 1" />
+
+	<!-- Map -->
+	<color name="MapAvatarColor" value="0.35 0.65 0.90 1" />
+	<color name="MapAvatarFriendColor" reference="Yellow" />
+
+	<!-- Tab -->
+	<color name="TabActiveColor" value="0.38 0.58 0.82 0.55" />
+	<color name="TabInactiveColor" value="0.10 0.13 0.20 0.85" />
+	<color name="TabBorderColor" value="0.35 0.55 0.78 0.50" />
+
+	<!-- Tooltip -->
+	<color name="ToolTipBgColor" value="0.14 0.20 0.30 0.97" />
+	<color name="ToolTipFgColor" value="0.90 0.92 0.95 1" />
+	<color name="ToolTipBorderColor" value="0.40 0.60 0.85 0.70" />
+
+	<!-- Pie menu -->
+	<color name="PieMenuBgColor" value="0.10 0.14 0.22 0.95" />
+	<color name="PieMenuFgColor" value="0.90 0.92 0.95 1" />
+	<color name="PieMenuHoverColor" value="0.38 0.58 0.82 0.50" />
+	<color name="PieMenuBorderColor" value="0.35 0.55 0.78 0.65" />
+
+	<!-- Inventory -->
+	<color name="InventoryItemBackground" value="0.10 0.14 0.22 0.92" />
+	<color name="InventoryItemSelected" value="0.38 0.58 0.82 0.45" />
+	<color name="InventoryItemDropTarget" value="0.38 0.58 0.82 0.30" />
+
+	<!-- List -->
+	<color name="ListBackground" value="0.08 0.10 0.16 0.95" />
+	<color name="ListItemSelected" value="0.38 0.58 0.82 0.40" />
+	<color name="ListItemHover" value="0.38 0.58 0.82 0.25" />
+
+	<!-- Menu bar -->
+	<color name="MenuBarBgColor" value="0.10 0.14 0.22 0.95" />
+	<color name="MenuBarFgColor" value="0.90 0.92 0.95 1" />
+	<color name="MenuItemHighlight" value="0.38 0.58 0.82 0.45" />
+	<color name="MenuItemBorder" value="0.35 0.55 0.78 0.55" />
+
+	<!-- Checkbox -->
+	<color name="CheckboxBgColor" value="0.08 0.10 0.16 1.0" />
+	<color name="CheckboxFgColor" reference="White" />
+	<color name="CheckboxBorderColor" value="0.38 0.58 0.82 0.65" />
+
+	<!-- Radio button -->
+	<color name="RadioBgColor" value="0.08 0.10 0.16 1.0" />
+	<color name="RadioFgColor" value="0.35 0.65 0.90 1" />
+	<color name="RadioBorderColor" value="0.38 0.58 0.82 0.65" />
+
+	<!-- Separator -->
+	<color name="SeparatorColor" value="0.35 0.55 0.78 0.45" />
+
+	<!-- Status bar -->
+	<color name="StatusBarBgColor" value="0.10 0.14 0.22 0.95" />
+	<color name="StatusBarFgColor" value="0.90 0.92 0.95 1" />
+	<color name="StatusBarBorderColor" value="0.35 0.55 0.78 0.55" />
+
+	<!-- Notification -->
+	<color name="NotificationBgColor" value="0.14 0.20 0.30 0.97" />
+	<color name="NotificationFgColor" value="0.90 0.92 0.95 1" />
+	<color name="NotificationBorderColor" value="0.40 0.60 0.85 0.70" />
+
+	<!-- Accent colors -->
+	<color name="AccentColor" value="0.40 0.60 0.85 1.0" />
+	<color name="Cyan" value="0.35 0.65 0.90 1.0" />
+	<color name="EmphasisColor" value="0.45 0.65 0.88 1.0" />
+	<color name="EmphasisColorLight" value="0.55 0.72 0.92 1.0" />
+	<color name="EmphasisColor_13" value="0.42 0.62 0.85 0.13" />
+	<color name="EmphasisColor_35" value="0.42 0.62 0.85 0.35" />
+
+	<!-- HUD -->
+	<color name="HudTextColor" reference="White" />
+	<color name="HudTextBgColor" value="0.08 0.10 0.16 0.85" />
+
+	<!-- Media / HTML -->
+	<color name="HtmlDefaultColor" reference="White" />
+	<color name="HtmlLinkColor" value="0.50 0.75 1.0 1" />
+	<color name="HtmlVisitedColor" value="0.60 0.70 0.85 1" />
+	<color name="HtmlBackground" value="0.08 0.10 0.16 0.92" />
+
+	<!-- Progress bar -->
+	<color name="ProgressBarTrack" value="0.08 0.10 0.16 0.85" />
+	<color name="ProgressBarFill" value="0.40 0.60 0.85 0.80" />
+	<color name="ProgressBarLabel" value="0.90 0.92 0.95 1" />
+
+	<!-- Misc -->
+	<color name="BeaconColor" value="0.55 0.78 1.0 1" />
+	<color name="EditHighlightColor" value="0.38 0.58 0.82 0.40" />
+	<color name="GridColor" value="0.32 0.52 0.75 0.35" />
+	<color name="MuteColor" value="0.65 0.22 0.22 1" />
+</colors>

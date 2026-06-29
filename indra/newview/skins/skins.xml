@@ -5,15 +5,6 @@
       <string>Default</string>
       <key>folder</key>
       <string>default</string>
-      <key>themes</key>
-      <array>
-        <map>
-          <key>name</key>
-          <string>Looking Glass</string>
-          <key>folder</key>
-          <string>looking_glass</string>
-        </map>
-      </array>
     </map>
 
     <map>
@@ -23,6 +14,12 @@
       <string>ansastorm</string>
       <key>themes</key>
       <array>
+        <map>
+          <key>name</key>
+          <string>Looking Glass</string>
+          <key>folder</key>
+          <string>looking_glass</string>
+        </map>
         <map>
           <key>name</key>
           <string>Bright Blue</string>
