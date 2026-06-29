@@ -1141,6 +1141,45 @@ void LLAgent::changeParcels()
     LL_DEBUGS("AgentLocation") << "Calling ParcelChanged callbacks" << LL_ENDL;
     // Notify anything that wants to know about parcel changes
     mParcelChangedSignal();
+
+    // AutoParcel: check if we should auto-switch group title based on parcel/region
+    static bool auto_parcel_enabled = gSavedSettings.getBOOL("AutoParcelChange");
+    if (auto_parcel_enabled)
+    {
+        LLViewerParcelMgr* mgr = LLViewerParcelMgr::getInstance();
+        LLParcel* parcel = mgr->getParcel();
+        if (parcel)
+        {
+            std::string parcel_name = parcel->getName();
+            if (!parcel_name.empty())
+            {
+                LLSD config = gSavedPerAccountSettings.getLLSD("AutoParcelChangeConfig");
+                if (config.isMap() && config.has(parcel_name))
+                {
+                    LLSD entry = config[parcel_name];
+                    if (entry.isMap())
+                    {
+                        std::string group_id_str = entry["group_id"].asString();
+                        std::string role_id_str = entry["role_id"].asString();
+                        if (!group_id_str.empty())
+                        {
+                            LLUUID group_id(group_id_str);
+                            LLUUID role_id(role_id_str);
+                            if (group_id.notNull())
+                            {
+                                LLGroupMgr::getInstance()->sendGroupTitleUpdate(group_id, role_id);
+                                if (gAgent.getGroupID() != group_id)
+                                {
+                                    LLGroupActions::activate(group_id);
+                                }
+                                LL_DEBUGS("AutoParcel") << "Auto-switched to group " << group_id << " in parcel " << parcel_name << LL_ENDL;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 boost::signals2::connection LLAgent::addParcelChangedCallback(parcel_changed_callback_t cb)

@@ -8041,6 +8041,28 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>AutoParcelChange</key>
+    <map>
+      <key>Comment</key>
+      <string>Enable auto group title change based on parcel name.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AutoParcelChangeConfig</key>
+    <map>
+      <key>Comment</key>
+      <string>Per-account configuration for auto parcel group title changes. Format: {\"ParcelName\": {\"group_id\": \"...\", \"role_id\": \"...\"}}</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>LLSD</string>
+      <key>Value</key>
+      <llsd><map></map></llsd>
+    </map>
     <key>MaxPersistentNotifications</key>
     <map>
       <key>Comment</key>
