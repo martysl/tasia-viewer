@@ -50,6 +50,8 @@
 #include "llfilesystem.h"
 #include "llxfermanager.h"
 #include "mean_collision_data.h"
+#include "lltasiacrypt.h"
+#include "lltasia_user_config.h"
 
 #include "llagent.h"
 #include "llagentbenefits.h"
@@ -2525,6 +2527,52 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
     msg->getStringFast(_PREHASH_MessageBlock, _PREHASH_FromAgentName, agentName);
     msg->getStringFast(_PREHASH_MessageBlock, _PREHASH_Message, message);
     msg->getU32Fast(_PREHASH_MessageBlock, _PREHASH_ParentEstateID, parent_estate_id);
+
+    // TasiaCrypt: decrypt incoming IM if it's an encrypted message
+    if (dialog == IM_NOTHING_SPECIAL && LLTasiaCrypt::isTasiaCryptMessage(message))
+    {
+        std::string decrypted = LLTasiaCrypt::instance().decrypt(from_id, message);
+        if (!decrypted.empty())
+        {
+            message = decrypted;
+            LL_DEBUGS("TasiaCrypt") << "Decrypted IM from " << from_id << LL_ENDL;
+        }
+        else
+        {
+            LL_WARNS("TasiaCrypt") << "Failed to decrypt IM from " << from_id << " - displaying as-is" << LL_ENDL;
+        }
+    }
+
+    // TasiaCrypt: handle incoming public key exchange
+    if (dialog == IM_NOTHING_SPECIAL && !offline && message.compare(0, 14, "TASIACRYPT_KEY:") == 0)
+    {
+        std::string their_key = message.substr(14);
+        LLTasiaCrypt::instance().handlePublicKey(from_id, their_key);
+        LL_INFOS("TasiaCrypt") << "Received public key from " << from_id << LL_ENDL;
+        // Don't display the key message - set it to empty and let the processing handle it
+        message = "[TasiaCrypt: encrypted session established]";
+    }
+
+    // Check for TasiaCrypt key exchange: if sender uses Tasia and we don't have a key yet, send ours
+    if (dialog == IM_NOTHING_SPECIAL && !offline && from_id.notNull() && message.compare(0, 14, "TASIACRYPT_KEY:") != 0)
+    {
+        LLTasiaCrypt& crypt = LLTasiaCrypt::instance();
+        if (!crypt.hasKeyFor(from_id))
+        {
+            LLTasiaUserConfig::User user;
+            if (LLTasiaUserConfig::getUser(from_id, user))
+            {
+                // This user is on Tasia - send our public key
+                std::string our_key = crypt.getPublicKeyBase64();
+                if (!our_key.empty())
+                {
+                    std::string key_msg = "TASIACRYPT_KEY:" + our_key;
+                    send_improved_im(from_id, gAgent.getFullname(), key_msg, false, IM_NOTHING_SPECIAL, LLUUID::null, 0, NULL, 0);
+                    LL_INFOS("TasiaCrypt") << "Sent public key to Tasia user " << from_id << LL_ENDL;
+                }
+            }
+        }
+    }
     msg->getUUIDFast(_PREHASH_MessageBlock, _PREHASH_RegionID, region_id);
     msg->getVector3Fast(_PREHASH_MessageBlock, _PREHASH_Position, position);
     msg->getBinaryDataFast(_PREHASH_MessageBlock, _PREHASH_BinaryBucket, binary_bucket, 0, 0, MTUBYTES);
@@ -8142,6 +8190,22 @@ void send_improved_im(const LLUUID& to_id,
                             const U8* binary_bucket,
                             S32 binary_bucket_size)
 {
+    // TasiaCrypt: encrypt outgoing IM if recipient has a shared key
+    std::string encrypted_msg = message;
+    if (dialog == IM_NOTHING_SPECIAL && !offline && binary_bucket_size <= 0)
+    {
+        LLTasiaCrypt& crypt = LLTasiaCrypt::instance();
+        if (crypt.hasKeyFor(to_id))
+        {
+            std::string encrypted = crypt.encrypt(to_id, message);
+            if (!encrypted.empty())
+            {
+                encrypted_msg = encrypted;
+                LL_DEBUGS("TasiaCrypt") << "Encrypted IM to " << to_id << LL_ENDL;
+            }
+        }
+    }
+
     pack_instant_message(
         gMessageSystem,
         gAgent.getID(),
@@ -8149,7 +8213,7 @@ void send_improved_im(const LLUUID& to_id,
         gAgent.getSessionID(),
         to_id,
         name,
-        message,
+        encrypted_msg,
         offline,
         dialog,
         id,

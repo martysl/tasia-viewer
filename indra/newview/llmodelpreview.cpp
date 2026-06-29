@@ -3386,10 +3386,11 @@ void LLModelPreview::updateStatusMessages()
 // </FS:Beq>
         else if (has_physics_error & PhysicsError::NOHAVOK)
         {
-            mFMP->childSetValue("physics_status_message_text", mFMP->getString("phys_status_no_havok"));
-            LLUIImagePtr img = LLUI::getUIImage("ModelImport_Status_Warning");
+            //<TASIA> Havok error suppressed — SL has Havok
+            mFMP->childSetValue("physics_status_message_text", mFMP->getString("phys_status_ready"));
+            LLUIImagePtr img = LLUI::getUIImage("ModelImport_Status_Ready");
             physStatusIcon->setImage(img);
-        }
+            //</TASIA>
         else
         {
             // This should not happen

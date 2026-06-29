@@ -326,12 +326,12 @@ bool LLFloaterModelPreview::postBuild()
 #endif // OPENSIM <FS:AW optional opensim support>
     // </Ansariel>
 
-// <FS:CR> Show an alert dialog if using the Opensim viewer as functionality will be limited without Havok
-#ifndef HAVOK_TPV
-    LLSD args;
-    args["FEATURE"] = getString("no_havok");
-    LLNotificationsUtil::add("NoHavok", args);
-#endif
+// <FS:CR> Havok alert disabled — not needed for SL
+// #ifndef HAVOK_TPV
+//     LLSD args;
+//     args["FEATURE"] = getString("no_havok");
+//     LLNotificationsUtil::add("NoHavok", args);
+// #endif
 // </FS:CR>
 
     getChild<LLTextBox>("warning_message")->setTextArg("[VURL]", validate_url);
