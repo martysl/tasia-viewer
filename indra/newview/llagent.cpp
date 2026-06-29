@@ -1146,8 +1146,7 @@ void LLAgent::changeParcels()
     static bool auto_parcel_enabled = gSavedSettings.getBOOL("AutoParcelChange");
     if (auto_parcel_enabled)
     {
-        LLViewerParcelMgr* mgr = LLViewerParcelMgr::getInstance();
-        LLParcel* parcel = mgr->mAgentParcel;
+        LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
         if (parcel)
         {
             std::string parcel_name = parcel->getName();

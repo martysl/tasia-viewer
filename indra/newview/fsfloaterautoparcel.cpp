@@ -56,7 +56,7 @@ void FSFloaterAutoParcel::changed(LLGroupChange gc)
 
 void FSFloaterAutoParcel::addCurrentParcel()
 {
-    LLParcel* parcel = LLViewerParcelMgr::getInstance()->mAgentParcel;
+    LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
     if (!parcel) return;
 
     std::string parcel_name = parcel->getName();
@@ -97,7 +97,7 @@ void FSFloaterAutoParcel::refresh()
     gSavedSettings.setBOOL("AutoParcelChange", mEnabledCheck->getValue().asBoolean());
 
     // Update current parcel name
-    LLParcel* parcel = LLViewerParcelMgr::getInstance()->mAgentParcel;
+    LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
     if (parcel)
     {
         std::string name = parcel->getName();
