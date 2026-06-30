@@ -2569,7 +2569,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
                 if (!our_key.empty())
                 {
                     std::string key_msg = "TASIACRYPT_KEY:" + our_key;
-                    send_improved_im(from_id, gAgent.getFullname(), key_msg, false, IM_NOTHING_SPECIAL, LLUUID::null, 0, NULL, 0);
+                    send_improved_im(from_id, gAgentAvatarp->getFullname(), key_msg, false, IM_NOTHING_SPECIAL, LLUUID::null, 0, NULL, 0);
                     LL_INFOS("TasiaCrypt") << "Sent public key to Tasia user " << from_id << LL_ENDL;
                 }
             }
