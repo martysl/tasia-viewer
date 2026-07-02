@@ -522,10 +522,10 @@ void LLGridManager::gridInfoResponderCB(GridEntry* grid_entry)
 
 void LLGridManager::addGrid(const std::string& loginuri)
 {
-    // Block Second Life grids
-    if (isSLGrid(loginuri))
+    // Block non-Second Life grids (SL-only version)
+    if (!isSLGrid(loginuri))
     {
-        LLNotificationsUtil::add("GridBlockedSL");
+        LLNotificationsUtil::add("GridBlockedNonSL");
         return;
     }
 
@@ -1077,10 +1077,10 @@ void LLGridManager::setGridChoice(const std::string& grid)
     }
     else
     {
-        // Block selection of Second Life grids
-        if (isSLGrid(grid_name))
+        // Block selection of non-Second Life grids (SL-only version)
+        if (!isSLGrid(grid_name))
         {
-            LLNotificationsUtil::add("GridBlockedSL");
+            LLNotificationsUtil::add("GridBlockedNonSL");
             return;
         }
 
