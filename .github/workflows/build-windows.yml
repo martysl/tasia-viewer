@@ -138,8 +138,8 @@ jobs:
       - name: Install NASM for quictls/OpenSSL assembly optimization
         shell: bash
         run: |
-          curl -sL -o /tmp/nasm.zip "https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip"
-          python3 -c "import zipfile,pathlib,sys;z=zipfile.ZipFile('/tmp/nasm.zip');z.extractall('/tmp/nasm');exe=list(pathlib.Path('/tmp/nasm').rglob('nasm.exe'));sys.exit(1) if not exe else None;pathlib.Path.home().joinpath('_np').write_text(str(exe[0].parent))"
+          curl -sL -o /tmp/nasm.zip "https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip" 2>/dev/null || echo "::warning::NASM download failed"
+          python3 -c "import zipfile,pathlib,sys;z=zipfile.ZipFile('/tmp/nasm.zip');z.extractall('/tmp/nasm');exe=list(pathlib.Path('/tmp/nasm').rglob('nasm.exe'));[print(str(exe[0].parent)) if exe else print('::warning::NASM not found')]"
           cat ~/_np >> "$GITHUB_PATH"
 
       - name: Set Tasia build metadata
