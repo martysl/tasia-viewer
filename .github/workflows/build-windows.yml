@@ -3,7 +3,7 @@ name: Build Tasia Viewer - Windows
 on:
   push:
     branches:
-      - feature/tasia-giphy-welcome-loading-windows
+      - tasia_windows_sl
   workflow_dispatch:
     inputs:
       publish_release:
@@ -96,32 +96,44 @@ jobs:
 
           if [ -z "${GH_TOKEN:-}" ]; then
             echo "::warning::FMOD token not available, continuing without FMOD"
+            echo "FMOD_AVAILABLE=false" >> "$GITHUB_ENV"
             exit 0
           fi
 
           mkdir -p private-deps
-          gh release download fmod-20307 \
+          if gh release download fmod-20307 \
             --repo martysl/tasia-viewer \
             --pattern "*windows64*.tar.bz2" \
-            --dir private-deps 2>/dev/null || echo "::warning::FMOD download failed"
-          FMOD_PACKAGE="$(find private-deps -type f -name '*.tar.bz2' | sort | head -n 1)"
-          if [ -z "$FMOD_PACKAGE" ]; then
-            echo "::warning::No FMOD package found, continuing without FMOD"
-            exit 0
+            --dir private-deps 2>/dev/null; then
+            
+            FMOD_PACKAGE="$(find private-deps -type f -name '*.tar.bz2' | sort | head -n 1)"
+            if [ -n "$FMOD_PACKAGE" ]; then
+              FMOD_HASH=$(python3 -c "import hashlib,sys; print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$FMOD_PACKAGE")
+              FMOD_FILE_URL=$(python3 -c "import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_uri())" "$FMOD_PACKAGE")
+
+              echo "FMOD_PLATFORM=windows64" >> "$GITHUB_ENV"
+              echo "FMOD_PACKAGE=$FMOD_PACKAGE" >> "$GITHUB_ENV"
+              echo "FMOD_HASH=$FMOD_HASH" >> "$GITHUB_ENV"
+              echo "FMOD_FILE_URL=$FMOD_FILE_URL" >> "$GITHUB_ENV"
+              echo "FMOD_AVAILABLE=true" >> "$GITHUB_ENV"
+              echo "::notice::FMOD package found and configured"
+            else
+              echo "::warning::No FMOD package found, continuing without FMOD"
+              echo "FMOD_AVAILABLE=false" >> "$GITHUB_ENV"
+            fi
+          else
+            echo "::warning::FMOD download failed, continuing without FMOD"
+            echo "FMOD_AVAILABLE=false" >> "$GITHUB_ENV"
           fi
-
-          FMOD_HASH=$(python3 -c "import hashlib,sys; print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$FMOD_PACKAGE")
-          FMOD_FILE_URL=$(python3 -c "import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_uri())" "$FMOD_PACKAGE")
-
-          echo "FMOD_PLATFORM=windows64" >> "$GITHUB_ENV"
-          echo "FMOD_PACKAGE=$FMOD_PACKAGE" >> "$GITHUB_ENV"
-          echo "FMOD_HASH=$FMOD_HASH" >> "$GITHUB_ENV"
-          echo "FMOD_FILE_URL=$FMOD_FILE_URL" >> "$GITHUB_ENV"
 
       - name: Point autobuild to private FMOD package
         shell: bash
         run: |
           set -euo pipefail
+          if [ "${FMOD_AVAILABLE:-false}" != "true" ]; then
+            echo "::notice::Skipping FMOD configuration (not available)"
+            exit 0
+          fi
           autobuild installables edit fmodstudio \
             platform="$FMOD_PLATFORM" \
             hash="$FMOD_HASH" \
@@ -197,7 +209,6 @@ jobs:
             -- \
             --fmodstudio \
             --no-package \
-            --ninja \
             "-DLOCAL_DIST_DIR:PATH=$LOCAL_DIST_DIR"
 
       - name: Windows dependency probe
@@ -288,6 +299,38 @@ jobs:
             echo "RSP not found yet, will be generated during build"
           fi
 
+      - name: Validate build configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          BUILD_DIR="build-vc170-64"
+          echo "Checking for Visual Studio solution files..."
+          
+          if ! find "$BUILD_DIR" -name "*.sln" -type f 2>/dev/null | head -1; then
+            echo "ERROR: No Visual Studio solution file found!"
+            echo ""
+            echo "=== CMake Configuration Status ==="
+            if [ -f "$BUILD_DIR/CMakeCache.txt" ]; then
+              echo "CMakeCache.txt found:"
+              grep -E "^CMAKE_GENERATOR:|^CMAKE_BUILD_TYPE:" "$BUILD_DIR/CMakeCache.txt" || echo "Generator info not found in CMakeCache"
+              echo ""
+              echo "=== CMakeError.log (last 50 lines) ==="
+              if [ -f "$BUILD_DIR/CMakeFiles/CMakeError.log" ]; then
+                tail -50 "$BUILD_DIR/CMakeFiles/CMakeError.log" || echo "Could not read CMakeError.log"
+              else
+                echo "CMakeError.log not found"
+              fi
+            else
+              echo "CMakeCache.txt missing - configure may have failed completely"
+              echo "Checking for CMake output files..."
+              find "$BUILD_DIR" -name "CMakeOutput.log" -o -name "CMakeError.log" 2>/dev/null | head -5
+            fi
+            exit 1
+          fi
+          
+          echo "✓ Build configuration valid - solution file found"
+
       - name: Build Windows with FMOD
         shell: bash
         run: |
@@ -300,8 +343,7 @@ jobs:
             --no-configure \
             -- \
             --fmodstudio \
-            --no-package \
-            --ninja
+            --no-package
 
       - name: Dump link response file after failure
         if: failure() && inputs.probe_only != 'true'
