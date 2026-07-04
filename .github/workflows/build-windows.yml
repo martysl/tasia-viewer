@@ -61,10 +61,25 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Checkout build variables
+        id: checkout_vars
+        continue-on-error: true
         uses: actions/checkout@v4
         with:
           repository: martysl/tasia-viewer-build-variables
           path: .build-variables
+
+      - name: Create build variables if checkout failed
+        shell: bash
+        run: |
+          if [ ! -f .build-variables/variables ]; then
+            mkdir -p .build-variables
+            echo "export VIEWER_VERSION_REVISION=${GITHUB_RUN_NUMBER}" > .build-variables/variables
+            echo "export VIEWER_VERSION_CHANNEL=\"TasiaSL Viewer\"" >> .build-variables/variables
+            echo "export VIEWER_VERSION_MAJOR=8" >> .build-variables/variables
+            echo "export VIEWER_VERSION_MINOR=0" >> .build-variables/variables
+            echo "export VIEWER_VERSION_PATCH=1" >> .build-variables/variables
+            echo "export VIEWER_VERSION_BUILD=${GITHUB_RUN_NUMBER}" >> .build-variables/variables
+          fi
 
       - name: Remove KDU (proprietary, cannot use)
         shell: bash
