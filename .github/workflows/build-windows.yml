@@ -1,0 +1,469 @@
+name: Build Tasia Viewer - Windows
+
+on:
+  push:
+    branches:
+      - feature/tasia-giphy-welcome-loading-windows
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Publish GitHub pre-release"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AUTOBUILD_ADDRSIZE: 64
+  AUTOBUILD_BUILD_ID: ${{ github.run_id }}
+  AUTOBUILD_INSTALLABLE_CACHE: ${{ github.workspace }}/.autobuild-installables
+  AUTOBUILD_VARIABLES_FILE: ${{ github.workspace }}/.build-variables/variables
+  AUTOBUILD_VCS_INFO: "true"
+  AUTOBUILD_VSVER: 170
+  LL_SKIP_REQUIRE_SYSROOT: 1
+  XZ_DEFAULTS: -T0
+
+jobs:
+  build:
+    name: Build Tasia Viewer - Windows - FMOD
+    runs-on: windows-2022
+    timeout-minutes: 240
+
+    steps:
+      - name: Checkout viewer source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Restore autobuild installables cache
+        id: cache-autobuild
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.AUTOBUILD_INSTALLABLE_CACHE }}
+          key: autobuild-windows-${{ hashFiles('autobuild.xml') }}
+
+      - name: Install autobuild and Python deps
+        run: pip install -r requirements.txt
+
+      - name: Checkout build variables
+        id: checkout_vars
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: FirestormViewer/fs-build-variables
+          path: .build-variables
+
+      - name: Create build variables if checkout failed
+        shell: bash
+        run: |
+          if [ ! -f .build-variables/variables ]; then
+            mkdir -p .build-variables
+            echo "export VIEWER_VERSION_REVISION=${GITHUB_RUN_NUMBER}" > .build-variables/variables
+            echo "export VIEWER_VERSION_CHANNEL=\"TasiaSL Viewer\"" >> .build-variables/variables
+            echo "export VIEWER_VERSION_MAJOR=8" >> .build-variables/variables
+            echo "export VIEWER_VERSION_MINOR=0" >> .build-variables/variables
+            echo "export VIEWER_VERSION_PATCH=1" >> .build-variables/variables
+            echo "export VIEWER_VERSION_BUILD=${GITHUB_RUN_NUMBER}" >> .build-variables/variables
+          fi
+
+      - name: Remove KDU (proprietary, cannot use)
+        shell: bash
+        run: |
+          autobuild installables remove kdu || true
+          echo "KDU installable removed."
+
+      - name: Download private FMOD autobuild package
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::warning::FMOD token not available, continuing without FMOD"
+            echo "FMOD_AVAILABLE=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          mkdir -p private-deps
+          if gh release download fmod-20307 \
+            --repo martysl/tasia-viewer \
+            --pattern "*windows64*.tar.bz2" \
+            --dir private-deps 2>/dev/null; then
+            
+            FMOD_PACKAGE="$(find private-deps -type f -name '*.tar.bz2' | sort | head -n 1)"
+            if [ -n "$FMOD_PACKAGE" ]; then
+              FMOD_HASH=$(python3 -c "import hashlib,sys; print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$FMOD_PACKAGE")
+              FMOD_FILE_URL=$(python3 -c "import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_uri())" "$FMOD_PACKAGE")
+
+              echo "FMOD_PLATFORM=windows64" >> "$GITHUB_ENV"
+              echo "FMOD_PACKAGE=$FMOD_PACKAGE" >> "$GITHUB_ENV"
+              echo "FMOD_HASH=$FMOD_HASH" >> "$GITHUB_ENV"
+              echo "FMOD_FILE_URL=$FMOD_FILE_URL" >> "$GITHUB_ENV"
+              echo "FMOD_AVAILABLE=true" >> "$GITHUB_ENV"
+              echo "::notice::FMOD package found and configured"
+            else
+              echo "::warning::No FMOD package found, continuing without FMOD"
+              echo "FMOD_AVAILABLE=false" >> "$GITHUB_ENV"
+            fi
+          else
+            echo "::warning::FMOD download failed, continuing without FMOD"
+            echo "FMOD_AVAILABLE=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Point autobuild to private FMOD package
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${FMOD_AVAILABLE:-false}" != "true" ]; then
+            echo "::notice::Skipping FMOD configuration (not available)"
+            exit 0
+          fi
+          autobuild installables edit fmodstudio \
+            platform="$FMOD_PLATFORM" \
+            hash="$FMOD_HASH" \
+            url="$FMOD_FILE_URL"
+
+      - name: Load autobuild environment
+        shell: bash
+        run: |
+          autobuild source_environment > .source_env 2>/dev/null || true
+          . .source_env 2>/dev/null || true
+          echo "LL_BUILD=${LL_BUILD:-}" >> "$GITHUB_ENV"
+          echo "LL_BUILD_RELEASE=${LL_BUILD_RELEASE:-}" >> "$GITHUB_ENV"
+
+      - name: Setup MSVC dev environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          vsversion: 2022
+
+      - name: Install Windows build prerequisites
+        shell: bash
+        run: |
+          choco install ninja --no-progress -y || true
+          ninja --version
+          cmake --version
+          where cl
+
+      - name: Set Tasia build metadata
+        shell: bash
+        run: |
+          echo "revision=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          echo "VIEWER_VERSION_GITHASH=${GITHUB_SHA}" >> "$GITHUB_ENV"
+          TASIA_SHORT_SHA="${GITHUB_SHA}"
+          echo "TASIA_SHORT_SHA=${TASIA_SHORT_SHA::7}" >> "$GITHUB_ENV"
+          echo "TASIA_DISPLAY_VERSION=8.0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          echo "TASIA_BUILD_NUMBER=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+
+      - name: Set up Strawberry Perl + NASM for MsQuic quictls build
+        shell: bash
+        run: |
+          # Strawberry Perl has all required Perl modules (Locale::Maketext::Simple etc.)
+          # Put it first in PATH so quictls OpenSSL Configure can use it.
+          # NASM is also needed for OpenSSL assembly optimization.
+          echo "C:/Strawberry/perl/bin" >> "$GITHUB_PATH"
+          echo "C:/Strawberry/c/bin" >> "$GITHUB_PATH"
+          echo "Perl: $(perl -v | head -1)"
+          echo "NASM: $(which nasm)"
+
+      - name: Configure Windows with FMOD
+        shell: bash
+        env:
+          TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          unset CC || true
+          unset CXX || true
+
+          # Use VS-bundled CMake if available (better VS 2022 compatibility)
+          VS_CMAKE="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
+          if [ -f "$VS_CMAKE" ]; then
+            VS_CMAKE_DIR="$(dirname "$VS_CMAKE")"
+            echo "Using VS-bundled CMake from: $VS_CMAKE_DIR"
+            export PATH="$VS_CMAKE_DIR:$PATH"
+          fi
+
+          LOCAL_DIST_DIR="$(pwd)/build-vc170-64/newview/unpacked"
+          mkdir -p "$LOCAL_DIST_DIR"
+
+          autobuild configure \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            -- \
+            --fmodstudio \
+            --no-package \
+            "-DLOCAL_DIST_DIR:PATH=$LOCAL_DIST_DIR"
+
+      - name: Windows dependency probe
+        if: inputs.probe_only == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "=== Boost / Collada packages ==="
+          find .autobuild-installables build-vc170-64 -iname "*boost*" -o -iname "*collada*" 2>/dev/null | head -200 || true
+
+          echo ""
+          echo "=== Link response file ==="
+          if [ -f build-vc170-64/newview/CMakeFiles/firestorm-bin.rsp ]; then
+            grep -i "boost.*filesystem\|collada" build-vc170-64/newview/CMakeFiles/firestorm-bin.rsp || echo "(no boost/collada entries in rsp)"
+          else
+            echo "firestorm-bin.rsp not generated yet"
+            # Try alternate paths
+            find build-vc170-64 -name "*.rsp" | head -5
+          fi
+
+          echo ""
+          echo "=== CMakeCache boost/collada ==="
+          if [ -f build-vc170-64/CMakeCache.txt ]; then
+            grep -i "boost\|collada" build-vc170-64/CMakeCache.txt | head -200 || true
+          else
+            echo "CMakeCache.txt not found"
+          fi
+
+          echo ""
+          echo "=== Boost version check ==="
+          find build-vc170-64/_deps -maxdepth 3 -name "CMakeLists.txt" -path "*boost*" 2>/dev/null | head -5
+          head -5 build-vc170-64/_deps/boost-src/CMakeLists.txt 2>/dev/null || echo "boost-src not found"
+
+          echo ""
+          echo "Probe complete. Stopping before full build."
+          exit 0
+
+      - name: Verify Boost version for Windows
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set +e
+          echo "=== Boost version.hpp ==="
+          for p in \
+            build-vc170-64/_deps/boost-src/boost/version.hpp \
+            build-vc170-64/_deps/boost-build/boost/version.hpp \
+            build-vc170-64/boost/version.hpp; do
+            if [ -f "$p" ]; then
+              grep -E "#define BOOST_VERSION|#define BOOST_LIB_VERSION" "$p"
+              found=1
+              break
+            fi
+          done
+          if [ -z "${found:-}" ]; then
+            echo "version.hpp not found, checking CMakeCache..."
+            grep -i "boost_VERSION\|BOOST_VERSION" build-vc170-64/CMakeCache.txt 2>/dev/null || echo "Not in CMakeCache either"
+          fi
+
+          echo "=== Colladadom lib ==="
+          ls -lah build-vc170-64/packages/lib/release/libcollada14dom23-s.lib 2>/dev/null || echo "not found at expected path"
+
+          echo "=== Boost filesystem build dir ==="
+          test -d build-vc170-64/_deps/boost-build/libs/filesystem && echo "Found boost-build/libs/filesystem" || echo "boost-build/libs/filesystem not found"
+          # Also check build dir listing
+          echo "=== _deps/boost-build contents (top 2 levels) ==="
+          find build-vc170-64/_deps/boost-build -maxdepth 2 -name "*.lib" -o -name "*.a" 2>/dev/null | head -20 || echo "(empty)"
+          set -e
+
+      - name: Dump link response file before build
+        if: inputs.probe_only != 'true'
+        shell: bash
+        run: |
+          set +e
+          RSP="$(find build-vc170-64 -name "firestorm-bin.rsp" -type f 2>/dev/null | head -1)"
+          if [ -f "$RSP" ]; then
+            echo "RSP=$RSP"
+            echo "=== firestorm-bin.rsp (boost/collada entries) ==="
+            grep -i "collada\|boost" "$RSP" || echo "(no matches)"
+            echo ""
+            echo "=== boost_filesystem.library resolved path ==="
+            echo "Checking CMakeCache..."
+            grep -i "boost_filesystem_LIBRARY\|boost_filesystem_location" build-vc170-64/CMakeCache.txt 2>/dev/null || true
+            echo ""
+            echo "=== Searching for boost_filesystem.lib ==="
+            find build-vc170-64/_deps -name "*boost_filesystem*" -type f 2>/dev/null | head -10
+          else
+            echo "RSP not found yet, will be generated during build"
+          fi
+
+      - name: Validate build configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          BUILD_DIR="build-vc170-64"
+          echo "Checking for Visual Studio solution files..."
+          
+          if ! find "$BUILD_DIR" -name "*.sln" -type f 2>/dev/null | head -1; then
+            echo "ERROR: No Visual Studio solution file found!"
+            echo ""
+            echo "=== CMake Configuration Status ==="
+            if [ -f "$BUILD_DIR/CMakeCache.txt" ]; then
+              echo "CMakeCache.txt found:"
+              grep -E "^CMAKE_GENERATOR:|^CMAKE_BUILD_TYPE:" "$BUILD_DIR/CMakeCache.txt" || echo "Generator info not found in CMakeCache"
+              echo ""
+              echo "=== CMakeError.log (last 50 lines) ==="
+              if [ -f "$BUILD_DIR/CMakeFiles/CMakeError.log" ]; then
+                tail -50 "$BUILD_DIR/CMakeFiles/CMakeError.log" || echo "Could not read CMakeError.log"
+              else
+                echo "CMakeError.log not found"
+              fi
+            else
+              echo "CMakeCache.txt missing - configure may have failed completely"
+              echo "Checking for CMake output files..."
+              find "$BUILD_DIR" -name "CMakeOutput.log" -o -name "CMakeError.log" 2>/dev/null | head -5
+            fi
+            exit 1
+          fi
+          
+          echo "✓ Build configuration valid - solution file found"
+
+      - name: Build Windows with FMOD
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Strawberry Perl for quictls OpenSSL Configure (has required Perl modules)
+          export PATH="/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
+          autobuild build \
+            -c ReleaseFS_open \
+            -A ${{ env.AUTOBUILD_ADDRSIZE }} \
+            --no-configure \
+            -- \
+            --fmodstudio \
+            --no-package
+
+      - name: Dump link response file after failure
+        if: failure() && inputs.probe_only != 'true'
+        shell: bash
+        run: |
+          set +e
+          RSP="$(find build-vc170-64 -name "firestorm-bin.rsp" -type f 2>/dev/null | head -1)"
+          echo "=== firestorm-bin.rsp after failure ==="
+          if [ -f "$RSP" ]; then
+            echo "RSP=$RSP"
+            echo "--- boost/collada entries ---"
+            grep -i "collada\|boost" "$RSP" || echo "(no boost/collada matches)"
+            echo ""
+            echo "--- boost_filesystem files ---"
+            BOOST_FS="$(find build-vc170-64/_deps -name "*boost_filesystem*.lib" -type f 2>/dev/null | head -1)"
+            find build-vc170-64/_deps -name "*boost_filesystem*" -type f 2>/dev/null | head -20
+            if [ -n "$BOOST_FS" ]; then
+              echo ""
+              echo "--- path_traits::convert symbols in boost_filesystem ---"
+              dumpbin //symbols "$BOOST_FS" 2>/dev/null | grep -i "path_traits.*convert" | head -40 || true
+            fi
+          else
+            echo "RSP not found"
+            find build-vc170-64 -name "*.rsp" -type f 2>/dev/null | head -20
+          fi
+
+      - name: Create Windows ZIP artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import shutil
+          from pathlib import Path
+
+          dist = Path('build-vc170-64/newview/unpacked')
+          if not dist.is_dir():
+              raise SystemExit(f'Missing unpacked Windows dist: {dist}')
+          archive = shutil.make_archive('Tasia-Viewer-Windows-FMOD', 'zip', dist)
+          print(f'Created {archive}')
+          PY
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tasia-Viewer-Windows-FMOD
+          if-no-files-found: error
+          path: Tasia-Viewer-Windows-FMOD.zip
+
+      - name: Publish GitHub prerelease - Windows
+        if: inputs.publish_release == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          TAG="v8.0.1-${GITHUB_RUN_NUMBER}"
+          TITLE="Tasia Viewer 8.0.1.${GITHUB_RUN_NUMBER} Windows Beta"
+          NOTES="$(mktemp)"
+
+          cat > "$NOTES" <<EOF
+          Tasia Viewer Windows beta build.
+
+          Version: 8.0.1.${GITHUB_RUN_NUMBER}
+          Commit: ${GITHUB_SHA:0:7}
+          Channel: Tasia
+          FMOD: enabled
+          KDU: removed
+
+          This is a beta/pre-release build. Mom must test before stable release.
+          EOF
+
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" Tasia-Viewer-Windows-FMOD.zip --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" Tasia-Viewer-Windows-FMOD.zip \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "$TITLE" \
+              --notes-file "$NOTES" \
+              --prerelease
+          fi
+
+      - name: Post to Discord
+        if: inputs.publish_release == 'true'
+        shell: bash
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          python3 - "${{ github.repository }}" "${{ github.sha }}" "${{ github.run_number }}" <<'PYEOF'
+          import json, os, sys, urllib.request
+
+          repo = sys.argv[1]
+          sha = sys.argv[2][:7]
+          run = sys.argv[3]
+          version = f"8.0.1.{run}"
+          tag = f"v8.0.1-{run}"
+          release_url = f"https://github.com/{repo}/releases/tag/{tag}"
+
+          payload = {
+              "embeds": [{
+                  "title": f"Tasia Viewer {version} — Windows Beta",
+                  "description": "Windows build ready!",
+                  "url": release_url,
+                  "color": 15105570,
+                  "fields": [
+                      {"name": "Version", "value": version, "inline": True},
+                      {"name": "Platform", "value": "Windows (x86_64)", "inline": True},
+                      {"name": "Commit", "value": sha, "inline": True},
+                  ],
+                  "footer": {"text": "💚 Tasia Release"}
+              }]
+          }
+
+          req = urllib.request.Request(
+              os.environ["DISCORD_WEBHOOK_URL"],
+              data=json.dumps(payload).encode(),
+              headers={"Content-Type": "application/json"},
+              method="POST"
+          )
+          urllib.request.urlopen(req)
+          PYEOF
