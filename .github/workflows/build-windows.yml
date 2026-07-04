@@ -130,10 +130,10 @@ jobs:
       - name: Load autobuild environment
         shell: bash
         run: |
-          autobuild source_environment > .source_env
-          . .source_env
-          echo "LL_BUILD=$LL_BUILD" >> "$GITHUB_ENV"
-          echo "LL_BUILD_RELEASE=$LL_BUILD_RELEASE" >> "$GITHUB_ENV"
+          autobuild source_environment > .source_env 2>/dev/null || true
+          . .source_env 2>/dev/null || true
+          echo "LL_BUILD=${LL_BUILD:-}" >> "$GITHUB_ENV"
+          echo "LL_BUILD_RELEASE=${LL_BUILD_RELEASE:-}" >> "$GITHUB_ENV"
 
       - name: Setup MSVC dev environment
         uses: ilammy/msvc-dev-cmd@v1
