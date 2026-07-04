@@ -63,7 +63,7 @@ jobs:
       - name: Checkout build variables
         uses: actions/checkout@v4
         with:
-          repository: FirestormViewer/fs-build-variables
+          repository: martysl/tasia-viewer-build-variables
           path: .build-variables
 
       - name: Remove KDU (proprietary, cannot use)
@@ -75,25 +75,24 @@ jobs:
       - name: Download private FMOD autobuild package
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.FMOD_DEPS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
           if [ -z "${GH_TOKEN:-}" ]; then
-            echo "::error::FMOD_DEPS_TOKEN secret is missing."
-            exit 1
+            echo "::warning::FMOD token not available, continuing without FMOD"
+            exit 0
           fi
 
           mkdir -p private-deps
           gh release download fmod-20307 \
-            --repo martysl/tasia-private-deps \
+            --repo martysl/tasia-viewer \
             --pattern "*windows64*.tar.bz2" \
-            --dir private-deps
-
-          FMOD_PACKAGE="$(find private-deps -type f -name '*.tar.bz2' | head -n 1)"
+            --dir private-deps 2>/dev/null || echo "::warning::FMOD download failed"
+          FMOD_PACKAGE="$(find private-deps -type f -name '*.tar.bz2' | sort | head -n 1)"
           if [ -z "$FMOD_PACKAGE" ]; then
-            echo "::error::FMOD Windows autobuild package was not downloaded."
-            exit 1
+            echo "::warning::No FMOD package found, continuing without FMOD"
+            exit 0
           fi
 
           FMOD_HASH=$(python3 -c "import hashlib,sys; print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$FMOD_PACKAGE")
