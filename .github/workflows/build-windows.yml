@@ -65,7 +65,7 @@ jobs:
         continue-on-error: true
         uses: actions/checkout@v4
         with:
-          repository: martysl/tasia-viewer-build-variables
+          repository: FirestormViewer/fs-build-variables
           path: .build-variables
 
       - name: Create build variables if checkout failed
