@@ -522,13 +522,6 @@ void LLGridManager::gridInfoResponderCB(GridEntry* grid_entry)
 
 void LLGridManager::addGrid(const std::string& loginuri)
 {
-    // Block non-Second Life grids (SL-only version)
-    if (!isSLGrid(loginuri))
-    {
-        LLNotificationsUtil::add("GridBlockedNonSL");
-        return;
-    }
-
     GridEntry* grid_entry = new GridEntry;
     grid_entry->set_current = true;
     grid_entry->grid = LLSD::emptyMap();
@@ -1077,13 +1070,6 @@ void LLGridManager::setGridChoice(const std::string& grid)
     }
     else
     {
-        // Block selection of non-Second Life grids (SL-only version)
-        if (!isSLGrid(grid_name))
-        {
-            LLNotificationsUtil::add("GridBlockedNonSL");
-            return;
-        }
-
         LL_DEBUGS("GridManager")<< "setting grid choice: " << grid << LL_ENDL;
         mGrid = grid;// AW: don't set mGrid anywhere else
         getGridData(mConnectedGrid);
@@ -1311,13 +1297,13 @@ bool LLGridManager::isInSLBeta()
 // For OpenSim — blocked in SL-only version
 bool LLGridManager::isInOpenSim()
 {
-    return false;
+    return (EGridPlatform == GP_OPENSIM || EGridPlatform == GP_AURORA);
 }
 
-// For Aurora Sim — blocked in SL-only version
+// For Aurora Sim
 bool LLGridManager::isInAuroraSim()
 {
-    return false;
+    return (EGridPlatform == GP_AURORA);
 }
 
 bool LLGridManager::isSLGrid(const std::string& grid)
