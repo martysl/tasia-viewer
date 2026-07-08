@@ -104,7 +104,7 @@ jobs:
           echo "Pattern: $FMOD_PATTERN"
 
           gh release download fmod-20307 \
-            --repo martysl/tasia-private-deps \
+            --repo martysl/tasia-viewer \
             --pattern "$FMOD_PATTERN" \
             --dir private-deps \
             --clobber
