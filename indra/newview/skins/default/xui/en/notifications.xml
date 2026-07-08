@@ -1462,6 +1462,20 @@ You need to enter either the Username or both the First and Last name of your av
   </notification>
   
    <notification
+    name="BugReportSubmitted"
+    type="alertmodal">
+    <tag>success</tag>
+Your bug report / feedback has been submitted. Thank you!
+   </notification>
+
+   <notification
+    name="TasiaGuardUnbanComplete"
+    type="alertmodal">
+    <tag>success</tag>
+Your unban request has been sent to TasiaGuard. Check your IP status shortly.
+   </notification>
+
+   <notification
     name="GridBlockedNonSL"
     type="alertmodal">
     <tag>fail</tag>

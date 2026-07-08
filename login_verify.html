@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% set title = 'Verify' %}
+{% block head %}
+<style>
+@keyframes questionPulse {
+  0%, 100% { box-shadow: 0 0 28px rgba(183,255,61,.25), 0 0 8px rgba(255,79,216,.1); }
+  50% { box-shadow: 0 0 50px rgba(183,255,61,.45), 0 0 20px rgba(255,79,216,.18); }
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.verify-panel {
+  animation: fadeSlideUp .6s cubic-bezier(.2,.8,.2,1);
+  width: min(480px, 100%); margin: 10vh auto;
+}
+.lock-ring {
+  width: 100px; height: 100px; margin: 0 auto 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(183,255,61,.25);
+  display: grid; place-items: center;
+  position: relative;
+  animation: questionPulse 3s ease-in-out infinite;
+}
+.lock-ring .icon {
+  font-size: 36px;
+  color: var(--lime);
+  text-shadow: 0 0 20px rgba(183,255,61,.4);
+}
+.verify-field {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(8,28,48,.6);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 18px;
+  text-align: center;
+  transition: border-color .3s, box-shadow .3s;
+  outline: none;
+}
+.verify-field:focus {
+  border-color: var(--lime);
+  box-shadow: 0 0 20px rgba(183,255,61,.2), inset 0 0 15px rgba(183,255,61,.06);
+}
+.verify-submit {
+  width: 100%; margin-top: 16px;
+  padding: 14px;
+  background: linear-gradient(90deg, rgba(183,255,61,.2), rgba(255,79,216,.12));
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: .08em;
+  transition: all .3s;
+}
+.verify-submit:hover {
+  background: linear-gradient(90deg, rgba(183,255,61,.35), rgba(255,79,216,.2));
+  box-shadow: 0 0 25px rgba(183,255,61,.18);
+  border-color: var(--lime);
+}
+</style>
+{% endblock %}
+{% block content %}
+<section class="verify-panel panel holo">
+  <div class="lock-ring">
+    <div class="icon">&#10067;</div>
+  </div>
+  <h1 style="text-align:center;margin:0 0 4px;">Security Check</h1>
+  <p class="muted" style="text-align:center;margin:0 0 20px;">One more question before entering the tower</p>
+  <div style="text-align:center;margin-bottom:18px;color:var(--glow);font-size:17px;font-weight:600;">
+    What is Marty's kid name?
+  </div>
+  <form method="post" class="stack" autocomplete="off">
+    <input class="verify-field" name="answer" type="text"
+      placeholder="Enter the answer..."
+      required autofocus>
+    <button class="verify-submit" type="submit">&#9654; Unlock Tower</button>
+  </form>
+</section>
+{% endblock %}

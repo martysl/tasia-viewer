@@ -101,6 +101,7 @@ set(viewer_SOURCE_FILES
     tasiafeedconnect.cpp
     llgiphyclient.cpp
     lltasia_user_config.cpp
+    lltasiaguard.cpp
     lltasiacrypt.cpp
     lltasia_welcome_client.cpp
     lltasia_giphy_key.cpp
@@ -953,6 +954,7 @@ set(viewer_HEADER_FILES
     tasiafeedconnect.h
     llgiphyclient.h
     lltasia_user_config.h
+    lltasiaguard.h
     lltasiacrypt.h
     lltasia_welcome_client.h
     lltasia_giphy_key.h
@@ -1980,6 +1982,7 @@ if (WINDOWS)
 
     list(APPEND viewer_SOURCE_FILES
          llboostfilesystemcompat.cpp
+    llbugreport.cpp
          growlmanager.cpp
          growlnotifierwin.cpp
          llappviewerwin32.cpp

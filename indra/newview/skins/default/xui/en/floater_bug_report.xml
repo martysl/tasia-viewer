@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater
+    name="bug_report"
+    title="Report a Bug / Feedback"
+    width="500"
+    height="520"
+    can_minimize="false"
+    can_resize="false">
+
+    <text
+        name="title_label"
+        type="string"
+        length="1"
+        follows="left|top"
+        height="20"
+        left="15"
+        top="15"
+        width="470">
+        Title:
+    </text>
+
+    <line_editor
+        name="bug_title"
+        follows="left|top|right"
+        height="25"
+        left="15"
+        max_length_chars="200"
+        top_pad="5"
+        width="470" />
+
+    <text
+        name="category_label"
+        type="string"
+        length="1"
+        follows="left|top"
+        height="20"
+        left="15"
+        top_pad="10"
+        width="470">
+        Category:
+    </text>
+
+    <combo_box
+        name="bug_category"
+        follows="left|top|right"
+        height="22"
+        left="15"
+        top_pad="5"
+        width="470"
+        initial_value="Bug Reports">
+        <combo_box.item
+            label="Bug Reports"
+            name="bug-reports" />
+        <combo_box.item
+            label="Feature Requests"
+            name="feature-requests" />
+        <combo_box.item
+            label="Support"
+            name="support" />
+        <combo_box.item
+            label="Other"
+            name="other" />
+    </combo_box>
+
+    <text
+        name="details_label"
+        type="string"
+        length="1"
+        follows="left|top"
+        height="20"
+        left="15"
+        top_pad="10"
+        width="470">
+        Details:
+    </text>
+
+    <text_editor
+        name="bug_details"
+        follows="left|top|right"
+        height="200"
+        left="15"
+        top_pad="5"
+        width="470" />
+
+    <text
+        name="status_text"
+        type="string"
+        length="1"
+        follows="left|top"
+        height="20"
+        left="15"
+        top_pad="5"
+        width="470"
+        text_color="LtGray_75">
+    </text>
+
+    <button
+        label="Submit"
+        name="submit_btn"
+        follows="left|top"
+        height="22"
+        left="15"
+        top_pad="10"
+        width="100">
+        <button.commit_callback
+            function="BugReport.Submit" />
+    </button>
+
+    <button
+        label="Cancel"
+        name="cancel_btn"
+        follows="left|top"
+        height="22"
+        left="130"
+        top_pad="10"
+        width="100">
+        <button.commit_callback
+            function="BugReport.Cancel" />
+    </button>
+
+</floater>
