@@ -12,6 +12,7 @@
 #include "lltextbox.h"
 #include "lluicolortable.h"
 #include "lluri.h"
+#include "llvoavatar.h"
 #include "llviewercontrol.h"
 
 const std::string LLTasiaGuardFloater::SELF_UNBAN_URL = "https://apps.easierit.org/igrid/self-unban.php";
@@ -47,8 +48,19 @@ void LLTasiaGuardFloater::onOpen(const LLSD& key)
     mIP->setEnabled(false);  // IP is read-only since it's detected
 
     // Auto-fill avatar name from current agent
-    std::string first_name = gAgent.getFirstName();
-    std::string last_name = gAgent.getLastName();
+    std::string full_name = gAgentAvatarp->getFullname();
+    // Split into first and last name
+    std::string::size_type pos = full_name.find(' ');
+    if (pos != std::string::npos)
+    {
+        mFirstName->setText(full_name.substr(0, pos));
+        mLastName->setText(full_name.substr(pos + 1));
+    }
+    else
+    {
+        mFirstName->setText(full_name);
+        mLastName->setText("");
+    }
     mFirstName->setText(first_name);
     mLastName->setText(last_name);
 
@@ -95,11 +107,11 @@ void LLTasiaGuardFloater::onUnban()
     http_headers->append(HTTP_OUT_HEADER_CONTENT_TYPE, "application/x-www-form-urlencoded");
 
     // Encode form data manually
-    std::string form_body = "ip=" + LLURI::urlEscape(post_data["ip"].asString())
-                          + "&uuid=" + LLURI::urlEscape(post_data["uuid"].asString())
-                          + "&first_name=" + LLURI::urlEscape(post_data["first_name"].asString())
-                          + "&last_name=" + LLURI::urlEscape(post_data["last_name"].asString())
-                          + "&auth_name=" + LLURI::urlEscape(post_data["auth_name"].asString());
+    std::string form_body = "ip=" + LLURI::escape(post_data["ip"].asString())
+                          + "&uuid=" + LLURI::escape(post_data["uuid"].asString())
+                          + "&first_name=" + LLURI::escape(post_data["first_name"].asString())
+                          + "&last_name=" + LLURI::escape(post_data["last_name"].asString())
+                          + "&auth_name=" + LLURI::escape(post_data["auth_name"].asString());
 
     LLCoreHttpUtil::HttpCoroutineAdapter::callback_t callback =
         [this](const LLSD& result)
