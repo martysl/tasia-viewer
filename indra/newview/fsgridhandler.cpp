@@ -197,22 +197,6 @@ void LLGridManager::initGrids()
     initGridList(grid_remote_file, FINISH);
     initGridList(grid_user_file, FINISH);
 
-    // Purge any Second Life grids from user/remote lists
-    std::vector<std::string> sl_grids;
-    for (LLSD::map_iterator grid_iter = mGridList.beginMap();
-         grid_iter != mGridList.endMap();
-         ++grid_iter)
-    {
-        if (isSLGrid(grid_iter->first))
-        {
-            sl_grids.push_back(grid_iter->first);
-        }
-    }
-    for (const auto& sl_grid : sl_grids)
-    {
-        LL_INFOS("GridManager") << "Removing blocked Second Life grid: " << sl_grid << LL_ENDL;
-        mGridList[sl_grid]["USER_DELETED"] = true;
-    }
 #endif
 
     if(!mCommandLineDone)
@@ -522,13 +506,6 @@ void LLGridManager::gridInfoResponderCB(GridEntry* grid_entry)
 
 void LLGridManager::addGrid(const std::string& loginuri)
 {
-    // Block Second Life grids
-    if (isSLGrid(loginuri))
-    {
-        LLNotificationsUtil::add("GridBlockedSL");
-        return;
-    }
-
     GridEntry* grid_entry = new GridEntry;
     grid_entry->set_current = true;
     grid_entry->grid = LLSD::emptyMap();
@@ -582,13 +559,6 @@ void LLGridManager::addGrid(GridEntry* grid_entry,  AddState state)
             LLSD args;
             args["GRID"] = grid;
             LLNotificationsUtil::add("InvalidGrid", args);
-            state = FAIL;
-        }
-
-        // Block Second Life grids
-        if (state != FAIL && isSLGrid(grid))
-        {
-            LLNotificationsUtil::add("GridBlockedSL");
             state = FAIL;
         }
 
@@ -1077,13 +1047,6 @@ void LLGridManager::setGridChoice(const std::string& grid)
     }
     else
     {
-        // Block selection of Second Life grids
-        if (isSLGrid(grid_name))
-        {
-            LLNotificationsUtil::add("GridBlockedSL");
-            return;
-        }
-
         LL_DEBUGS("GridManager")<< "setting grid choice: " << grid << LL_ENDL;
         mGrid = grid;// AW: don't set mGrid anywhere else
         getGridData(mConnectedGrid);
@@ -1273,16 +1236,6 @@ void LLGridManager::updateIsInProductionGrid()
     {
         LL_DEBUGS("GridManager")<< "uri: "<< uris[0] << "setting grid platform to AURORA" << LL_ENDL;
         EGridPlatform = GP_AURORA;
-        return;
-    }
-
-    // TPVP compliance: a SL login screen must connect to SL.
-    // NOTE: This is more TPVP compliant than LLs own viewer, where
-    // setting the command line login page can be used for spoofing.
-    LLURI login_page = LLURI(getLoginPage());
-    if (login_page.authority().find("lindenlab.com") !=  std::string::npos)
-    {
-        setGridChoice(MAINGRID);
         return;
     }
 
