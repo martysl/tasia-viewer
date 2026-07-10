@@ -8,6 +8,7 @@
 #include "llsd.h"
 #include "llsdserialize.h"
 #include "lltextbox.h"
+#include "lluicolortable.h"
 #include "llviewercontrol.h"
 
 const std::string LLBugReportFloater::API_BASE = "https://apps.easierit.org/igrid/feedback/index.php?page=api";
@@ -49,7 +50,7 @@ void LLBugReportFloater::setStatus(const std::string& text, bool is_error)
     if (mStatus)
     {
         mStatus->setText(text);
-        mStatus->setColor(is_error ? LLUIColor("red") : LLUIColor("LtGray_75"));
+        mStatus->setColor(is_error ? LLUIColorTable::instance().getColor("Red") : LLUIColorTable::instance().getColor("LtGray_75"));
     }
 }
 

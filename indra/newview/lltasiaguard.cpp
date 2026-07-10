@@ -10,6 +10,7 @@
 #include "llsd.h"
 #include "llsdserialize.h"
 #include "lltextbox.h"
+#include "lluicolortable.h"
 #include "lluri.h"
 #include "llviewercontrol.h"
 
@@ -46,8 +47,8 @@ void LLTasiaGuardFloater::onOpen(const LLSD& key)
     mIP->setEnabled(false);  // IP is read-only since it's detected
 
     // Auto-fill avatar name from current agent
-    std::string first_name = gAgent.getFirstname();
-    std::string last_name = gAgent.getLastname();
+    std::string first_name = gAgent.getFirstName();
+    std::string last_name = gAgent.getLastName();
     mFirstName->setText(first_name);
     mLastName->setText(last_name);
 
@@ -60,7 +61,7 @@ void LLTasiaGuardFloater::setStatus(const std::string& text, bool is_error)
     if (mStatus)
     {
         mStatus->setText(text);
-        mStatus->setColor(is_error ? LLUIColor("red") : LLUIColor("LtGray_75"));
+        mStatus->setColor(is_error ? LLUIColorTable::instance().getColor("Red") : LLUIColorTable::instance().getColor("LtGray_75"));
     }
 }
 
