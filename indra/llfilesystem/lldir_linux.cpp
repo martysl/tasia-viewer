@@ -157,25 +157,13 @@ void LLDir_Linux::initAppDirs(const std::string &app_name,
     }
     mAppName = app_name;
 
-    std::string upper_app_name(app_name);
-    LLStringUtil::toUpper(upper_app_name);
-
-    auto app_home_env(LLStringUtil::getoptenv(upper_app_name + "_USER_DIR"));
-    if (app_home_env)
-    {
-        // user has specified own userappdir i.e. $SECONDLIFE_USER_DIR
-        mOSUserAppDir = *app_home_env;
-    }
-    else
-    {
-        // traditionally on unixoids, MyApp gets ~/.myapp dir for data
-        mOSUserAppDir = mOSUserDir;
-        mOSUserAppDir += "/";
-        mOSUserAppDir += ".";
-        std::string lower_app_name(app_name);
-        LLStringUtil::toLower(lower_app_name);
-        mOSUserAppDir += lower_app_name;
-    }
+    // STRICT PORTABLE MODE: ALL user data goes next to the executable.
+    // Creates portable-data/ beside the binary if it doesn't exist.
+    // Cache, settings, logs, credentials — everything stays in portable-data/.
+    std::string portable_dir = add(mExecutableDir, "portable-data");
+    LLFile::mkdir(portable_dir);
+    mOSUserAppDir = portable_dir;
+    LL_INFOS() << "PORTABLE MODE: data directory = " << mOSUserAppDir << LL_ENDL;
 
     // create any directories we expect to write to.
 

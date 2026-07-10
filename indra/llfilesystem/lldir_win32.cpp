@@ -309,7 +309,18 @@ void LLDir_Win32::initAppDirs(const std::string &app_name,
         mSkinBaseDir = add(mAppRODataDir, "skins");
     }
     mAppName = app_name;
-    mOSUserAppDir = add(mOSUserDir, app_name);
+
+    // STRICT PORTABLE MODE: ALL user data goes next to the executable.
+    // Creates portable-data\ beside the binary if it doesn't exist.
+    // Cache, settings, logs, credentials — everything stays in portable-data\.
+    std::string portable_dir = add(mExecutableDir, "portable-data");
+    LLFile::mkdir(portable_dir);
+    mOSUserAppDir = portable_dir;
+    LL_INFOS() << "PORTABLE MODE: data directory = " << mOSUserAppDir << LL_ENDL;
+
+    // Redirect cache to portable-data too (Windows normally uses LOCALAPPDATA)
+    mOSCacheDir = "";
+    mDefaultCacheDir = buildSLOSCacheDir();
 
     int res = LLFile::mkdir(mOSUserAppDir);
     if (res == -1)
