@@ -35,7 +35,7 @@ bool FSDAEExporter::exportRiggedMesh(const std::string& filename, LLViewerObject
 
     std::string model_name = object->getAttachmentItemName();
     if (model_name.empty())
-        model_name = object->getFirstName();
+        model_name = "ExportedMesh";
 
     std::ofstream out(filename.c_str());
     if (!out.is_open()) return false;
@@ -63,7 +63,7 @@ bool FSDAEExporter::extractWeightData(const LLVolumeFace& vf,
     {
         for (S32 j = 0; j < 4; ++j)
         {
-            F32 combined = vf.mWeights[i].mV[j];
+            F32 combined = vf.mWeights[i][j];
             if (combined == 0.0f) continue;
 
             S32 joint_idx = (S32)floorf(combined);
@@ -94,10 +94,19 @@ void FSDAEExporter::gatherFaces(LLVolume* volume, std::vector<ExportData>& faces
         face.material_name = "Material_" + std::to_string(i);
         face.has_skin = false;
 
-        face.positions.assign(vf.mPositions, vf.mPositions + vf.mNumVertices);
-        face.normals.assign(vf.mNormals, vf.mNormals + vf.mNumVertices);
-        face.texcoords.assign(vf.mTexCoords, vf.mTexCoords + vf.mNumVertices);
+        face.positions.resize(vf.mNumVertices);
+        face.normals.resize(vf.mNumVertices);
+        face.texcoords.resize(vf.mNumVertices);
         face.indices.assign(vf.mIndices, vf.mIndices + vf.mNumIndices);
+
+        for (S32 j = 0; j < vf.mNumVertices; ++j)
+        {
+            const F32* pos = vf.mPositions[j].getF32ptr();
+            face.positions[j].set(pos[0], pos[1], pos[2]);
+            const F32* nrm = vf.mNormals[j].getF32ptr();
+            face.normals[j].set(nrm[0], nrm[1], nrm[2]);
+            face.texcoords[j] = vf.mTexCoords[j];
+        }
 
         if (extractWeightData(vf, face.skin_weights))
             face.has_skin = true;
