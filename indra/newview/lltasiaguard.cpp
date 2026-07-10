@@ -12,7 +12,7 @@
 #include "lltextbox.h"
 #include "lluicolortable.h"
 #include "lluri.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llviewercontrol.h"
 
 const std::string LLTasiaGuardFloater::SELF_UNBAN_URL = "https://apps.easierit.org/igrid/self-unban.php";
@@ -59,10 +59,8 @@ void LLTasiaGuardFloater::onOpen(const LLSD& key)
     else
     {
         mFirstName->setText(full_name);
-        mLastName->setText("");
+        mLastName->setText(LLSD().asString());
     }
-    mFirstName->setText(first_name);
-    mLastName->setText(last_name);
 
     setStatus("");
     mUnbanBtn->setEnabled(true);
