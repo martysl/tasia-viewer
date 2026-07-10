@@ -8,9 +8,11 @@
 #include "llfilepicker.h"
 #include "llagent.h"
 #include "llmeshrepository.h"
+#include "llvolume.h"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 
 //=============================================================================
 // Public API
@@ -20,105 +22,93 @@ bool FSDAEExporter::exportRiggedMesh(const std::string& filename, LLViewerObject
 {
     if (!object) return false;
 
-    // Get skin info from the object
     LLVOVolume* volume_obj = dynamic_cast<LLVOVolume*>(object);
     if (!volume_obj) return false;
 
     const LLMeshSkinInfo* skin = volume_obj->getSkinInfo();
-
-    // Get volume for mesh data
     LLVolume* volume = object->getVolume();
     if (!volume) return false;
 
-    // Extract face data directly from volume faces
     std::vector<ExportData> faces;
-    S32 num_faces = volume->getNumVolumeFaces();
+    gatherFaces(volume, faces);
+    if (faces.empty()) return false;
 
+    std::string model_name = object->getAttachmentItemName();
+    if (model_name.empty())
+        model_name = object->getFirstName();
+
+    std::ofstream out(filename.c_str());
+    if (!out.is_open()) return false;
+
+    writeDAE(out, faces, skin, model_name);
+    out.close();
+
+    LL_INFOS("DAEExport") << "Exported rigged mesh '" << model_name << "' to " << filename << LL_ENDL;
+    return true;
+}
+
+//=============================================================================
+// Weight extraction from volume face
+//=============================================================================
+
+bool FSDAEExporter::extractWeightData(const LLVolumeFace& vf,
+    std::vector<std::vector<std::pair<S32, F32>>>& weights)
+{
+    if (!vf.mWeights || vf.mNumVertices == 0)
+        return false;
+
+    weights.resize(vf.mNumVertices);
+
+    for (S32 i = 0; i < vf.mNumVertices; ++i)
+    {
+        for (S32 j = 0; j < 4; ++j)
+        {
+            F32 combined = vf.mWeights[i].mV[j];
+            if (combined == 0.0f) continue;
+
+            S32 joint_idx = (S32)floorf(combined);
+            F32 weight = combined - floorf(combined);
+            if (weight > 0.001f)
+            {
+                weights[i].push_back(std::make_pair(joint_idx, weight));
+            }
+        }
+    }
+
+    return true;
+}
+
+//=============================================================================
+// Face data extraction
+//=============================================================================
+
+void FSDAEExporter::gatherFaces(LLVolume* volume, std::vector<ExportData>& faces)
+{
+    S32 num_faces = volume->getNumVolumeFaces();
     for (S32 i = 0; i < num_faces; ++i)
     {
         const LLVolumeFace& vf = volume->getVolumeFace(i);
         if (vf.mNumVertices <= 0 || vf.mNumIndices <= 0) continue;
 
         ExportData face;
+        face.material_name = "Material_" + std::to_string(i);
+        face.has_skin = false;
 
         face.positions.assign(vf.mPositions, vf.mPositions + vf.mNumVertices);
         face.normals.assign(vf.mNormals, vf.mNormals + vf.mNumVertices);
         face.texcoords.assign(vf.mTexCoords, vf.mTexCoords + vf.mNumVertices);
         face.indices.assign(vf.mIndices, vf.mIndices + vf.mNumIndices);
 
-        faces.push_back(face);
-    }
-
-    if (faces.empty()) return false;
-
-    std::string model_name = object->getAttachmentItemName();
-    if (model_name.empty())
-    {
-        model_name = object->getFirstName();
-    }
-
-    std::ofstream out(filename.c_str());
-    if (!out.is_open()) return false;
-
-    writeDAE(out, faces, skin, model_name);
-    out.close();
-    return true;
-}
-
-bool FSDAEExporter::exportModelToDAE(const std::string& filename,
-                                      LLModel* model,
-                                      const LLMeshSkinInfo* skin,
-                                      const std::string& model_name)
-{
-    if (!model) return false;
-
-    std::vector<ExportData> faces;
-    gatherFaces(model, faces);
-    if (faces.empty()) return false;
-
-    std::ofstream out(filename.c_str());
-    if (!out.is_open()) return false;
-
-    writeDAE(out, faces, skin, model_name);
-    out.close();
-    return true;
-}
-
-//=============================================================================
-// Internal helpers
-//=============================================================================
-
-void FSDAEExporter::gatherFaces(LLModel* model, std::vector<ExportData>& faces)
-{
-    S32 num_faces = model->getNumVolumeFaces();
-    for (S32 i = 0; i < num_faces; ++i)
-    {
-        const LLVolumeFace& volface = model->getVolumeFace(i);
-        if (volface.mNumVertices <= 0 || volface.mNumIndices <= 0) continue;
-
-        ExportData face;
-        face.material_name = model->getMaterialList()[i];
-
-        face.positions.resize(volface.mNumVertices);
-        face.normals.resize(volface.mNumVertices);
-        face.texcoords.resize(volface.mNumVertices);
-
-        for (S32 j = 0; j < volface.mNumVertices; ++j)
-        {
-            face.positions[j] = volface.mPositions[j];
-            face.normals[j] = volface.mNormals[j];
-            face.texcoords[j] = volface.mTexCoords[j];
-        }
-
-        face.indices.resize(volface.mNumIndices);
-        for (S32 j = 0; j < volface.mNumIndices; ++j)
-        {
-            face.indices[j] = volface.mIndices[j];
-        }
+        if (extractWeightData(vf, face.skin_weights))
+            face.has_skin = true;
 
         faces.push_back(face);
     }
 }
+
+//=============================================================================
+// DAE writing
+//=============================================================================
 
 void FSDAEExporter::writeDAE(std::ofstream& out,
                               const std::vector<ExportData>& faces,
@@ -136,14 +126,15 @@ void FSDAEExporter::writeDAE(std::ofstream& out,
 
     if (skin && !skin->mJointNames.empty())
     {
-        // Count total vertices for the skin
-        U32 total_verts = 0;
-        for (const auto& face : faces) total_verts += static_cast<U32>(face.positions.size());
-        writeSkin(out, skin, geom_id, skin_id, total_verts);
+        bool has_weights = false;
+        for (const auto& f : faces)
+            if (f.has_skin) { has_weights = true; break; }
+
+        if (has_weights)
+            writeSkinning(out, faces, skin, geom_id, skin_id);
     }
 
     writeScene(out, skin, skin_id, geom_id);
-
     out << "</COLLADA>\n";
 }
 
@@ -153,95 +144,64 @@ void FSDAEExporter::writeAsset(std::ofstream& out)
     out << "    <contributor>\n";
     out << "      <authoring_tool>Tasia Viewer</authoring_tool>\n";
     out << "    </contributor>\n";
-    out << "    <created>" << time(nullptr) << "</created>\n";
-    out << "    <modified>" << time(nullptr) << "</modified>\n";
     out << "    <unit name=\"meter\" meter=\"1\"/>\n";
     out << "    <up_axis>Z_UP</up_axis>\n";
     out << "  </asset>\n";
 }
 
-void FSDAEExporter::writeGeometry(std::ofstream& out, const std::vector<ExportData>& faces, const std::string& geom_id)
+void FSDAEExporter::writeGeometry(std::ofstream& out,
+                                   const std::vector<ExportData>& faces,
+                                   const std::string& geom_id)
 {
+    U32 total_verts = 0, total_idx = 0;
+    for (const auto& f : faces)
+    {
+        total_verts += (U32)f.positions.size();
+        total_idx += (U32)f.indices.size();
+    }
+
     out << "  <library_geometries>\n";
     out << "    <geometry id=\"" << geom_id << "-mesh\" name=\"" << geom_id << "\">\n";
     out << "      <mesh>\n";
 
-    // Collect all vertices into a single array
-    std::vector<LLVector3> all_pos;
-    std::vector<LLVector3> all_norm;
-    std::vector<LLVector2> all_uv;
-    U32 base_vertex = 0;
-
-    // Count total
-    U32 total_verts = 0, total_idx = 0;
-    for (const auto& face : faces)
-    {
-        total_verts += static_cast<U32>(face.positions.size());
-        total_idx += static_cast<U32>(face.indices.size());
-    }
-
-    all_pos.reserve(total_verts);
-    all_norm.reserve(total_verts);
-    all_uv.reserve(total_verts);
-
-    // Position source
+    // Positions
     out << "        <source id=\"" << geom_id << "-mesh-positions\">\n";
     out << "          <float_array id=\"" << geom_id << "-mesh-positions-array\" count=\"" << (total_verts * 3) << "\">";
-    for (const auto& face : faces)
-    {
-        for (const auto& v : face.positions)
-        {
+    for (const auto& f : faces)
+        for (const auto& v : f.positions)
             out << v.mV[0] << " " << v.mV[1] << " " << v.mV[2] << " ";
-            all_pos.push_back(v);
-        }
-    }
     out << "</float_array>\n";
     out << "          <technique_common>\n";
     out << "            <accessor source=\"#" << geom_id << "-mesh-positions-array\" count=\"" << total_verts << "\" stride=\"3\">\n";
-    out << "              <param name=\"X\" type=\"float\"/>\n";
-    out << "              <param name=\"Y\" type=\"float\"/>\n";
-    out << "              <param name=\"Z\" type=\"float\"/>\n";
+    out << "              <param name=\"X\" type=\"float\"/><param name=\"Y\" type=\"float\"/><param name=\"Z\" type=\"float\"/>\n";
     out << "            </accessor>\n";
     out << "          </technique_common>\n";
     out << "        </source>\n";
 
-    // Normal source
+    // Normals
     out << "        <source id=\"" << geom_id << "-mesh-normals\">\n";
     out << "          <float_array id=\"" << geom_id << "-mesh-normals-array\" count=\"" << (total_verts * 3) << "\">";
-    for (const auto& face : faces)
-    {
-        for (const auto& v : face.normals)
-        {
+    for (const auto& f : faces)
+        for (const auto& v : f.normals)
             out << v.mV[0] << " " << v.mV[1] << " " << v.mV[2] << " ";
-            all_norm.push_back(v);
-        }
-    }
     out << "</float_array>\n";
     out << "          <technique_common>\n";
     out << "            <accessor source=\"#" << geom_id << "-mesh-normals-array\" count=\"" << total_verts << "\" stride=\"3\">\n";
-    out << "              <param name=\"X\" type=\"float\"/>\n";
-    out << "              <param name=\"Y\" type=\"float\"/>\n";
-    out << "              <param name=\"Z\" type=\"float\"/>\n";
+    out << "              <param name=\"X\" type=\"float\"/><param name=\"Y\" type=\"float\"/><param name=\"Z\" type=\"float\"/>\n";
     out << "            </accessor>\n";
     out << "          </technique_common>\n";
     out << "        </source>\n";
 
-    // Texcoord source
+    // Texcoords
     out << "        <source id=\"" << geom_id << "-mesh-map-0\">\n";
     out << "          <float_array id=\"" << geom_id << "-mesh-map-0-array\" count=\"" << (total_verts * 2) << "\">";
-    for (const auto& face : faces)
-    {
-        for (const auto& v : face.texcoords)
-        {
+    for (const auto& f : faces)
+        for (const auto& v : f.texcoords)
             out << v.mV[0] << " " << (1.0f - v.mV[1]) << " ";
-            all_uv.push_back(v);
-        }
-    }
     out << "</float_array>\n";
     out << "          <technique_common>\n";
     out << "            <accessor source=\"#" << geom_id << "-mesh-map-0-array\" count=\"" << total_verts << "\" stride=\"2\">\n";
-    out << "              <param name=\"S\" type=\"float\"/>\n";
-    out << "              <param name=\"T\" type=\"float\"/>\n";
+    out << "              <param name=\"S\" type=\"float\"/><param name=\"T\" type=\"float\"/>\n";
     out << "            </accessor>\n";
     out << "          </technique_common>\n";
     out << "        </source>\n";
@@ -249,27 +209,22 @@ void FSDAEExporter::writeGeometry(std::ofstream& out, const std::vector<ExportDa
     // Vertices
     out << "        <vertices id=\"" << geom_id << "-mesh-vertices\">\n";
     out << "          <input semantic=\"POSITION\" source=\"#" << geom_id << "-mesh-positions\"/>\n";
+    out << "          <input semantic=\"NORMAL\" source=\"#" << geom_id << "-mesh-normals\"/>\n";
+    out << "          <input semantic=\"TEXCOORD\" source=\"#" << geom_id << "-mesh-map-0\"/>\n";
     out << "        </vertices>\n";
 
-    // Triangles
-    for (const auto& face : faces)
+    // Triangles per face
+    U32 base_vert = 0;
+    for (const auto& f : faces)
     {
-        out << "        <triangles count=\"" << (face.indices.size() / 3) << "\" material=\"" << sanitizeId(face.material_name) << "\">\n";
+        out << "        <triangles count=\"" << (f.indices.size() / 3) << "\" material=\"" << sanitizeId(f.material_name) << "\">\n";
         out << "          <input semantic=\"VERTEX\" source=\"#" << geom_id << "-mesh-vertices\" offset=\"0\"/>\n";
-        out << "          <input semantic=\"NORMAL\" source=\"#" << geom_id << "-mesh-normals\" offset=\"1\"/>\n";
-        out << "          <input semantic=\"TEXCOORD\" source=\"#" << geom_id << "-mesh-map-0\" offset=\"2\"/>\n";
         out << "          <p>";
-        for (U32 j = 0; j < face.indices.size(); j += 3)
-        {
-            out << face.indices[j] << " " << face.indices[j] << " "
-                << face.indices[j] << " "
-                << face.indices[j+1] << " " << face.indices[j+1] << " "
-                << face.indices[j+1] << " "
-                << face.indices[j+2] << " " << face.indices[j+2] << " "
-                << face.indices[j+2] << " ";
-        }
+        for (U32 j = 0; j < f.indices.size(); ++j)
+            out << (base_vert + f.indices[j]) << " ";
         out << "</p>\n";
         out << "        </triangles>\n";
+        base_vert += (U32)f.positions.size();
     }
 
     out << "      </mesh>\n";
@@ -277,28 +232,48 @@ void FSDAEExporter::writeGeometry(std::ofstream& out, const std::vector<ExportDa
     out << "  </library_geometries>\n";
 }
 
-void FSDAEExporter::writeSkin(std::ofstream& out, const LLMeshSkinInfo* skin,
-                               const std::string& geom_id, const std::string& skin_id,
-                               U32 num_vertices)
+void FSDAEExporter::writeSkinning(std::ofstream& out,
+                                   const std::vector<ExportData>& faces,
+                                   const LLMeshSkinInfo* skin,
+                                   const std::string& geom_id,
+                                   const std::string& skin_id)
 {
-    if (!skin || skin->mJointNames.empty()) return;
+    U32 num_joints = (U32)skin->mJointNames.size();
 
-    U32 num_joints = static_cast<U32>(skin->mJointNames.size());
+    // Collect all weights across all faces
+    struct WeightEntry { S32 joint; F32 weight; };
+    std::vector<std::vector<WeightEntry>> all_weights;
+    U32 total_unique_weights = 0;
+
+    for (const auto& f : faces)
+    {
+        for (const auto& vw : f.skin_weights)
+        {
+            std::vector<WeightEntry> entry;
+            for (const auto& w : vw)
+                entry.push_back({w.first, w.second});
+            all_weights.push_back(entry);
+            total_unique_weights += (U32)entry.size();
+        }
+    }
+
+    U32 num_vertices = (U32)all_weights.size();
 
     out << "  <library_controllers>\n";
     out << "    <controller id=\"" << skin_id << "\">\n";
     out << "      <skin source=\"#" << geom_id << "-mesh\">\n";
 
     // Bind shape matrix
-    out << "        <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>\n";
+    out << "        <bind_shape_matrix>";
+    for (U32 i = 0; i < 16; ++i)
+        out << skin->mBindShapeMatrix.mMatrix[i] << " ";
+    out << "</bind_shape_matrix>\n";
 
-    // Joint names source
+    // Joint names
     out << "        <source id=\"" << skin_id << "-joints\">\n";
     out << "          <Name_array id=\"" << skin_id << "-joints-array\" count=\"" << num_joints << "\">";
     for (const auto& name : skin->mJointNames)
-    {
         out << sanitizeId(name) << " ";
-    }
     out << "</Name_array>\n";
     out << "          <technique_common>\n";
     out << "            <accessor source=\"#" << skin_id << "-joints-array\" count=\"" << num_joints << "\" stride=\"1\">\n";
@@ -307,16 +282,12 @@ void FSDAEExporter::writeSkin(std::ofstream& out, const LLMeshSkinInfo* skin,
     out << "          </technique_common>\n";
     out << "        </source>\n";
 
-    // Bind poses source
+    // Bind poses
     out << "        <source id=\"" << skin_id << "-bind-poses\">\n";
     out << "          <float_array id=\"" << skin_id << "-bind-poses-array\" count=\"" << (num_joints * 16) << "\">";
-    for (const auto& bind : skin->mInvBindMatrix)
-    {
+    for (const auto& mat : skin->mInvBindMatrix)
         for (U32 j = 0; j < 16; ++j)
-        {
-            out << bind.mMatrix[j] << " ";
-        }
-    }
+            out << mat.mMatrix[j] << " ";
     out << "</float_array>\n";
     out << "          <technique_common>\n";
     out << "            <accessor source=\"#" << skin_id << "-bind-poses-array\" count=\"" << num_joints << "\" stride=\"16\">\n";
@@ -325,29 +296,45 @@ void FSDAEExporter::writeSkin(std::ofstream& out, const LLMeshSkinInfo* skin,
     out << "          </technique_common>\n";
     out << "        </source>\n";
 
-    // Weights source
+    // Weight values
     out << "        <source id=\"" << skin_id << "-weights\">\n";
-    out << "          <float_array id=\"" << skin_id << "-weights-array\" count=\"0\">";
+    out << "          <float_array id=\"" << skin_id << "-weights-array\" count=\"" << total_unique_weights << "\">";
+    for (const auto& vw : all_weights)
+        for (const auto& w : vw)
+            out << w.weight << " ";
     out << "</float_array>\n";
     out << "          <technique_common>\n";
-    out << "            <accessor source=\"#" << skin_id << "-weights-array\" count=\"0\" stride=\"1\">\n";
+    out << "            <accessor source=\"#" << skin_id << "-weights-array\" count=\"" << total_unique_weights << "\" stride=\"1\">\n";
     out << "              <param name=\"WEIGHT\" type=\"float\"/>\n";
     out << "            </accessor>\n";
     out << "          </technique_common>\n";
     out << "        </source>\n";
 
+    // Joints and weights mapping
     out << "        <joints>\n";
     out << "          <input semantic=\"JOINT\" source=\"#" << skin_id << "-joints\"/>\n";
     out << "          <input semantic=\"INV_BIND_MATRIX\" source=\"#" << skin_id << "-bind-poses\"/>\n";
     out << "        </joints>\n";
 
+    // Vertex weights: vcount + v
     out << "        <vertex_weights count=\"" << num_vertices << "\">\n";
     out << "          <input semantic=\"JOINT\" source=\"#" << skin_id << "-joints\" offset=\"0\"/>\n";
     out << "          <input semantic=\"WEIGHT\" source=\"#" << skin_id << "-weights\" offset=\"1\"/>\n";
     out << "          <vcount>";
-    for (U32 i = 0; i < num_vertices; ++i) out << "0 ";
+    for (const auto& vw : all_weights)
+        out << vw.size() << " ";
     out << "</vcount>\n";
-    out << "          <v></v>\n";
+    out << "          <v>";
+    U32 weight_idx = 0;
+    for (const auto& vw : all_weights)
+    {
+        for (const auto& w : vw)
+        {
+            out << w.joint << " " << weight_idx << " ";
+            weight_idx++;
+        }
+    }
+    out << "</v>\n";
     out << "        </vertex_weights>\n";
 
     out << "      </skin>\n";
@@ -355,41 +342,55 @@ void FSDAEExporter::writeSkin(std::ofstream& out, const LLMeshSkinInfo* skin,
     out << "  </library_controllers>\n";
 }
 
-void FSDAEExporter::writeScene(std::ofstream& out, const LLMeshSkinInfo* skin,
-                                const std::string& skin_id, const std::string& geom_id)
+void FSDAEExporter::writeScene(std::ofstream& out,
+                                const LLMeshSkinInfo* skin,
+                                const std::string& skin_id,
+                                const std::string& geom_id)
 {
     out << "  <library_visual_scenes>\n";
     out << "    <visual_scene id=\"Scene\" name=\"Scene\">\n";
 
-    // Write skeleton nodes
-    if (skin && !skin->mJointNames.empty())
+    bool has_skin = (skin && !skin->mJointNames.empty());
+
+    // Skeleton joints
+    if (has_skin)
     {
-        // Create joint nodes in the scene
         out << "      <node id=\"Armature\" name=\"Armature\" type=\"NODE\">\n";
         for (const auto& name : skin->mJointNames)
         {
-            out << "        <node id=\"" << sanitizeId(name) << "\" name=\"" << sanitizeId(name) << "\" type=\"JOINT\">\n";
-            out << "          <matrix sid=\"transform\">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>\n";
+            std::string sname = sanitizeId(name);
+            out << "        <node id=\"" << sname << "\" name=\"" << sname << "\" sid=\"" << sname << "\" type=\"JOINT\">\n";
+            out << "          <matrix sid=\"transform\">0 0 0 0  0 0 0 0  0 0 0 0  0 0 0 0</matrix>\n";
             out << "        </node>\n";
         }
         out << "      </node>\n";
     }
 
-    // Instance the mesh
+    // Mesh instance
     out << "      <node id=\"" << geom_id << "\" name=\"" << geom_id << "\" type=\"NODE\">\n";
-    out << "        <matrix sid=\"transform\">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>\n";
-    if (skin && !skin->mJointNames.empty())
+    out << "        <matrix sid=\"transform\">1 0 0 0  0 1 0 0  0 0 1 0  0 0 0 1</matrix>\n";
+
+    if (has_skin && !skin->mJointNames.empty())
     {
         out << "        <instance_controller url=\"#" << skin_id << "\">\n";
         out << "          <skeleton>#" << sanitizeId(skin->mJointNames[0]) << "</skeleton>\n";
+        out << "          <bind_material>\n";
+        out << "            <technique_common>\n";
+        out << "            </technique_common>\n";
+        out << "          </bind_material>\n";
         out << "        </instance_controller>\n";
     }
     else
     {
-        out << "        <instance_geometry url=\"#" << geom_id << "-mesh\"/>\n";
+        out << "        <instance_geometry url=\"#" << geom_id << "-mesh\">\n";
+        out << "          <bind_material>\n";
+        out << "            <technique_common>\n";
+        out << "            </technique_common>\n";
+        out << "          </bind_material>\n";
+        out << "        </instance_geometry>\n";
     }
-    out << "      </node>\n";
 
+    out << "      </node>\n";
     out << "    </visual_scene>\n";
     out << "  </library_visual_scenes>\n";
 
@@ -403,14 +404,10 @@ std::string FSDAEExporter::sanitizeId(const std::string& name)
     std::string result = name;
     for (char& c : result)
     {
-        if (!isalnum(static_cast<unsigned char>(c)) && c != '_' && c != '-')
-        {
+        if (!isalnum((unsigned char)c) && c != '_' && c != '-')
             c = '_';
-        }
     }
-    if (result.empty() || isdigit(static_cast<unsigned char>(result[0])))
-    {
+    if (result.empty() || isdigit((unsigned char)result[0]))
         result = "ID_" + result;
-    }
     return result;
 }
