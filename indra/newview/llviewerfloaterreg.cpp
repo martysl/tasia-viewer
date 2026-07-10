@@ -212,6 +212,8 @@
 #include "fsfloaterplacedetails.h"
 #include "fsfloaterposestand.h"
 #include "fsfloaterprotectedfolders.h"
+#include "llbugreport.h"
+#include "lltasiaguard.h"
 #include "fsfloaterradar.h"
 #include "fsfloatersearch.h"
 #include "fsfloaterstatistics.h"
@@ -407,6 +409,8 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("auction", "floater_auction.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterAuction>);
     LLFloaterReg::add("avatar", "floater_avatar.xml",  (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterAvatar>);
     LLFloaterReg::add("avatar_picker", "floater_avatar_picker.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterAvatarPicker>);
+    LLFloaterReg::add("bug_report", "floater_bug_report.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLBugReportFloater>);
+    LLFloaterReg::add("tasiaguard", "floater_tasiaguard.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLTasiaGuardFloater>);
     // <FS:Ansariel> [FS Persisted Avatar Render Settings]
     //LLFloaterReg::add("avatar_render_settings", "floater_avatar_render_settings.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterAvatarRenderSettings>);
     LLFloaterReg::add("avatar_textures", "floater_avatar_textures.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterAvatarTextures>);
