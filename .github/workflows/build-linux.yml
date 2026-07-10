@@ -1,9 +1,6 @@
 name: Build Tasia Viewer - Linux
 
 on:
-  push:
-    branches:
-      - feature/tasia-giphy-welcome-loading-linux
   workflow_dispatch:
     inputs:
       publish_release:
