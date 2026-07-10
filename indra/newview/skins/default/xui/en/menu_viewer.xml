@@ -2737,24 +2737,6 @@
 
          <menu_item_separator/>
 
-        <menu_item_call
-         label="Report a Bug / Feedback"
-         name="ReportBug">
-            <menu_item_call.on_click
-             function="Floater.Show"
-             parameter="bug_report" />
-        </menu_item_call>
-
-        <menu_item_call
-         label="TasiaGuard - Unban IP"
-         name="TasiaGuard">
-            <menu_item_call.on_click
-             function="Floater.Show"
-             parameter="tasiaguard" />
-        </menu_item_call>
-
-         <menu_item_separator/>
-
          <menu_item_call
           label="About [APP_NAME]"
           name="About Second Life">
@@ -6209,5 +6191,34 @@
                 </menu_item_call>
             </menu>
         </menu>
+     </menu>
+
+    <menu
+     label="Tasia"
+     name="Tasia"
+     tear_off="true"
+     visible="true">
+        <menu_item_call
+         label="Report a Bug / Feedback"
+         name="ReportBug">
+            <menu_item_call.on_click
+             function="Floater.Show"
+             parameter="bug_report" />
+        </menu_item_call>
+        <menu_item_call
+         label="TasiaGuard - Unban IP"
+         name="TasiaGuard">
+            <menu_item_call.on_click
+             function="Floater.Show"
+             parameter="tasiaguard" />
+        </menu_item_call>
+        <menu_item_separator/>
+        <menu_item_call
+         label="About [APP_NAME]"
+         name="About">
+            <menu_item_call.on_click
+             function="Floater.Show"
+             parameter="sl_about" />
+        </menu_item_call>
     </menu>
 </menu_bar>
