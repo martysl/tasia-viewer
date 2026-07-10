@@ -6,8 +6,6 @@
 #include "llcorehttputil.h"
 #include "llcoros.h"
 #include "llfloaterreg.h"
-#include "llhttpconstants.h"
-#include "llhttpclient.h"
 #include "llnotificationsutil.h"
 #include "llsd.h"
 #include "llsdserialize.h"
