@@ -89,7 +89,7 @@ static void unbanCoro(std::string url, LLSD post_data)
         LLSD data = result["data"];
         std::string msg = data["message"].asString();
         if (!msg.empty())
-            LLSD::String(msg);
+            LL_WARNS("TasiaGuard") << "Unban response: " << msg << LL_ENDL;
         LLNotificationsUtil::add("TasiaGuardUnbanComplete");
     }
     else
@@ -126,10 +126,4 @@ void LLTasiaGuardFloater::onUnban()
 
     setStatus("Request sent. Check notifications.");
     mUnbanBtn->setEnabled(true);
-}
-
-void registerTasiaGuardFloater()
-{
-    LLFloaterReg::add("tasiaguard", "floater_tasiaguard.xml",
-        (LLFloaterBuildFunc)&LLFloaterReg::build<LLTasiaGuardFloater>);
 }
