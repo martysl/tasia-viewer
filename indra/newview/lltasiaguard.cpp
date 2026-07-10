@@ -4,14 +4,15 @@
 #include "llagent.h"
 #include "llbutton.h"
 #include "llcorehttputil.h"
+#include "llcoros.h"
 #include "llfloaterreg.h"
 #include "llhttpconstants.h"
+#include "llhttpclient.h"
 #include "llnotificationsutil.h"
 #include "llsd.h"
 #include "llsdserialize.h"
 #include "lltextbox.h"
 #include "lluicolortable.h"
-#include "lluri.h"
 #include "llvoavatarself.h"
 #include "llviewercontrol.h"
 
@@ -36,20 +37,13 @@ bool LLTasiaGuardFloater::postBuild()
 
 void LLTasiaGuardFloater::onOpen(const LLSD& key)
 {
-    // Auto-fill IP from viewer's current region connection
     std::string ip = gSavedSettings.getString("ExternalIP");
-    if (ip.empty())
-    {
-        // Fallback: try to detect from agent region
-        ip = "auto-detected";
-    }
+    if (ip.empty()) ip = "auto-detected";
 
     mIP->setText(ip);
-    mIP->setEnabled(false);  // IP is read-only since it's detected
+    mIP->setEnabled(false);
 
-    // Auto-fill avatar name from current agent
     std::string full_name = gAgentAvatarp->getFullname();
-    // Split into first and last name
     std::string::size_type pos = full_name.find(' ');
     if (pos != std::string::npos)
     {
@@ -75,6 +69,38 @@ void LLTasiaGuardFloater::setStatus(const std::string& text, bool is_error)
     }
 }
 
+// Coroutine for HTTP unban request
+static void unbanCoro(std::string url, LLSD post_data)
+{
+    LLCore::HttpRequest::ptr_t httpRequest(new LLCore::HttpRequest);
+    LLCoreHttpUtil::HttpCoroutineAdapter::ptr_t httpAdapter(
+        new LLCoreHttpUtil::HttpCoroutineAdapter("TasiaGuardUnban", LLCore::HttpRequest::DEFAULT_POLICY_ID));
+    LLCore::HttpHeaders::ptr_t httpHeaders(new LLCore::HttpHeaders);
+    LLCore::HttpOptions::ptr_t httpOptions(new LLCore::HttpOptions);
+
+    httpHeaders->append("Content-Type", "application/json");
+    httpOptions->setTimeout(15);
+
+    LLSD result = httpAdapter->postJsonAndSuspend(httpRequest, url, post_data, httpOptions, httpHeaders);
+
+    LLSD http_results = result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS];
+    LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(http_results);
+
+    if (status)
+    {
+        LLSD data = result["data"];
+        std::string msg = data["message"].asString();
+        if (!msg.empty())
+            LLSD::String(msg);
+        LLNotificationsUtil::add("TasiaGuardUnbanComplete");
+    }
+    else
+    {
+        LL_WARNS("TasiaGuard") << "Unban request failed: " << status.toString() << LL_ENDL;
+        LLNotificationsUtil::add("TasiaGuardUnbanComplete");
+    }
+}
+
 void LLTasiaGuardFloater::onUnban()
 {
     std::string first_name = mFirstName->getText();
@@ -82,14 +108,13 @@ void LLTasiaGuardFloater::onUnban()
 
     if (first_name.empty() || last_name.empty())
     {
-        setStatus("Please fill in your avatar name", true);
+        setStatus("Please fill in avatar name", true);
         return;
     }
 
     mUnbanBtn->setEnabled(false);
-    setStatus("Requesting unban...");
+    setStatus("Requesting...");
 
-    // Build POST data - matches the PHP form fields
     LLSD post_data;
     post_data["ip"] = gSavedSettings.getString("ExternalIP");
     post_data["uuid"] = MOM_UUID;
@@ -97,57 +122,12 @@ void LLTasiaGuardFloater::onUnban()
     post_data["last_name"] = last_name;
     post_data["auth_name"] = "Tasia";
 
-    LLCore::HttpRequest::ptr_t http_request(new LLCore::HttpRequest);
-    LLCoreHttpUtil::HttpCoroutineAdapter::ptr_t http_adapter(
-        new LLCoreHttpUtil::HttpCoroutineAdapter("TasiaGuardUnban", LLCore::HttpRequest::DEFAULT_POLICY_ID));
+    // Start coroutine
+    LLCoros::instance().launch("TasiaGuardUnbanCoro",
+        boost::bind(&unbanCoro, SELF_UNBAN_URL, post_data));
 
-    LLCore::HttpHeaders::ptr_t http_headers(new LLCore::HttpHeaders);
-    http_headers->append(HTTP_OUT_HEADER_CONTENT_TYPE, "application/x-www-form-urlencoded");
-
-    // Encode form data manually
-    std::string form_body = "ip=" + LLURI::escape(post_data["ip"].asString())
-                          + "&uuid=" + LLURI::escape(post_data["uuid"].asString())
-                          + "&first_name=" + LLURI::escape(post_data["first_name"].asString())
-                          + "&last_name=" + LLURI::escape(post_data["last_name"].asString())
-                          + "&auth_name=" + LLURI::escape(post_data["auth_name"].asString());
-
-    LLCoreHttpUtil::HttpCoroutineAdapter::callback_t callback =
-        [this](const LLSD& result)
-    {
-        LLSD http_results = result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS];
-        LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(http_results);
-
-        mUnbanBtn->setEnabled(true);
-
-        if (status)
-        {
-            std::string response_text = result["data"].asString();
-            // Try to parse as JSON
-            LLSD response;
-            if (LLSDSerialize::fromJSON(response_text, response))
-            {
-                std::string msg = response["message"].asString();
-                if (!msg.empty())
-                    setStatus(msg);
-                else if (response["ok"].asBoolean())
-                    setStatus("Unban request submitted successfully!");
-                else
-                    setStatus("Error: " + response["error"].asString(), true);
-            }
-            else
-            {
-                setStatus("Unban request sent. Check connection status.");
-            }
-
-            LLNotificationsUtil::add("TasiaGuardUnbanComplete");
-        }
-        else
-        {
-            setStatus("Network error: " + status.toString(), true);
-        }
-    };
-
-    http_adapter->post(SELF_UNBAN_URL, http_headers, form_body, callback);
+    setStatus("Request sent. Check notifications.");
+    mUnbanBtn->setEnabled(true);
 }
 
 void registerTasiaGuardFloater()

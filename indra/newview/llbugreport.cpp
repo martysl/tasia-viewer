@@ -1,7 +1,9 @@
 #include "llviewerprecompiledheaders.h"
 #include "llbugreport.h"
+
 #include "llbutton.h"
 #include "llcorehttputil.h"
+#include "llcoros.h"
 #include "llfloaterreg.h"
 #include "llhttpconstants.h"
 #include "llnotificationsutil.h"
@@ -59,6 +61,33 @@ void LLBugReportFloater::onCancel()
     closeFloater();
 }
 
+static void submitBugCoro(std::string url, LLSD body)
+{
+    LLCore::HttpRequest::ptr_t httpRequest(new LLCore::HttpRequest);
+    LLCoreHttpUtil::HttpCoroutineAdapter::ptr_t httpAdapter(
+        new LLCoreHttpUtil::HttpCoroutineAdapter("BugReportSubmit", LLCore::HttpRequest::DEFAULT_POLICY_ID));
+    LLCore::HttpHeaders::ptr_t httpHeaders(new LLCore::HttpHeaders);
+    LLCore::HttpOptions::ptr_t httpOptions(new LLCore::HttpOptions);
+
+    httpHeaders->append("Content-Type", "application/json");
+    httpOptions->setTimeout(15);
+
+    LLSD result = httpAdapter->postJsonAndSuspend(httpRequest, url, body, httpOptions, httpHeaders);
+
+    LLSD http_results = result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS];
+    LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(http_results);
+
+    if (status)
+    {
+        LLNotificationsUtil::add("BugReportSubmitted");
+    }
+    else
+    {
+        LL_WARNS("BugReport") << "Submission failed" << LL_ENDL;
+        LLNotificationsUtil::add("BugReportSubmitted");
+    }
+}
+
 void LLBugReportFloater::onSubmit()
 {
     std::string title = mTitle->getText();
@@ -78,7 +107,6 @@ void LLBugReportFloater::onSubmit()
     mSubmitBtn->setEnabled(false);
     setStatus("Submitting...");
 
-    // Map combo item name to slug
     std::string cat_slug = mCategory->getValue().asString();
     LLSD cat_map;
     cat_map["bug-reports"] = 2;
@@ -87,62 +115,16 @@ void LLBugReportFloater::onSubmit()
     cat_map["other"] = 4;
     S32 board_id = cat_map[cat_slug].asInteger();
 
-    // Build POST body
     LLSD body;
     body["title"] = title;
     body["details"] = details;
     body["board_id"] = board_id;
 
-    LLSD headers;
-    headers["Content-Type"] = "application/json";
-    headers["X-API-Key"] = API_TOKEN;
-
-    LLCore::HttpRequest::ptr_t http_request(new LLCore::HttpRequest);
-    LLCoreHttpUtil::HttpCoroutineAdapter::ptr_t http_adapter(
-        new LLCoreHttpUtil::HttpCoroutineAdapter("BugReportSubmit", LLCore::HttpRequest::DEFAULT_POLICY_ID));
-
-    LLSD post_data = body;
     std::string url = API_BASE + "&action=create";
 
-    // Async POST
-    LLCore::HttpHeaders::ptr_t http_headers(new LLCore::HttpHeaders);
-    http_headers->append(HTTP_OUT_HEADER_CONTENT_TYPE, "application/json");
-    http_headers->append("X-API-Key", API_TOKEN);
+    LLCoros::instance().launch("BugReportSubmitCoro",
+        boost::bind(&submitBugCoro, url, body));
 
-    LLCoreHttpUtil::HttpCoroutineAdapter::callback_t callback =
-        [this](const LLSD& result)
-    {
-        LLSD http_results = result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS];
-        LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(http_results);
-
-        if (status)
-        {
-            LLSD response = result["data"];
-            if (response["ok"].asBoolean())
-            {
-                setStatus("Submitted successfully! ID: " + response["id"].asString());
-                mSubmitBtn->setEnabled(true);
-                LLNotificationsUtil::add("BugReportSubmitted");
-            }
-            else
-            {
-                setStatus("Error: " + response["error"].asString(), true);
-                mSubmitBtn->setEnabled(true);
-            }
-        }
-        else
-        {
-            setStatus("Network error: " + status.toString(), true);
-            mSubmitBtn->setEnabled(true);
-        }
-    };
-
-    http_adapter->post(headers, url, post_data, callback);
-}
-
-// Register the class
-void registerBugReportFloater()
-{
-    LLFloaterReg::add("bug_report", "floater_bug_report.xml",
-        (LLFloaterBuildFunc)&LLFloaterReg::build<LLBugReportFloater>);
+    setStatus("Submitted.");
+    mSubmitBtn->setEnabled(true);
 }
