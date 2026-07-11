@@ -1,6 +1,10 @@
 name: Build Tasia Viewer - Windows
 
 on:
+  push:
+    branches:
+      - feature/tasia-giphy-welcome-loading-windows
+      - tasia_windows_sl
   workflow_dispatch:
     inputs:
       publish_release:
@@ -185,65 +189,17 @@ jobs:
             --no-package \
             --ninja
 
-      - name: Sign Windows binaries (Necessary Code Signing)
-        if: env.SIGNING_TOKEN != ''
+      - name: Copy Microsoft-signed msquic.dll to output
         shell: bash
-        env:
-          SIGNING_TOKEN: ${{ secrets.NECESSARY_SIGNING_TOKEN }}
         run: |
           set -euo pipefail
-
-          echo "::group::Installing osslsigncode"
-          choco install osslsigncode --no-progress -y || true
-          osslsigncode --version
-          echo "::endgroup::"
-
           DIST_DIR="build-vc170-64/newview/unpacked"
-
-          if [ ! -d "$DIST_DIR" ]; then
-            echo "::error::Distribution directory not found: $DIST_DIR"
-            exit 1
-          fi
-
-          echo "::group::Signing Windows executables"
-          SIGNED=0
-          FAILED=0
-
-          while IFS= read -r -d '' exe; do
-            echo "Signing: $exe"
-
-            # Step 1: Extract data to sign
-            osslsigncode extract-data -in "$exe" -out /tmp/tosign.bin
-
-            # Step 2: Submit to signing service
-            HTTP_CODE=$(curl -s -o /tmp/signed.bin -w "%{http_code}" \
-              -X POST \
-              -H "Authorization: Bearer ${SIGNING_TOKEN}" \
-              --data-binary @/tmp/tosign.bin \
-              https://sign.necessary.nu/windows/sign)
-
-            if [ "$HTTP_CODE" != "200" ]; then
-              echo "::warning::Signing failed for $exe (HTTP $HTTP_CODE)"
-              FAILED=$((FAILED + 1))
-              continue
-            fi
-
-            # Step 3: Attach signature back to binary
-            osslsigncode attach-signature \
-              -sigin /tmp/signed.bin \
-              -in "$exe" \
-              -out "$exe.signed"
-
-            mv "$exe.signed" "$exe"
-            echo "Signed: $exe"
-            SIGNED=$((SIGNED + 1))
-          done < <(find "$DIST_DIR" -name "*.exe" -print0)
-
-          echo "::endgroup::"
-          echo "Signing complete: $SIGNED signed, $FAILED failed"
-
-          if [ "$SIGNED" -eq 0 ] && [ "$FAILED" -gt 0 ]; then
-            echo "::warning::All signing attempts failed — uploading unsigned binaries"
+          MSQUIC_DLL="$(find build/_deps -name 'msquic.dll' 2>/dev/null | head -1)"
+          if [ -n "$MSQUIC_DLL" ] && [ -d "$DIST_DIR" ]; then
+            cp -v "$MSQUIC_DLL" "$DIST_DIR/"
+            echo "Copied Microsoft-signed msquic.dll to $DIST_DIR"
+          else
+            echo "::warning::Could not find msquic.dll to copy"
           fi
 
       - name: Create Windows ZIP artifact

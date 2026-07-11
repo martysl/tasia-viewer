@@ -50,12 +50,8 @@ if (WIN32)
         INTERFACE_INCLUDE_DIRECTORIES "${_msquic_inc}"
     )
 
-    # Copy DLL next to the viewer executable at build time
-    add_custom_command(TARGET msquic POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${_msquic_dll}"
-                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/msquic.dll"
-        COMMENT "MsQuic: Copying Microsoft-signed msquic.dll to output directory")
+    # Note: msquic.dll is copied to the output directory in the build workflow
+    # (cannot use POST_BUILD on imported targets)
 
     message(STATUS "MsQuic: Using pre-built Microsoft-signed DLL (v${MSQUIC_GIT_TAG})")
     message(STATUS "  DLL:  ${_msquic_dll}")
