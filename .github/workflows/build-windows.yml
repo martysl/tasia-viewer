@@ -282,22 +282,16 @@ jobs:
           fi
 
           if [ ! -f "$DIST_DIR/msquic.dll" ]; then
+            # Search multiple locations: prebuilt dir, cmake deps, and build tree
             MSQUIC_DLL="$(
-              find build-vc170-64/_deps \
+              find \
+                build-vc170-64/msquic-prebuilt \
+                build-vc170-64/_deps \
+                build-vc170-64 \
                 -type f \
                 -iname 'msquic.dll' \
-                -path '*/bin/Release/*' \
                 -print -quit 2>/dev/null || true
             )"
-
-            if [ -z "$MSQUIC_DLL" ]; then
-              MSQUIC_DLL="$(
-                find build-vc170-64/_deps \
-                  -type f \
-                  -iname 'msquic.dll' \
-                  -print -quit 2>/dev/null || true
-              )"
-            fi
 
             if [ -z "$MSQUIC_DLL" ]; then
               echo "::error::Could not find msquic.dll."
