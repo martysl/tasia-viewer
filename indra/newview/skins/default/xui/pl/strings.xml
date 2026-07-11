@@ -21,6 +21,9 @@
 	<string name="StartupRequireDriverUpdate">
 		Nie można zainicjować grafiki. Zaktualizuj sterowniki!
 	</string>
+	<string name="StartupWelcome">
+		>> PRZEGLĄDARKA TASIA GOTOWA — WITAJ
+	</string>
 	<string name="AboutCompiler">
 		Zbudowane za pomocą [COMPILER] w wersji [COMPILER_VERSION]
 	</string>
