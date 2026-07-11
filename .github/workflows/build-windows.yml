@@ -320,8 +320,6 @@ jobs:
               raise SystemExit(f"Missing runtime directory: {source}")
 
           excluded_names = {
-              "firestorm-bin.exe",
-              "secondlife-bin.exe",
               "copy_touched.bat",
               "touched.bat",
           }
