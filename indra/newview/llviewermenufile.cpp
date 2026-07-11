@@ -1041,6 +1041,7 @@ bool convert_clipboard_image_to_png(const std::string& input_filename, std::stri
 #endif
 }
 
+#if LL_WINDOWS
 bool normalize_viewer_image_to_png(const std::string& input_filename, std::string& output_filename)
 {
     std::string ext = gDirUtilp->getExtension(input_filename);
@@ -1110,6 +1111,8 @@ bool normalize_viewer_image_to_png(const std::string& input_filename, std::strin
 
     return true;
 }
+
+#endif // LL_WINDOWS
 
 #if LL_WINDOWS
 bool write_bytes_to_file(const std::string& filename, const void* data, size_t size)
