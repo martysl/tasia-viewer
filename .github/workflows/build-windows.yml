@@ -233,7 +233,6 @@ jobs:
 
           python --version
           cmake --version
-          ninja --version
           git --version
           gh --version
           patch --version
@@ -242,8 +241,9 @@ jobs:
           where.exe link.exe
           where.exe rc.exe
           where.exe mt.exe
+          where.exe msbuild.exe
 
-      - name: Configure Windows with FMOD
+      - name: Configure Windows with FMOD and OpenSim
         shell: bash
         env:
           TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
@@ -262,20 +262,37 @@ jobs:
             echo "Using CMake from PATH"
           fi
 
-          LOCAL_DIST_DIR="$(pwd)/build-vc170-64/newview/unpacked"
-          mkdir -p "$LOCAL_DIST_DIR"
-
           autobuild configure \
             -c ReleaseFS_open \
             -A "$AUTOBUILD_ADDRSIZE" \
             -- \
+            --opensim \
             --fmodstudio \
             --no-package \
-            --ninja \
-            --jobs 2 \
-            "-DLOCAL_DIST_DIR:PATH=$LOCAL_DIST_DIR"
+            -DLL_TESTS:BOOL=FALSE
 
-      - name: Build Windows with FMOD
+      - name: Validate Visual Studio configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BUILD_DIR="build-vc170-64"
+          SOLUTION="$BUILD_DIR/Firestorm.sln"
+
+          if [ ! -f "$SOLUTION" ]; then
+            echo "::error::Firestorm.sln was not generated."
+            grep -E '^CMAKE_GENERATOR:|^CMAKE_BUILD_TYPE:' \
+              "$BUILD_DIR/CMakeCache.txt" 2>/dev/null || true
+            find "$BUILD_DIR" -maxdepth 2 -type f \
+              \( -name '*.sln' -o -name '*.slnx' \) -print || true
+            exit 1
+          fi
+
+          echo "Using solution: $SOLUTION"
+          grep -E '^CMAKE_GENERATOR:|^CMAKE_BUILD_TYPE:' \
+            "$BUILD_DIR/CMakeCache.txt" 2>/dev/null || true
+
+      - name: Build Windows with FMOD and OpenSim
         shell: bash
         run: |
           set -euo pipefail
@@ -285,57 +302,161 @@ jobs:
             -A "$AUTOBUILD_ADDRSIZE" \
             --no-configure \
             -- \
+            --opensim \
             --fmodstudio \
-            --no-package \
-            --ninja \
-            --jobs 2
+            --no-package
 
-      - name: Copy Microsoft-signed msquic.dll to output
+      - name: Prepare portable Windows runtime
         shell: bash
         run: |
           set -euo pipefail
 
-          DIST_DIR="build-vc170-64/newview/unpacked"
-          MSQUIC_DLL="$(
-            find . \
-              -type f \
-              -path '*/_deps/*' \
-              -iname 'msquic.dll' \
-              -print -quit 2>/dev/null || true
-          )"
+          DIST_DIR="build-vc170-64/newview/Release"
 
-          if [ -n "$MSQUIC_DLL" ] && [ -d "$DIST_DIR" ]; then
-            cp -v "$MSQUIC_DLL" "$DIST_DIR/msquic.dll"
-            echo "Copied Microsoft-signed msquic.dll to $DIST_DIR"
-          else
-            echo "::warning::Could not find msquic.dll to copy."
+          if [ ! -d "$DIST_DIR" ]; then
+            echo "::error::Missing Windows runtime directory: $DIST_DIR"
+            find build-vc170-64/newview -maxdepth 2 -type d -print 2>/dev/null || true
+            exit 1
           fi
 
-      - name: Create Windows ZIP artifact
+          if [ ! -d "$DIST_DIR/app_settings" ] || [ ! -d "$DIST_DIR/skins" ]; then
+            echo "::error::Runtime directory is incomplete."
+            find "$DIST_DIR" -maxdepth 2 -type f -print 2>/dev/null | head -200 || true
+            exit 1
+          fi
+
+          if ! find "$DIST_DIR" -maxdepth 1 -type f -iname '*.exe' -print -quit | grep -q .; then
+            echo "::error::No viewer executable found in $DIST_DIR"
+            exit 1
+          fi
+
+          if [ ! -f "$DIST_DIR/msquic.dll" ]; then
+            MSQUIC_DLL="$(
+              find build-vc170-64/_deps \
+                -type f \
+                -iname 'msquic.dll' \
+                -path '*/bin/Release/*' \
+                -print -quit 2>/dev/null || true
+            )"
+
+            if [ -z "$MSQUIC_DLL" ]; then
+              MSQUIC_DLL="$(
+                find build-vc170-64/_deps \
+                  -type f \
+                  -iname 'msquic.dll' \
+                  -print -quit 2>/dev/null || true
+              )"
+            fi
+
+            if [ -z "$MSQUIC_DLL" ]; then
+              echo "::error::Could not find msquic.dll."
+              exit 1
+            fi
+
+            cp -v "$MSQUIC_DLL" "$DIST_DIR/msquic.dll"
+          fi
+
+          echo "Portable runtime prepared in $DIST_DIR"
+          find "$DIST_DIR" -maxdepth 1 -type f -printf '%f\n' | sort
+
+      - name: Create portable Windows ZIP
         shell: bash
         run: |
           set -euo pipefail
 
           python3 - <<'PY'
-          import shutil
           from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile
 
-          dist = Path("build-vc170-64/newview/unpacked")
-          if not dist.is_dir():
-              raise SystemExit(f"Missing unpacked Windows directory: {dist}")
+          source = Path("build-vc170-64/newview/Release")
+          output = Path("Tasia-Viewer-Windows-FMOD.zip")
 
-          if not any(dist.iterdir()):
-              raise SystemExit(f"Windows output directory is empty: {dist}")
+          if not source.is_dir():
+              raise SystemExit(f"Missing runtime directory: {source}")
 
-          archive = shutil.make_archive(
-              "Tasia-Viewer-Windows-FMOD",
-              "zip",
-              root_dir=dist,
-          )
-          print(f"Created {archive}")
+          excluded_names = {
+              "firestorm-bin.exe",
+              "secondlife-bin.exe",
+              "copy_touched.bat",
+              "touched.bat",
+          }
+          excluded_suffixes = {
+              ".exp",
+              ".ilk",
+              ".lib",
+              ".map",
+              ".nsi",
+              ".pdb",
+          }
+
+          files_added = 0
+
+          with ZipFile(output, "w", compression=ZIP_DEFLATED, compresslevel=9) as archive:
+              for file in sorted(source.rglob("*")):
+                  if not file.is_file():
+                      continue
+
+                  relative = file.relative_to(source)
+                  lower_name = file.name.lower()
+                  lower_parts = tuple(part.lower() for part in relative.parts)
+
+                  if lower_name in excluded_names:
+                      continue
+                  if file.suffix.lower() in excluded_suffixes:
+                      continue
+                  if lower_name.endswith("_setup.exe") or lower_name.endswith("-setup.exe"):
+                      continue
+                  if lower_name.endswith(".tar.xz") or lower_name.endswith(".tar.bz2"):
+                      continue
+                  if "installers" in lower_parts:
+                      continue
+
+                  archive.write(file, relative.as_posix())
+                  files_added += 1
+
+          if files_added == 0:
+              output.unlink(missing_ok=True)
+              raise SystemExit("Portable ZIP would be empty.")
+
+          print(f"Created {output} with {files_added} runtime files.")
           PY
 
-      - name: Upload Windows artifact
+      - name: Verify portable ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          archive_path = Path("Tasia-Viewer-Windows-FMOD.zip")
+
+          if not archive_path.is_file():
+              raise SystemExit(f"Missing archive: {archive_path}")
+
+          with ZipFile(archive_path) as archive:
+              bad = [
+                  name for name in archive.namelist()
+                  if name.lower().endswith(("_setup.exe", "-setup.exe", ".nsi"))
+                  or "/installers/" in f"/{name.lower()}"
+              ]
+
+              if bad:
+                  raise SystemExit(
+                      "Installer content found in portable ZIP:\n" + "\n".join(bad)
+                  )
+
+              names = archive.namelist()
+              if not any(name.lower().endswith(".exe") for name in names):
+                  raise SystemExit("Portable ZIP contains no executable.")
+              if not any(name.lower() == "msquic.dll" for name in names):
+                  raise SystemExit("Portable ZIP is missing msquic.dll.")
+
+              print(f"Verified {len(names)} files in {archive_path}.")
+          PY
+
+      - name: Upload portable Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: Tasia-Viewer-Windows-FMOD
@@ -355,14 +476,17 @@ jobs:
           NOTES="$(mktemp)"
 
           cat > "$NOTES" <<EOF
-          Tasia Viewer Windows beta build.
+          Tasia Viewer Windows portable beta build.
 
           Version: ${TASIA_DISPLAY_VERSION}
           Source branch: ${SOURCE_BRANCH}
           Source commit: ${SOURCE_SHORT_SHA}
           Platform: Windows x86_64
+          Format: portable ZIP
           FMOD: enabled
+          OpenSim: enabled
           KDU: disabled
+          Installer: not included
 
           This is a beta/pre-release build.
           EOF
