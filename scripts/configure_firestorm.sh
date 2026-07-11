@@ -629,10 +629,15 @@ if [ $WANTS_BUILD -eq $TRUE ] ; then
             declare -i BUILD_EXIT=${PIPESTATUS[0]}
         fi
     elif [ $TARGET_PLATFORM == "windows" ] ; then
-        msbuild.exe Firestorm.sln -p:Configuration=${BTYPE} -flp:LogFile="logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
-            -flp1:"errorsonly;LogFile=logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
-            -verbosity:normal -toolsversion:Current -p:"VCBuildAdditionalOptions= /incremental"
-        declare -i BUILD_EXIT=$?
+        if [ $WANTS_NINJA -eq $TRUE ] ; then
+            ninja -j $JOBS 2>&1 | tee -a "$LOG"
+            declare -i BUILD_EXIT=${PIPESTATUS[0]}
+        else
+            msbuild.exe Firestorm.sln -p:Configuration=${BTYPE} -flp:LogFile="logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.log" \
+                -flp1:"errorsonly;LogFile=logs\\FirestormBuild_win-${AUTOBUILD_ADDRSIZE}.err" -p:Platform=${AUTOBUILD_WIN_VSPLATFORM} -t:Build -p:useenv=true \
+                -verbosity:normal -toolsversion:Current -p:"VCBuildAdditionalOptions= /incremental"
+            declare -i BUILD_EXIT=$?
+        fi
     fi
     # Check the return code of the build command
     if [ $BUILD_EXIT -ne 0 ]; then
