@@ -220,91 +220,51 @@ jobs:
             echo "LL_BUILD_RELEASE=${LL_BUILD_RELEASE:-}"
           } >> "$GITHUB_ENV"
 
-      - name: Setup MSVC development environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-          vsversion: 2022
-
-      - name: Validate Windows build dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          python --version
-          cmake --version
-          git --version
-          gh --version
-          patch --version
-
-          where.exe cl.exe
-          where.exe link.exe
-          where.exe rc.exe
-          where.exe mt.exe
-          where.exe msbuild.exe
-
       - name: Configure Windows with FMOD and OpenSim
-        shell: bash
+        shell: cmd
         env:
           TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
         run: |
-          set -euo pipefail
+          for /f "usebackq delims=" %%I in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%I"
 
-          unset CC || true
-          unset CXX || true
+          if not defined VSINSTALL (
+            echo ERROR: Visual Studio with C++ tools was not found.
+            exit /b 1
+          )
 
-          VS_CMAKE="C:/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
-          if [ -f "$VS_CMAKE" ]; then
-            VS_CMAKE_DIR="$(dirname "$VS_CMAKE")"
-            echo "Using Visual Studio CMake from: $VS_CMAKE_DIR"
-            export PATH="$VS_CMAKE_DIR:$PATH"
-          else
-            echo "Using CMake from PATH"
-          fi
+          call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
+          if errorlevel 1 exit /b 1
 
-          autobuild configure \
-            -c ReleaseFS_open \
-            -A "$AUTOBUILD_ADDRSIZE" \
-            -- \
-            --opensim \
-            --fmodstudio \
-            --no-package \
-            -DLL_TESTS:BOOL=FALSE
+          where cl.exe
+          where cmake.exe
+          where msbuild.exe
+          if errorlevel 1 exit /b 1
 
-      - name: Validate Visual Studio configuration
-        shell: bash
-        run: |
-          set -euo pipefail
+          cl.exe
+          cmake --version
+          msbuild -version
 
-          BUILD_DIR="build-vc170-64"
-          SOLUTION="$BUILD_DIR/Firestorm.sln"
-
-          if [ ! -f "$SOLUTION" ]; then
-            echo "::error::Firestorm.sln was not generated."
-            grep -E '^CMAKE_GENERATOR:|^CMAKE_BUILD_TYPE:' \
-              "$BUILD_DIR/CMakeCache.txt" 2>/dev/null || true
-            find "$BUILD_DIR" -maxdepth 2 -type f \
-              \( -name '*.sln' -o -name '*.slnx' \) -print || true
-            exit 1
-          fi
-
-          echo "Using solution: $SOLUTION"
-          grep -E '^CMAKE_GENERATOR:|^CMAKE_BUILD_TYPE:' \
-            "$BUILD_DIR/CMakeCache.txt" 2>/dev/null || true
+          autobuild configure -c ReleaseFS_open -A 64 -- --opensim --fmodstudio --no-package -DLL_TESTS:BOOL=FALSE
+          if errorlevel 1 exit /b 1
 
       - name: Build Windows with FMOD and OpenSim
-        shell: bash
+        shell: cmd
         run: |
-          set -euo pipefail
+          for /f "usebackq delims=" %%I in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%I"
 
-          autobuild build \
-            -c ReleaseFS_open \
-            -A "$AUTOBUILD_ADDRSIZE" \
-            --no-configure \
-            -- \
-            --opensim \
-            --fmodstudio \
-            --no-package
+          if not defined VSINSTALL (
+            echo ERROR: Visual Studio with C++ tools was not found.
+            exit /b 1
+          )
+
+          call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
+          if errorlevel 1 exit /b 1
+
+          where cl.exe
+          where msbuild.exe
+
+          autobuild build -c ReleaseFS_open -A 64 --no-configure
+          if errorlevel 1 exit /b 1
 
       - name: Prepare portable Windows runtime
         shell: bash
