@@ -221,80 +221,42 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Configure Windows with FMOD and OpenSim
-        shell: cmd
+        shell: bash
         env:
           TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
         run: |
-          for /f "usebackq delims=" %%I in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%I"
+          set -euo pipefail
 
-          if not defined VSINSTALL (
-            echo ERROR: Visual Studio with C++ tools was not found.
-            exit /b 1
-          )
+          autobuild configure \
+            -c ReleaseFS_open \
+            -A 64 \
+            -- \
+            --opensim \
+            --fmodstudio \
+            --no-package \
+            -DLL_TESTS:BOOL=FALSE || {
+              echo "===== FIRESTORM CMAKE CONFIGURE LOG ====="
 
-          call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
-          if errorlevel 1 exit /b 1
+              if [ -f "build-vc170-64/CMakeFiles/CMakeConfigureLog.yaml" ]; then
+                cat "build-vc170-64/CMakeFiles/CMakeConfigureLog.yaml"
+              fi
 
-          where cl.exe
-          where cmake.exe
-          where msbuild.exe
-          if errorlevel 1 exit /b 1
+              if [ -f "build-vc170-64/CMakeFiles/CMakeError.log" ]; then
+                cat "build-vc170-64/CMakeFiles/CMakeError.log"
+              fi
 
-          cl.exe
-          cmake --version
-          msbuild -version
-
-          echo ===== CMAKE COMPILER SMOKE TEST =====
-          set "SMOKE_DIR=%RUNNER_TEMP%\tasia-cmake-smoke"
-          if exist "%SMOKE_DIR%" rmdir /s /q "%SMOKE_DIR%"
-          mkdir "%SMOKE_DIR%"
-
-          > "%SMOKE_DIR%\CMakeLists.txt" echo cmake_minimum_required(VERSION 3.20)
-          >> "%SMOKE_DIR%\CMakeLists.txt" echo project(TasiaCompilerSmoke LANGUAGES C CXX)
-
-          cmake -S "%SMOKE_DIR%" -B "%SMOKE_DIR%\build" -G "Visual Studio 17 2022" -A x64
-          if errorlevel 1 (
-            echo ERROR: Standalone MSVC/CMake smoke test failed.
-            if exist "%SMOKE_DIR%\build\CMakeFiles\CMakeConfigureLog.yaml" (
-              type "%SMOKE_DIR%\build\CMakeFiles\CMakeConfigureLog.yaml"
-            )
-            exit /b 1
-          )
-
-          cmake --build "%SMOKE_DIR%\build" --config Release
-          if errorlevel 1 exit /b 1
-          echo ===== SMOKE TEST PASSED =====
-
-          autobuild configure -c ReleaseFS_open -A 64 -- --opensim --fmodstudio --no-package -DLL_TESTS:BOOL=FALSE
-          if errorlevel 1 (
-            echo ===== FIRESTORM CMAKE CONFIGURE LOG =====
-            if exist "build-vc170-64\CMakeFiles\CMakeConfigureLog.yaml" (
-              type "build-vc170-64\CMakeFiles\CMakeConfigureLog.yaml"
-            )
-            if exist "build-vc170-64\CMakeFiles\CMakeError.log" (
-              type "build-vc170-64\CMakeFiles\CMakeError.log"
-            )
-            exit /b 1
-          )
+              exit 1
+            }
 
       - name: Build Windows with FMOD and OpenSim
-        shell: cmd
+        shell: bash
         run: |
-          for /f "usebackq delims=" %%I in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%I"
+          set -euo pipefail
 
-          if not defined VSINSTALL (
-            echo ERROR: Visual Studio with C++ tools was not found.
-            exit /b 1
-          )
-
-          call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
-          if errorlevel 1 exit /b 1
-
-          where cl.exe
-          where msbuild.exe
-
-          autobuild build -c ReleaseFS_open -A 64 --no-configure
-          if errorlevel 1 exit /b 1
+          autobuild build \
+            -c ReleaseFS_open \
+            -A 64 \
+            --no-configure
 
       - name: Prepare portable Windows runtime
         shell: bash
