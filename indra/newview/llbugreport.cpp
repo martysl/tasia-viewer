@@ -39,9 +39,9 @@ bool LLBugReportFloater::postBuild()
 
 void LLBugReportFloater::onOpen(const LLSD& key)
 {
-    mTitle->setText("");
+    mTitle->setText(std::string());
     mCategory->setCurrentByIndex(0);
-    mDetails->setText("");
+    mDetails->setText(std::string());
     setStatus("");
     mSubmitBtn->setEnabled(true);
 }
