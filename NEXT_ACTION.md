@@ -1,18 +1,16 @@
 # Next Action
 
 ## Current
-
-Manual prerelease `v8.0.1.78497` is published:
-
-https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78497
-
-Windows must keep `quictls` for older Windows QUIC support. Do not revert Windows to `schannel` unless Mom explicitly accepts losing older-Windows QUIC.
+Both builds retriggered:
+- Linux: `tasia_linux_stable_os` (after `llbugreport.cpp` setText fix)
+- Windows: `tasia_windows_os_stable` (after MsQuic.cmake POST_BUILD fix + workflow cleanup)
 
 ## Next
-
-1. Runtime-test `v8.0.1.78497` Windows clipboard image upload.
-2. If Windows runtime test passes, use `v8.0.1.78497` as the current public prerelease.
+1. Check build results.
+2. If Linux passes → download artifact, runtime test portable mode + grid connection.
+3. If Windows passes → download artifact, verify `msquic.dll` is in zip, runtime test.
+4. If both pass → publish as new prerelease.
 
 ## Blockers
-
-- None for publishing. Windows runtime verification still needed.
+- Waiting for build results.
+- `NECESSARY_SIGNING_TOKEN` not yet obtained for optional code signing.

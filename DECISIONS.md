@@ -25,3 +25,8 @@
 | 2026-05-25 | Keep only the newest Linux+Windows releases visible | Avoids release confusion and stale downloads |
 | 2026-05-25 | Prune old Actions run results after successful publish | Keeps CI history focused on current releasable builds |
 | 2026-05-25 | Discord webhook post is part of release completion | Ensures Mom/community always gets direct release+ZIP links |
+| 2026-07-11 | Strict portable mode: all data next to binary | `portable-data/` auto-created beside executable. No AppData, no ~/.tasia. |
+| 2026-07-11 | Remove all grid blocking | Viewer is open to any grid (SL, OpenSim, I-Grid, Aurora) |
+| 2026-07-11 | Windows MsQuic: use pre-built Microsoft-signed DLL (v2.4.10) | Avoids unsigned msquic.dll triggering Defender. API v2.4 compatible. |
+| 2026-07-11 | No TasiaCrypt/IMs for now | Feature set is simplified, TasiaCrypt added later |
+| 2026-07-11 | Build only on manual workflow_dispatch | No auto-build on push to prevent wasted CI minutes |

@@ -1,424 +1,58 @@
 # Project Status
 
-## 2026-06-20 manual prerelease v8.0.1.78497
+## 2026-07-11 — Stable branch rebuild
 
-### What is done
-- Published prerelease: https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78497
-- Linux clipboard image upload is included and runtime-tested by Mom.
-- Windows clipboard image upload is included from successful Windows CI.
-- Clipboard uploads normalize images to PNG, resize down to max `2048x2048`, then open the normal texture upload preview.
-- Windows zip was repacked to remove `TasiaOS-Releasex64-8-0-1-96_Setup.exe` to save space.
-- Verified Windows zip still contains `TasiaOS-Releasex64.exe` and `msquic.dll`; no setup exe remains.
+### Branches
+- `tasia_linux_stable_os` — Linux stable, manual-dispatch only
+- `tasia_windows_os_stable` — Windows stable, manual-dispatch only, code signing workflow ready
 
-### Release assets
-- `TasiaOS-Releasex64-8-0-1-78497.tar.xz`
-  - Size: `200454972`
-  - SHA256: `90c79ce24a6a16ad10313382c41b26d65b44553a82315ecb19a7a97c4a738a17`
-- `Tasia-Viewer-Windows-FMOD-8-0-1-78497.zip`
-  - Size: `281684615`
-  - SHA256: `9b29843a69d1832b6a5db1198f166db4476e28ff4ce6d43ce206e32a8bb72f3c`
-- `SHA256SUMS.txt`
+### What is done (both branches)
+- **Strict portable mode**: `portable-data/` auto-created next to binary. ALL data (cache, settings, logs, credentials) stays beside the executable. Works for any copy: `tasia1/` gets `tasia1/portable-data/`, `tasia2/` gets its own.
+- **All grid blocking removed**: Connect to any grid (SL, OpenSim, I-Grid, Aurora, etc.)
+- **OpenSSL/quictls verified**: No Schannel anywhere. Linux builds MsQuic from source (static). Windows uses Microsoft-signed pre-built DLL (v2.4.10).
+- **TasiaGuard + bug report**: Self-service unban via HTTP API, bug report submission from viewer menu.
+- **DAE mesh export**: Rigged meshes with skin weights, LLVector4a fixes.
+- **Havok error suppressed**: No more missing Havok warning on OpenSim.
+- **Looking Glass theme**: Semi-transparent Aero style, Family Grids branding, animated boot splash.
+- **New Tasia cyan/blue logo icons**: All replaced.
+- **2GB RAM / 2048MB VRAM defaults**.
+- **Windows clipboard image upload**.
+- **Linux clipboard image upload** (LLProcess, WebP, PNG normalize, resize).
+- **Windows DPAPI protected password store**.
+- **SSL certificate chain fixes**.
+- **TasiaFeed owner page**.
 
-### Source builds
-- Linux: run `27867582030`, commit `e16c34ab705f5a07972ca9ad98acb3f8b876cb50`
-- Windows: run `27875889710`, commit `1f634395c10934f19fd25103a55629240781cf66`
+### MsQuic / Windows Defender fix
+- Windows builds no longer compile MsQuic/quictls from source.
+- Downloads pre-built `msquic.dll` from Microsoft GitHub releases (v2.4.10).
+- DLL is Microsoft-signed — no Defender false positives.
+- No more NASM/Perl required on Windows CI.
+- Linux still builds MsQuic from source (static, v2.5.7) — no Defender issues.
 
-### What is broken
-- No known release packaging blocker.
-
-### Next exact action
-- Runtime-test Windows clipboard image upload from release `v8.0.1.78497`.
-
-## 2026-06-14 manual release v8.0.1.78484
-
-Update 2026-06-15:
-- Replaced the Windows release asset in `v8.0.1.78484` with `/home/marty/src/Tasia-Viewer-Windows-FMOD.zip`.
-- Published asset name remains `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`.
-- Replaced it again after login failed with `SSL_PEER_CERTIFICATE` / “best effort” because Windows viewer rejected `https://i.let-us.cyou:8002/` and Tasia HTTPS endpoints.
-- The live Windows zip now has `ca-bundle.crt` patched with the explicit Let's Encrypt R12 intermediate for older bundled Windows libcurl/OpenSSL verification.
-- That was not enough; build `815213467e` adds a targeted CoreHttp SSL verification exception for trusted `https://i.let-us.cyou/` and `https://i.let-us.cyou:8002/` endpoints so login/welcome/config work while other hosts still verify normally.
-- The release Windows asset was replaced with the successful CI artifact from run `27574206454`.
-- New Windows asset size: `461590419` bytes.
-- New Windows SHA256: `373138c008d0dd7fb51f78641a230abdc8bb145952c271979af36559e41fb94f`.
-- `SHA256SUMS.txt` was replaced to match the live release assets.
-
-Update 2026-06-18:
-- Windows release asset in `v8.0.1.78484` was replaced from Mom-provided ready zip:
-  `/home/marty/win/Tasia Viewer 8.0.1.78484.zip`.
-- The provided zip already had no setup exe and included `msquic.dll`.
-- Live asset name remains `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`.
-- Windows asset size: `284631553` bytes.
-- Windows SHA256: `6dfb8e64e5e55fd50765ca25befa360a2f7f45db5ffe0ba9ee09ee34ea3763a7`.
-- `SHA256SUMS.txt` was regenerated and uploaded with `--clobber`.
-
-Update 2026-06-19:
-- Windows release asset in `v8.0.1.78484` was replaced with CI artifact from run `27797678311` / commit `609f46857dac93c19051b2bfe2dd37b91de40b17`.
-- The zip was repacked to remove `TasiaOS-Releasex64-8-0-1-94_Setup.exe`.
-- Verified `msquic.dll` and `TasiaOS-Releasex64.exe` remain in the zip; no `*_Setup.exe` remains.
-- Live asset name remains `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`.
-- Windows asset size: `281675846` bytes.
-- Windows SHA256: `f9c1d0ebe5c99818c0b2264ecc81f01045e9d895885c173ae96a77556a3891d6`.
-- `SHA256SUMS.txt` was regenerated and uploaded with `--clobber`.
-
-What is done:
-- Latest successful Linux and Windows CI artifacts were downloaded and published manually as a GitHub prerelease.
-- Release URL: https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1.78484
-- Linux source run: `27484208646`, commit `121b8d66b8474d4f484b962eacfcf1dd9f7d56a3`
-- Windows source run: `27495917464`, commit `f4410fa68a16ac9dfdbde9b400945078e4f3ca66`
-- Uploaded assets:
-  - `TasiaOS-Releasex64-8-0-1-78484.tar.xz`
-  - `Tasia-Viewer-Windows-FMOD-8-0-1-78484.zip`
-  - `SHA256SUMS.txt`
-
-What was verified:
-- GitHub release exists and is marked prerelease.
-- All three assets are present with expected sizes.
-
-Next exact action:
-- Runtime-test the Linux and Windows packages from release `v8.0.1.78484`.
-
-## 2026-06-14 EOD — QUIC/quictls/CI build fight
-
-### 2026-06-14 follow-up — keep Windows quictls, fix NASM visibility
-
-Mom rejected Windows `schannel` fallback because older Windows must keep QUIC support.
-Current patch keeps `QUIC_TLS_LIB=quictls` globally and fixes the Windows CI toolchain instead:
-
-- `.github/workflows/build-windows.yml`
-  - Downloads NASM to `C:/tools/nasm`.
-  - Converts the NASM path with `cygpath -w` before writing to `GITHUB_PATH`.
-  - Saves POSIX `NASM_DIR` to `GITHUB_ENV`.
-  - Exports `NASM_DIR` before Strawberry Perl in the MsQuic build step.
-  - Verifies `Locale::Maketext::Simple`, `perl`, and `nasm` before build.
-- `.github/workflows/release.yml`
-  - Applies the same NASM path fix to release builds.
-
-Validation done locally:
-- `git diff --check`: passed
-- workflow text checks: passed
-- PyYAML parse for `build-windows.yml` and `release.yml`: passed
-
-Next exact action:
-- Push this patch to the Windows branch and run Windows CI.
-- If OpenSSL still says `NASM not found`, inspect the failed step and pass NASM path directly to the OpenSSL/MsQuic environment.
-
-### State before Mom's sleep
-
-Windows build is **still failing** with quictls (Strawberry Perl + NASM) on CI.
-Approach tried (all failed):
-1. `Perl_EXECUTABLE` in MsQuic.cmake → cmake var doesn't reach ninja build
-2. Strawberry Perl via PATH export → `Locale::Maketext::Simple` found, but OpenSSL Configure fails ("NASM not found")
-3. CPAN install of Locale::Maketext::Simple → CPAN itself broken (same module missing)
-4. MSYS2 pacman → not available in Git for Windows
-5. NASM download via Python → YAML syntax broke multi-line Python, then single-line Python exit(1) broke step
-
-### Current Windows QUIC policy
-Windows must keep `quictls`; do not revert to `schannel` unless Mom explicitly accepts losing QUIC support on older Windows.
-
-### What works
-- Linux build: passes with quictls 🎉
-- Both branches: all patches pushed (QUIC fallback with 3 retries, quictls on Linux, password 32 chars, badge fallback, YouTube/image viewer, icon rename, launcher)
-- QUIC teleport fallback to UDP works
-
-### What's broken
-- Windows CI: quictls Strawberry Perl + NASM chain fails
-- Windows release: cannot build with quictls yet
-
-### Next action
-- Push current NASM/Strawberry Perl CI fix.
-- Start Windows CI and inspect MsQuic/OpenSSL output if it still fails.
-
-<<<<<<< HEAD
-## 2026-05-24 Remote Tasia user config feature
-
-## What is done
-- Created isolated local branch/worktree: `feature/tasia-remote-user-config` at `/tmp/opencode/tasia-user-config`.
-- Added non-blocking one-shot startup fetch for `https://i.let-us.cyou/hg/config.json`.
-- Added UUID-keyed custom user data for nametag title/color and profile badge text/tooltip.
-- Changed welcome default URL to `https://i.let-us.cyou/welcome.php` and made welcome fetch use the first usable line instead of randomizing lines.
-- Welcome fetch now resets per visible progress screen, so it can run for login and teleport loading screens.
-- Linux branch was pushed and Linux build started: `26367560133`.
-- Windows branch cherry-pick is in progress.
-
-## What is broken
-- `https://i.let-us.cyou/hg/config.json` currently returns HTTP 404, so viewer-side code will fail gracefully but cannot display badges until the server file exists.
-- Full viewer build not run yet.
-
-## What was last attempted
-- Focused local implementation and verification on `feature/tasia-remote-user-config`.
-
-## Exact last failing step
-- Remote config URL smoke test returned HTTP 404.
-
-## What must not be changed
-- Do not touch Mom's existing dirty main worktree changes.
-
-## Next exact action
-- Resolve Windows branch memory-file conflicts, push, and start Windows build.
-
-## What is done
-- GIPHY key obfuscation, welcome text client, GIPHY picker, YouTube/image previews — all working in prior clean builds
-- Previous clean builds (26135635543 Linux, 26135636272 Windows) completed successfully
-- **Cherry-picked LL commit be04175579** (#4358 "Fix Microphone in use task bar icon") on both branches:
-  - Gating updateSettings() with voiceEnabled check
-  - Setting init_recording_on_send=false at WebRTC level
-  - Proper SetAudioRecording() management
-  - Mute state machine fix (MUTE_INITIAL/MUTED/UNMUTED)
-- Pushed to both branches on GitHub
-=======
-## 2026-06-04: Session summary — routes.py fix, capability audit, notecard creation investigation
->>>>>>> 43da2163ac (Rebrand to Tasia: channel name, URLs, auto revision)
-
-### What was done this session
-- **Fixed routes.py corruption**: auto-login code (`POST /api/login` equivalent) was accidentally orphaned after a debug edit. Restored `GET /api/status` to auto-login when not connected. Deployed fix to production via `docker cp`.
-- **Backed up all key source files**: `routes.py`, `login.py`, `session.py`, `udp.py`, `notecard.py`, `.env.example`, `requirements.txt`, `Dockerfile`, `docker-compose.yml`.
-- **Audited available capabilities from seed URL**:
-  - `EventQueueGet` — ✅ *Available*
-  - `NewFileAgentInventory` — ✅ *Available*
-  - `UpdateNotecardAgentInventory` — ✅ *Available*
-  - `MeshUploadFlag` — ✅ *Available*
-  - `CopyInventoryFromNotecard` — ✅ *Available*
-  - `CreateInventoryItem` — ❌ *Not available from seed*
-  - `UpdateInventoryItem` — ❌ *Not available*
-  - `FetchInventoryDescendents` — ❌ *Not available*
-- **Tested notecard creation approaches (all blocked):**
-  1. **Brand-new UUID + UpdateNotecardAgentInventory**: cap returns uploader URL, but uploader rejects with `NotFound` (AIS3 item doesn't exist).
-  2. **UDP CreateInventoryItem + UpdateNotecardAgentInventory**: UDP creates the item on sim. Cap returns uploader URL. Uploader calls AIS3 and gets 404 — UDP-created items **never sync to AIS3** even after 80+ seconds of retry with 5/15/25/35/45s backoff.
-  3. **NewFileAgentInventory with "notecard" type**: rejected server-side (`Invalid asset type: notecard`).
-  4. **UpdateNotecardAgentInventory without item_id**: returns `Invalid viewer parameters`.
-
-### Key findings
-- `EventQueueGet` IS available from seed — could be used to receive dynamic capabilities and events.
-- `CreateInventoryItem` cap is NOT available — this is the cap the viewer uses to create notecard-type items in AIS3 before uploading content.
-- UDP `CreateInventoryItem` creates items on the sim but they never appear in AIS3 (the inventory service that `UpdateNotecardAgentInventory` uploader validates against).
-- The notecard creation path is fundamentally blocked: no available cap creates a **notecard-type** item in AIS3.
-
-### What is broken
-- Notecard creation: all tested approaches fail.
-- Mesh upload: binary format mismatch remains.
-- EventQueueGet handler not implemented.
-- Discord bridge not enabled.
-
-### Next exact action
-- Notecard: either implement EventQueueGet to receive dynamic caps, or accept that notecard creation requires a different strategy (e.g., scripted in-world object, or another account giving a notecard).
-- Mesh upload: compare viewer's `writeModelToStream()` output with our LLSD binary.
-- Discord bridge: set `TASIA_DISCORD_BRIDGE_ENABLED=true`.
-
----
-
-## 2026-05-25 release cleanup and publish
-
-### What is done
-- Implemented/fixed:
-  - full nametag color from remote `tag_color` (whole tag, not title-only)
-  - profile badge visibility fallback behavior
-- Released:
-  - Linux: `v8.0.1-17`
-  - Windows: `v8.0.1-44-windows`
-- Cleaned old GitHub releases and old Actions runs (kept only newest Linux + Windows publish set).
-- Posted release announcement to Discord webhook with release links and direct ZIP links.
-
-### What is broken
-- No known blocker in current released pair.
-
-### Exact last failing step
-- Earlier profile badge remote icon path did not render reliably; replaced with corrected release set above.
-
-### Next exact action
-- Runtime verification on both platforms with live `config.json` badge/title/color entries.
-
-## Current Phase
-
-Linux viewer builds and runs with FMOD.
-
-Current branch: `feature/tasia-giphy-welcome-loading-windows`.
-
-Current feature work: Linux GIPHY/welcome/chat preview work succeeded and was ported to a Windows feature branch for validation/release.
-
-Next work:
-1. **Grid lock**: remove/block Second Life and add I-Grid Beta.
-2. **Version/build identity**: internal 8.0.1, display 8.0.1.<GitHub run number>, show short commit SHA.
-3. **Snapshot system**: replace Flickr/Primfeed with real TasiaFeed upload.
-4. **TasiaFeed backend**: PHP + DB + WebDAV storage under apps.easierit.org/igrid/feed/.
-5. **Bug reporting**: adapt BugSplat/crash reporter into real TasiaBugReport/TasiaCrash.
-6. **Bug backend**: PHP + DB/admin under apps.easierit.org/igrid/bugs/.
-7. **Branding cleanup** while keeping legal credits intact.
-8. **Manual Linux build** and test.
-
-## 2026-05-18: GIPHY/welcome/loading branch status
-
-### What is done
-- Voice-disabled microphone detection hotfix candidate added:
-  - `LLVoiceClient::refreshDeviceLists()` now skips device refresh when `EnableVoiceChat=false`.
-  - `LLVoiceClient::setCaptureDevice()` and `LLVoiceClient::setMicGain()` now skip capture/mic operations when voice is disabled.
-  - `LLWebRTCVoiceClient::init()` no longer refreshes devices at startup when voice is disabled.
-  - `LLWebRTCVoiceClient::updateSettings()`, `OnDevicesChangedImpl()`, and `refreshDeviceLists()` skip capture/mic/device work while voice is disabled.
-  - `LLVivoxVoiceClient::updateSettings()` and `refreshDeviceLists()` skip capture/mic/device work while voice is disabled.
-- Windows feature branch port is prepared:
-  - Branch: `feature/tasia-giphy-welcome-loading-windows`
-  - Base: `github/windows-build-test`
-  - Cherry-picked approved feature commits from Linux branch.
-  - Windows workflow now checks out `${{ github.ref_name }}` so dispatched feature-branch builds use the Windows feature branch.
-  - Windows configure step passes `TASIA_GIPHY_API_KEY` from GitHub Secrets.
-  - Focused checks passed on the Windows feature branch.
-  - Pushed branch and triggered Windows GitHub Actions build:
-    - Run: `26098421990`
-    - URL: `https://github.com/martysl/tasia-viewer/actions/runs/26098421990`
-    - Commit: `ab1dd99400a63adb46061b2597dba8252984140f`
-    - Inputs: `clean_build=false`, `probe_only=false`
-  - Windows build succeeded and prerelease was published:
-    - Release: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-16-windows`
-    - Asset: `Tasia-Viewer-Windows-FMOD.zip`
-- Mom runtime report before sleep:
-  - `welcome.txt` welcome message works well.
-  - GIPHY picker/window opens.
-  - GIPHY search works.
-  - GIF/image results display in picker window.
-  - Selecting GIF works.
-  - Nearby chat GIF button works.
-  - IM windows now also have the GIF button/support.
-- Mom correction after runtime testing:
-  - GIPHY chat preview did **not** show the actual GIF/image; it only showed a card/link.
-  - YouTube preview panel appeared, but playback failed with YouTube player error 153.
-- Current follow-up fix attempt:
-  - GIPHY chat preview now derives `https://i.giphy.com/media/<id>/giphy.gif` from normal GIPHY page URLs and renders that direct GIF in the chat preview panel.
-  - Preview insertion no longer depends on `PlainTextChatHistory`, so compact/old chat style can attempt previews too.
-- Hosted YouTube player wrapper support added as a separate checkpoint:
-  - Wrapper source: `web/youtube-player/index.html`
-  - Hosted URL: `https://apps.easierit.org/igrid/youtube-player/?v=VIDEO_ID`
-  - Viewer YouTube chat card no longer injects an iframe locally.
-  - User clicks `Play in Viewer`, then the viewer opens the hosted wrapper in `LLFloaterWebContent`.
-  - The hosted wrapper uses the official YouTube IFrame API with `/embed/VIDEO_ID`, real HTTPS origin, no autoplay with sound, visible controls/branding, and Open on YouTube fallback.
-  - Wrapper was uploaded by FTP and verified over HTTPS.
-- Latest Linux GitHub Actions build with autopublish succeeded:
-  - Run: `26067438313`
-  - Commit: `670d58e7ceb4ac0429cfd31e47d2e5897445df07`
-  - Release: `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-51`
-  - Asset: `Phoenix-FirestormOSTasia-Releasex64_LEGACY-8-0-1-78266.tar.xz`
-- Focused follow-up fixes added after Linux prerelease:
-  - IM windows now have a `GIF` button wired to the existing shared `LLFloaterGiphyPicker`.
-  - Picker selection from IM sends the selected GIPHY URL to that IM session, not nearby chat.
-  - YouTube chat/IM preview detection now accepts common scheme-less links like `youtube.com/...`, `www.youtube.com/...`, and `youtu.be/...`.
-  - `welcome.txt` `<USERNAME>` replacement now keeps the raw chosen line and renders using best available name.
-  - Pre-login welcome name priority: typed login username, saved/remembered username, then `friend` fallback.
-  - After login/teleport, real avatar name is preferred when available.
-- Linux GitHub Actions build for the GIPHY/welcome/chat preview branch succeeded:
-  - Run: `26061745761`
-  - Commit: `d73371e429172ae53b943a81a10426c73949bafd`
-- Linux prerelease published:
-  - `https://github.com/martysl/tasia-viewer/releases/tag/v8.0.1-50`
-  - Asset: `Phoenix-FirestormOSTasia-Releasex64_LEGACY-8-0-1-78266.tar.xz`
-- Added build-time generated obfuscated GIPHY API key fallback support.
-- Added generated-file ignores for:
-  - `indra/newview/lltasia_giphy_key.generated.h`
-  - `indra/newview/lltasia_giphy_key.generated.cpp`
-- Added runtime key accessor files:
-  - `indra/newview/lltasia_giphy_key.h`
-  - `indra/newview/lltasia_giphy_key.cpp`
-- Added generator script:
-  - `scripts/generate_tasia_giphy_key.py`
-- Wired Linux workflow configure step to pass `TASIA_GIPHY_API_KEY` from GitHub Secrets without printing it.
-- Added Tasia settings for welcome text, GIPHY, animated chat preview, and optional loading YouTube embed.
-- Added async welcome text client:
-  - `indra/newview/lltasia_welcome_client.h`
-  - `indra/newview/lltasia_welcome_client.cpp`
-- Hooked `LLProgressView` to request one random usable line during startup loading and ignore late responses after startup completes.
-- Added standalone GIPHY API client:
-  - `indra/newview/llgiphyclient.h`
-  - `indra/newview/llgiphyclient.cpp`
-- `LLGiphyClient` supports search/trending, safe key lookup, rating setting, JSON parsing, and `GIPHY is not configured.` fallback.
-- Added registered GIPHY picker floater shell:
-  - `indra/newview/llfloatergiphypicker.h`
-  - `indra/newview/llfloatergiphypicker.cpp`
-  - `indra/newview/skins/default/xui/en/floater_giphy_picker.xml`
-- Registered floater as `giphy_picker` in `indra/newview/llviewerfloaterreg.cpp`.
-- Added nearby chat `GIF` button in `indra/newview/skins/default/xui/en/floater_fs_nearby_chat.xml`.
-- Wired nearby chat button to `LLFloaterGiphyPicker`; selected GIF sends the normal GIPHY page URL through existing nearby chat send path.
-- Added local GIPHY URL preview cards in `indra/newview/fschathistory.cpp`, gated by `TasiaAnimatedGifChatPreview`.
-- Added direct image URL previews in `indra/newview/fschathistory.cpp`, gated by `TasiaImageChatPreview`.
-- Added inline YouTube embeds in `indra/newview/fschathistory.cpp`, gated by `TasiaYouTubeChatPreview` and enabled by default.
-- Confirmed active nearby chat and Firestorm IM use `FSChatHistory`; legacy `LLChatHistory` path is currently disabled by `#if 0`.
-- Added loading panel branding text and `Powered by GIPHY` credit in `indra/newview/skins/default/xui/en/panel_progress.xml`.
-- Added optional loading YouTube embed behavior in `LLProgressView`, gated by `TasiaLoadingYouTubeEnabled` and `TasiaLoadingYouTubeURL`; loading media is disabled by default.
-
-### What is broken
-- Voice-disabled microphone detection hotfix is not built/runtime-tested yet.
-- Voice disabled should not trigger Windows microphone detection, but Mom reports released viewer does while official viewer does not.
-- FMOD test with `LL_BAD_FMODSTUDIO_DRIVER=1` still triggered microphone detection, so FMOD is likely not the cause.
-- Likely next investigation: voice/WebRTC/Vivox startup initializes or enumerates capture devices before respecting `EnableVoiceChat=false`.
-- Windows feature prerelease is published, but runtime testing is still needed.
-- Latest GIPHY direct GIF preview fix is not built/runtime-tested yet.
-- YouTube embed panel renders, but playback may still fail with YouTube error 153 if the viewer media browser cannot satisfy YouTube embed requirements.
-- Hosted YouTube wrapper playback is not runtime-tested in the viewer yet.
-- Linux build succeeded, but runtime testing of the released package is still needed.
+### Build status
+- **Linux build**: Retriggered after `llbugreport.cpp` setText fix.
+- **Windows build**: Retriggered after MsQuic.cmake POST_BUILD fix + workflow cleanup.
 
 ### What was last attempted
-- Added focused voice privacy hotfix candidate to avoid capture device refresh/selection/mic gain while `EnableVoiceChat=false`.
-- Focused checks passed: `git diff --check` and memory conflict-marker scan.
-- Mom identified next-build goals:
-  - optional user-selectable rendering path: current PBR renderer plus old pre-PBR renderer/engine from an older viewer line;
-  - pre-PBR viewer source reference: `https://gitlab.com/lostorm/lostorm/-/tree/lostorm-13?ref_type=heads`;
-  - voice/microphone detection fix is a separate issue, not sourced from that Lostorm link.
-- Ported current approved Linux feature commits to `feature/tasia-giphy-welcome-loading-windows`.
-- Updated `.github/workflows/build-windows.yml` to build the dispatched ref and pass `TASIA_GIPHY_API_KEY`.
-- Focused checks passed on Windows feature branch: whitespace, Python generator compile, XUI/settings XML parse, wrapper HTML smoke, and conflict-marker scan.
-- Committed/pushed Windows feature branch and triggered build run `26098421990`.
-- Run `26098421990` completed successfully.
-- Published Windows prerelease `v8.0.1-16-windows` from artifact `Tasia-Viewer-Windows-FMOD.zip`.
-- Added only the requested focused fixes: IM GIF button/support and pre-login `<USERNAME>` replacement.
-- Added small YouTube detection fix for scheme-less YouTube URLs.
-- Ran focused XML/whitespace checks successfully.
-- Committed focused fixes as `670d58e7ce Fix IM GIPHY and welcome username handling`.
-- Pushed branch and triggered GitHub Actions Linux build with `publish_release=true`: run `26067438313`.
-- Run `26067438313` completed successfully and autopublished prerelease `v8.0.1-51`.
-- Mom reported runtime progress: welcome message works well; GIPHY button/support now exists in IMs; embedding display does not work yet.
-- Mom corrected status: GIPHY did not preview the actual GIF/image. Implemented direct GIPHY GIF media preview attempt in `FSChatHistory`.
-- Focused checks passed after the direct GIF preview change.
-- Added hosted YouTube player wrapper support and uploaded `web/youtube-player/index.html` to `https://apps.easierit.org/igrid/youtube-player/`.
-- Changed YouTube chat card to open the hosted player wrapper in a web-content floater via `Play in Viewer`.
-- Focused XML/HTML/whitespace checks passed.
-- Generated empty local fallback key files with no secret present.
-- Tested the generator with a fake key under `/tmp/opencode` and verified plaintext is not written.
-- Parsed `indra/newview/app_settings/settings.xml` successfully.
-- Ran `git diff --check` successfully.
-- Added welcome client/progress hook and reran focused XML/whitespace checks successfully.
-- Added `LLGiphyClient` and reran focused XML/whitespace/script checks successfully.
-- Added `LLFloaterGiphyPicker`, registered it, added XUI, and reran focused XML/whitespace/script checks successfully.
-- Wired nearby chat GIPHY button/selection send path and reran focused XML/whitespace/script checks successfully.
-- Added GIPHY chat preview cards, loading branding/GIPHY credit, optional YouTube loading media, and reran focused XML/whitespace/script checks successfully.
-- Enabled loading YouTube by default, added image URL chat previews, verified active IM coverage through `FSChatHistory`, and reran focused XML/whitespace/script checks successfully.
-- Corrected YouTube behavior: chat/IM YouTube embeds are now enabled by default via `TasiaYouTubeChatPreview`; loading YouTube is optional/off by default. Focused checks passed again.
-- Published Linux prerelease `v8.0.1-50` from successful run `26061745761`.
+- Cherry-picked features from HEAD (`tasia_linux_sl`) one by one to stable branches.
+- Self-diagnostic code check caught: `llbugreport.cpp` missing from Linux sources (moved from Windows-only to main), `LLSD::String(msg)` no-op, dead `registerTasiaGuardFloater()`.
+- Build caught: `llbugreport.cpp` `setText("")` type mismatch (needs `std::string()`).
+- Build caught: `add_custom_command(TARGET ... POST_BUILD)` on imported target (removed, moved to workflow step).
 
-### Exact last failing step
-- None in this session.
+### What is broken
+- Waiting for build results on both platforms.
 
 ### What must not be changed
-- Do not hardcode, print, commit, or document the real GIPHY API key.
-- Do not commit generated GIPHY key files.
-- Do not disturb the known-good Windows build path while Linux feature work is incomplete.
-- Keep Linux feature work on `feature/tasia-giphy-welcome-loading-linux` until Linux build succeeds.
+- Do not revert to Schannel on Windows (confirmed broken on Windows 10).
+- Do not re-add grid blocking.
+- Do not add TasiaCrypt/IMs yet.
+- Do not expose API tokens or secrets.
 
 ### Next exact action
-- Commit/push the voice-disabled microphone detection hotfix candidate, then trigger a focused Windows build when Mom approves.
-- After runtime test confirms the microphone indicator no longer triggers with voice disabled, plan the optional dual renderer/PBR vs pre-PBR work as a separate large feature branch.
+- Check build results when they complete.
+- If Linux passes → runtime test.
+- If Windows passes → runtime test + check msquic.dll is in output zip.
 
-## Build Status
-
-| Platform | Build | Runtime | TasiaFeed upload |
-|----------|-------|---------|------------------|
-| Linux    | ✅ v0.1.0 | ✅ (basic login) | ❌ HTTP bug (postJsonAndSuspend fix applied, new build needed) |
-| Windows  | ⏳ blocked on Linux first | - | - |
-| macOS    | ⏳ blocked on Windows first | - | - |
-
-## Completed Milestones
-
-- v0.1.0 release (tagged) - Linux builds and runs with FMOD
-- FMOD integration working (private deps pipeline)
-- KDU removed
-- Second Life grids removed from bundled defaults
-- release branch created
-- GitHub Actions: manual-only workflow, single-platform
-- GCC -Wmaybe-uninitialized fixed (real fix, not suppression)
-- **Grid Lock added**: I-Grid Beta included, SL grids blocked programmatically at all entry points, startup purge of existing SL grids
-- **Version bumped to 8.0.1**: Display version 8.0.1.<GitHub run number>, commit SHA visible in About window
+## Previous releases
+- `v8.0.1.78497`: Last prerelease with all features.
+- `v8.0.1.78484`: Windows/SSL fixes, CA bundle patch.
