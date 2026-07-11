@@ -66,7 +66,6 @@ jobs:
             echo "TASIA_BUILD_NUMBER=${GITHUB_RUN_NUMBER}"
             echo "TASIA_SHORT_SHA=$SOURCE_SHORT_SHA"
             echo "VIEWER_VERSION_GITHASH=$SOURCE_SHA"
-            echo "revision=${GITHUB_RUN_NUMBER}"
           } >> "$GITHUB_ENV"
 
           echo "Building tasia_linux_stable_os at $SOURCE_SHA"
