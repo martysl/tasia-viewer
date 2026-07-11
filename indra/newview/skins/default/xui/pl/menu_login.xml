@@ -2,6 +2,13 @@
 <menu_bar name="Login Menu">
 	<menu label="Przeglądarka" name="File">
 		<menu_item_call label="Preferencje..." name="Preferences..."/>
+		<menu_item_call
+			label="Freestorm Extras"
+			name="Freestorm Extras">
+			<menu_item_call.on_click
+				function="Floater.Toggle"
+				parameter="lo_extras" />
+		</menu_item_call>
 		<menu_item_call label="Zamknij okno" name="Close Window" />
 		<menu_item_check label="Pokaż wybór świata" name="Show Grid Picker"/>
 		<menu_item_call label="Wyłącz [APP_NAME]" name="Quit"/>
@@ -48,5 +55,25 @@
 			<menu_item_check label="Błędy" name="Error"/>
 			<menu_item_check label="Brak" name="None"/>
 		</menu>
+	</menu>
+	<menu
+		label="Tasia"
+		name="Tasia"
+		tear_off="true"
+		visible="true">
+		<menu_item_call
+			label="Zgłoś błąd / Opinia"
+			name="ReportBug">
+			<menu_item_call.on_click
+				function="Floater.Show"
+				parameter="bug_report" />
+		</menu_item_call>
+		<menu_item_call
+			label="TasiaGuard - Odblokuj IP"
+			name="TasiaGuard">
+			<menu_item_call.on_click
+				function="Floater.Show"
+				parameter="tasiaguard" />
+		</menu_item_call>
 	</menu>
 </menu_bar>
