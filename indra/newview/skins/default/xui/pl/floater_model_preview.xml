@@ -25,6 +25,7 @@
 <string name="phys_status_hull_limit_exceeded">Pewne modele przekroczyły limit powłok (256); Spróbuj 'upraszczania'.</string>
 <string name="phys_status_degenerate_triangles">Mesz fizyki zbyt gęsty lub ma zdegenerowane trójkąty. Użyj Analizuj/Uprość.</string>
 <string name="phys_status_no_havok">Ta wersja nie zawiera wsparcia Havoka i nie jest zalecana dla przesyłania fizyki do Second Life. Wyniki mogą być nieprzewidywalne.</string>
+<string name="phys_status_ready">Gotowy</string>
 <string name="phys_status_too_thin">Jeden z wymiarów ma mniej niż 0.5 m, tylko kształty fizyki oparte na kadłubie (po analizie) zadziałają poprawnie.</string>
 <string name="phys_status_unknown_error">Wykryto nierozpoznany błąd.</string>
 <string name="layer_all">Wszystko</string>
