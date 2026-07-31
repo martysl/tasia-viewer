@@ -308,6 +308,9 @@ using namespace LL;
 #include "glib.h"
 #endif // (LL_LINUX) && LL_GTK
 
+#include "llpluginmanager.h"
+#include "llplugineventbus.h"
+
 const char* const CRASH_SETTINGS_FILE = "settings_crash_behavior.xml"; // <FS:ND/> We need this filename defined here.
 
 static LLAppViewerListener sAppViewerListener(LLAppViewer::instance);
@@ -1228,6 +1231,10 @@ bool LLAppViewer::init()
     // call all self-registered classes
     LLInitClassList::instance().fireCallbacks();
 
+    // Initialize the plugin system
+    LLPluginService::instance().init();
+    LLPluginManager::instance().init();
+
     LLFolderViewItem::initClass(); // SJB: Needs to happen after initWindow(), not sure why but related to fonts
 
     gGLManager.getGLInfo(gDebugInfo);
@@ -1808,6 +1815,9 @@ bool LLAppViewer::doFrame()
                     idle();
                 }
 
+                // Update running plugins
+                LLPluginManager::instance().updateAll();
+
                 {
                     LL_PROFILE_ZONE_NAMED_CATEGORY_APP("df resumeMainloopTimeout");
                     resumeMainloopTimeout();
@@ -2086,6 +2096,9 @@ bool LLAppViewer::cleanup()
     LLEventPumps::instance().reset(true);
 
     GrowlManager::destroyManager(); // <FS> Growl support
+
+    // Shut down plugin system
+    LLPluginManager::instance().shutdownAll();
 
     //dump scene loading monitor results
     if (LLSceneMonitor::instanceExists())

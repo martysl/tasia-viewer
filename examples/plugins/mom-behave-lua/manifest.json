@@ -1,0 +1,15 @@
+{
+  "id": "com.tasia.example.mom-behave",
+  "name": "Mom Behave",
+  "version": "1.0.0",
+  "author": "Tasia",
+  "description": "Example Mom API plugin - behave when Mom is nearby",
+  "entrypoint": "main.lua",
+  "runtime": "lua",
+  "api_version": 1,
+  "permissions": [
+    "mom.read",
+    "mom.events",
+    "viewer.notify"
+  ]
+}

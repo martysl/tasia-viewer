@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<floater
+ can_close="true"
+ can_drag_on_left="false"
+ can_minimize="true"
+ can_resize="true"
+ height="500"
+ min_height="400"
+ width="750"
+ min_width="600"
+ name="Plugin Manager"
+ title="Tasia Plugin Manager"
+ help_topic="tasia_plugins">
+ 
+ <scroll_list
+  name="plugin_list"
+  follows="all"
+  height="340"
+  width="730"
+  left="10"
+  top="10"
+  multi_select="false">
+  
+  <columns>
+   <column
+    label="Name"
+    name="name"
+    width="150"
+    sort="name" />
+   <column
+    label="ID"
+    name="id"
+    width="180"
+    sort="id" />
+   <column
+    label="Version"
+    name="version"
+    width="80"
+    sort="version" />
+   <column
+    label="Author"
+    name="author"
+    width="100"
+    sort="author" />
+   <column
+    label="Runtime"
+    name="runtime"
+    width="70"
+    sort="runtime" />
+   <column
+    label="Enabled"
+    name="enabled"
+    width="70"
+    sort="enabled" />
+   <column
+    label="Status"
+    name="status"
+    width="80"
+    sort="status" />
+   <column
+    label="Error"
+    name="error"
+    width="200" />
+  </columns>
+ </scroll_list>
+ 
+ <!-- Button row -->
+ <button
+  follows="left|bottom"
+  height="22"
+  label="Install Plugin"
+  left="10"
+  name="install_btn"
+  top_delta="10"
+  width="110" />
+ <button
+  follows="left|bottom"
+  height="22"
+  label="Remove"
+  left_pad="5"
+  name="remove_btn"
+  top_delta="0"
+  width="80" />
+ <button
+  follows="left|bottom"
+  height="22"
+  label="Enable"
+  left_pad="5"
+  name="enable_btn"
+  top_delta="0"
+  width="70" />
+ <button
+  follows="left|bottom"
+  height="22"
+  label="Disable"
+  left_pad="5"
+  name="disable_btn"
+  top_delta="0"
+  width="70" />
+ <button
+  follows="left|bottom"
+  height="22"
+  label="Reload"
+  left_pad="5"
+  name="reload_btn"
+  top_delta="0"
+  width="70" />
+ <button
+  follows="left|bottom"
+  height="22"
+  label="Permissions"
+  left_pad="5"
+  name="permissions_btn"
+  top_delta="0"
+  width="100" />
+ 
+ <!-- Second row -->
+ <button
+  follows="left|bottom"
+  height="22"
+  label="Open Plugin Folder"
+  left="10"
+  name="open_folder_btn"
+  top_delta="25"
+  width="140" />
+ <button
+  follows="left|bottom"
+  height="22"
+  label="View Logs"
+  left_pad="5"
+  name="view_logs_btn"
+  top_delta="0"
+  width="90" />
+ <button
+  follows="left|bottom"
+  height="22"
+  label="Check for Updates"
+  left_pad="5"
+  name="check_updates_btn"
+  top_delta="0"
+  width="140" />
+ 
+</floater>

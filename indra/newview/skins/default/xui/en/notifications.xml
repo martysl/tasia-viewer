@@ -14810,4 +14810,30 @@ You have already linked this account to Primfeed. Use the reset button if you wi
    type="alertmodal">
 Primfeed user login successful, but status checks have failed. Please check the Primfeed is working.
   </notification>
+  <notification
+   icon="alertmodal.tga"
+   name="PluginPermissionsRequest"
+   type="alertmodal">
+Plugin "[PLUGIN_NAME]" requests [PERMISSIONS] permission(s). Grant them?
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Deny"
+     yestext="Grant"/>
+  </notification>
+  <notification
+   icon="alertmodal.tga"
+   name="PluginRemoveConfirm"
+   type="alertmodal">
+Remove plugin "[PLUGIN_NAME]" and its files?
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="Remove"/>
+  </notification>
+  <notification
+   icon="alertmodal.tga"
+   name="PluginCrashed"
+   type="alertmodal">
+Plugin "[PLUGIN_NAME]" has crashed. Safe mode will be enabled on next startup.
+  </notification>
 </notifications>

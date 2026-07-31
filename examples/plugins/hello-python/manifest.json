@@ -1,0 +1,14 @@
+{
+  "id": "com.tasia.example.hello-python",
+  "name": "Hello Python",
+  "version": "1.0.0",
+  "author": "Tasia",
+  "description": "Example Tasia Viewer plugin",
+  "entrypoint": "main.py",
+  "runtime": "python",
+  "api_version": 1,
+  "permissions": [
+    "viewer.notify",
+    "chat.send"
+  ]
+}

@@ -103,6 +103,15 @@ set(viewer_SOURCE_FILES
     lltasia_user_config.cpp
     lltasiaguard.cpp
     llbugreport.cpp
+    llpluginmanifest.cpp
+    llpluginprotocol.cpp
+    llpluginpermissions.cpp
+    llpluginstorage.cpp
+    llplugineventbus.cpp
+    llpluginservice.cpp
+    llpluginruntime.cpp
+    llpluginmanager.cpp
+    llfloaterpluginmanager.cpp
     lltasia_welcome_client.cpp
     lltasia_giphy_key.cpp
     exogroupmutelist.cpp
@@ -956,6 +965,15 @@ set(viewer_HEADER_FILES
     lltasia_user_config.h
     lltasiaguard.h
     llbugreport.h
+    llpluginmanifest.h
+    llpluginprotocol.h
+    llpluginpermissions.h
+    llpluginstorage.h
+    llplugineventbus.h
+    llpluginservice.h
+    llpluginruntime.h
+    llpluginmanager.h
+    llfloaterpluginmanager.h
     lltasia_welcome_client.h
     lltasia_giphy_key.h
     exogroupmutelist.h
@@ -2291,6 +2309,34 @@ add_executable(${VIEWER_BINARY_NAME}
     MACOSX_BUNDLE
     ${viewer_SOURCE_FILES}
     )
+
+# Tasia plugin system compile options
+option(TASIA_ENABLE_PLUGINS "Enable viewer plugin system" ON)
+option(TASIA_ENABLE_LUA "Enable Lua plugin runtime (requires SLua/Luau)" OFF)
+option(TASIA_ENABLE_JAVASCRIPT "Enable JavaScript plugin runtime (requires QuickJS)" OFF)
+option(TASIA_ENABLE_PYTHON "Enable Python plugin runtime" OFF)
+
+target_compile_definitions(${VIEWER_BINARY_NAME} PRIVATE
+    TASIA_ENABLE_PLUGINS=$<BOOL:${TASIA_ENABLE_PLUGINS}>
+)
+
+if (TASIA_ENABLE_LUA)
+    target_compile_definitions(${VIEWER_BINARY_NAME} PRIVATE TASIA_ENABLE_LUA=1)
+    # SLua/Luau library - add as submodule or system dep
+    # target_link_libraries(${VIEWER_BINARY_NAME} PRIVATE Luau.VM Luau.Compiler)
+    # target_include_directories(${VIEWER_BINARY_NAME} PRIVATE ${SLUA_INCLUDE_DIR})
+endif()
+
+if (TASIA_ENABLE_JAVASCRIPT)
+    target_compile_definitions(${VIEWER_BINARY_NAME} PRIVATE TASIA_ENABLE_JAVASCRIPT=1)
+    # QuickJS library
+    # target_link_libraries(${VIEWER_BINARY_NAME} PRIVATE quickjs)
+endif()
+
+if (TASIA_ENABLE_PYTHON)
+    target_compile_definitions(${VIEWER_BINARY_NAME} PRIVATE TASIA_ENABLE_PYTHON=1)
+    # Python libraries for IPC host only (not embedded)
+endif()
 
 if (pch_output)
 	add_custom_target(pch_target

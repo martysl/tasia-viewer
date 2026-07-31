@@ -1,0 +1,14 @@
+{
+  "id": "com.tasia.example.hello-js",
+  "name": "Hello JavaScript",
+  "version": "1.0.0",
+  "author": "Tasia",
+  "description": "Example Tasia Viewer plugin",
+  "entrypoint": "main.js",
+  "runtime": "javascript",
+  "api_version": 1,
+  "permissions": [
+    "viewer.notify",
+    "chat.send"
+  ]
+}

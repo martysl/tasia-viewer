@@ -1,0 +1,14 @@
+{
+  "id": "com.tasia.example.hello",
+  "name": "Hello Tasia",
+  "version": "1.0.0",
+  "author": "Tasia",
+  "description": "Example Tasia Viewer plugin",
+  "entrypoint": "main.lua",
+  "runtime": "lua",
+  "api_version": 1,
+  "permissions": [
+    "viewer.notify",
+    "chat.send"
+  ]
+}
