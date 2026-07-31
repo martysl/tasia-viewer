@@ -35,10 +35,6 @@ bool lolistorm_extras_unlocked();
 bool lolistorm_unlock_extras(const std::string& password_hash);
 void lolistorm_lock_extras();
 
-// Tasia: hard-block dangerous extras when connected to Second Life (Agni/Aditi).
-// On SL the spoofing and export tools are never usable, even with the password.
-void lolistorm_set_secondlife(bool is_secondlife);
-
 void lolistorm_set_custom_ids(const std::string& username, const std::string& id0, const std::string& macid);
 void lolistorm_set_custom_id0(const std::string& id0);
 void lolistorm_set_custom_macid(const std::string& macid);

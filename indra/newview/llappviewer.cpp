@@ -1141,19 +1141,6 @@ bool LLAppViewer::init()
     // correct password hash is entered. Never auto-unlock at startup.
     lolistorm_set_password(gSavedSettings.getString("TasiaExtrasPasswordHash"));
 
-    // Tasia: on Second Life (Agni/Aditi) the dangerous extras are
-    // hard-blocked and can never be unlocked, password or not.
-    {
-        const std::string grid_id = LLGridManager::getInstance()->getGridId();
-        const bool is_secondlife = (grid_id == "Agni" || grid_id == "Aditi");
-        lolistorm_set_secondlife(is_secondlife);
-        if (is_secondlife)
-        {
-            LL_INFOS("LOExtras") << "Second Life grid detected (" << grid_id
-                                 << "): spoofing and export tools hard-blocked." << LL_ENDL;
-        }
-    }
-
     bool extraHands = gSavedSettings.getBOOL("ExtraHands");
     if (extraHands)
     {

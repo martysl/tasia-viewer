@@ -19,33 +19,17 @@ static std::string custom_macid;
 // Tasia extras password gate
 static std::string extras_password_hash;
 static bool extras_unlocked = false;
-static bool extras_secondlife = false;
-
-// Flags that are never usable on Second Life, even with the password.
-// Copybot-adjacent export tools and spoofing would risk the account.
-constexpr unsigned SL_BLOCKED_FLAGS =
-    LO_BYPASS_EXPORT_PERMS | LO_ENHANCED_EXPORT | LO_ANONYMIZE_EXPORTS | LO_MD5_LOGINS;
-
-void lolistorm_set_secondlife(bool is_secondlife)
-{
-    extras_secondlife = is_secondlife;
-    if (is_secondlife)
-    {
-        // Never unlocked on SL.
-        extras_unlocked = false;
-    }
-}
-
-bool lolistorm_extras_unlocked()
-{
-    return extras_unlocked && !extras_secondlife;
-}
 
 void lolistorm_set_password(const std::string& password_hash)
 {
     extras_password_hash = password_hash;
     // If no password is configured, extras stay locked forever.
     extras_unlocked = false;
+}
+
+bool lolistorm_extras_unlocked()
+{
+    return extras_unlocked;
 }
 
 bool lolistorm_unlock_extras(const std::string& password_hash)
@@ -118,13 +102,6 @@ bool lolistorm_check_flag(unsigned flag)
     // Tasia: all extra features require the password to be entered.
     // While locked, every feature flag is off.
     if (!extras_unlocked)
-    {
-        return false;
-    }
-
-    // Tasia: on Second Life, the dangerous flags are never usable,
-    // even with the password.
-    if (extras_secondlife && (flag & SL_BLOCKED_FLAGS) == flag)
     {
         return false;
     }

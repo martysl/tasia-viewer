@@ -1329,17 +1329,6 @@ void FSPanelLogin::onSelectServer()
         LLGridManager::getInstance()->setGridChoice(server_combo_val.asString());
     }
 
-    // Tasia: update the Second Life hard-block when the grid selection changes.
-    {
-        const std::string grid_id = LLGridManager::getInstance()->getGridId();
-        const bool is_secondlife = (grid_id == "Agni" || grid_id == "Aditi");
-        lolistorm_set_secondlife(is_secondlife);
-        if (is_secondlife)
-        {
-            g_lo_locked_custom_ids = true;
-        }
-    }
-
     /*
      * Determine whether or not the value in the start_location_combo makes sense
      * with the new grid value.
