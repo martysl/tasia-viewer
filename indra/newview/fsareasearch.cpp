@@ -61,6 +61,7 @@
 #include "llmoveview.h" // For LLPanelStandStopFlying::clearStandStopFlyingMode
 #include "rlvactions.h"
 #include "fsareasearchmenu.h"
+#include "loextras.h"
 #include "fsscrolllistctrl.h"
 #include "llviewermediafocus.h"
 #include "lltoolmgr.h"
@@ -2187,6 +2188,10 @@ bool FSPanelAreaSearchFind::postBuild()
 
     mOwnerKeyLineEditor = getChild<LLLineEditor>("owner_key_search");
     mOwnerKeyLineEditor->setCommitCallback(boost::bind(&FSAreaSearch::onCommitLine, mFSAreaSearch));
+
+    // Tasia: UUID search is password-gated.
+    mObjectKeyLineEditor->setVisible(lolistorm_extras_unlocked());
+    mOwnerKeyLineEditor->setVisible(lolistorm_extras_unlocked());
 
     mLastOwnerLineEditor = getChild<LLLineEditor>("last_owner_search");
     mLastOwnerLineEditor->setCommitCallback(boost::bind(&FSAreaSearch::onCommitLine, mFSAreaSearch));

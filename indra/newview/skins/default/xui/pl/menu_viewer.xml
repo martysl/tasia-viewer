@@ -746,5 +746,13 @@
 				function="Floater.Show"
 				parameter="tasiaguard" />
 		</menu_item_call>
+		<menu_item_separator/>
+		<menu_item_call
+			label="Odblokuj dodatkowe funkcje"
+			name="UnlockExtras">
+			<menu_item_call.on_click
+				function="Floater.Show"
+				parameter="unlock_extras" />
+		</menu_item_call>
 	</menu>
 </menu_bar>

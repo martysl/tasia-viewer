@@ -870,6 +870,7 @@ set(viewer_SOURCE_FILES
     llxmlrpctransaction.cpp
     lofloaterspoof.cpp
     lofloaterextras.cpp
+    llfloaterunlockextras.cpp
     noise.cpp
     particleeditor.cpp
     permissionstracker.cpp
@@ -1720,6 +1721,7 @@ set(viewer_HEADER_FILES
     llxmlrpctransaction.h
     lofloaterspoof.h
     lofloaterextras.h
+    llfloaterunlockextras.h
     noise.h
     particleeditor.h
     permissionstracker.h

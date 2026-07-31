@@ -341,8 +341,18 @@ FSPanelLogin::FSPanelLogin(const LLRect &rect,
     auto&& spoof_btn = getChild<LLButton>("spoof_btn");
     spoof_btn->setClickedCallback([](LLUICtrl* ctrl, const LLSD&)
     {
-        LLFloaterReg::showInstance("lo_spoof");
+        // Tasia: spoofing is password-gated. When locked, direct the user to unlock first.
+        if (lolistorm_extras_unlocked())
+        {
+            LLFloaterReg::showInstance("lo_spoof");
+        }
+        else
+        {
+            LLFloaterReg::showInstance("unlock_extras");
+        }
     });
+    // Tasia: hide the spoof button entirely while extras are locked
+    spoof_btn->setVisible(lolistorm_extras_unlocked());
 
     auto&& extras_btn = getChild<LLButton>("extras_btn");
     extras_btn->setClickedCallback([](LLUICtrl* ctrl, const LLSD&)

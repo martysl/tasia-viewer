@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<floater
+ can_close="true"
+ can_drag_on_left="false"
+ can_minimize="true"
+ can_resize="false"
+ height="180"
+ min_height="180"
+ width="400"
+ min_width="400"
+ name="Unlock Extras"
+ title="Unlock Extra Features"
+ help_topic="tasia_extras">
+
+ <text
+  follows="top|left"
+  height="40"
+  layout="topleft"
+  left="20"
+  name="status_text"
+  top="15"
+  width="360">
+  Extra features are locked. Enter the password to unlock them for this session.
+ </text>
+
+ <line_editor
+  follows="top|left"
+  height="22"
+  layout="topleft"
+  left="20"
+  name="password_edit"
+  is_password="true"
+  top_pad="10"
+  width="360" />
+
+ <button
+  follows="left|bottom"
+  height="22"
+  label="Unlock"
+  layout="bottomleft"
+  left="20"
+  name="unlock_btn"
+  top_pad="10"
+  width="120" />
+ <button
+  follows="left|bottom"
+  height="22"
+  label="Lock"
+  layout="bottomleft"
+  left_pad="10"
+  name="lock_btn"
+  top_delta="0"
+  width="120" />
+
+</floater>

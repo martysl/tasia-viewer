@@ -8,6 +8,7 @@
 #include "lllineeditor.h"
 
 #include "lofloaterspoof.h"
+#include "loextras.h"
 
 #include "lospoof.h"
 
@@ -53,6 +54,14 @@ LOFloaterSpoof::~LOFloaterSpoof()
 
 bool LOFloaterSpoof::postBuild()
 {
+    // Tasia: spoofing requires the extras password. When locked, refuse to open.
+    if (!lolistorm_extras_unlocked())
+    {
+        LLFloaterReg::showInstance("unlock_extras");
+        closeFloater(false);
+        return false;
+    }
+
     update_labels();
 
     getChild<LLUICtrl>("reroll_btn")->setCommitCallback([this](LLUICtrl* ctrl, const LLSD&)

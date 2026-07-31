@@ -16,6 +16,37 @@ static std::string custom_username;
 static std::string custom_id0;
 static std::string custom_macid;
 
+// Tasia extras password gate
+static std::string extras_password_hash;
+static bool extras_unlocked = false;
+
+void lolistorm_set_password(const std::string& password_hash)
+{
+    extras_password_hash = password_hash;
+    // If no password is configured, extras stay locked forever.
+    extras_unlocked = false;
+}
+
+bool lolistorm_extras_unlocked()
+{
+    return extras_unlocked;
+}
+
+bool lolistorm_unlock_extras(const std::string& password_hash)
+{
+    if (!extras_password_hash.empty() && password_hash == extras_password_hash)
+    {
+        extras_unlocked = true;
+        return true;
+    }
+    return false;
+}
+
+void lolistorm_lock_extras()
+{
+    extras_unlocked = false;
+}
+
 void lolistorm_block_flag(unsigned flag)
 {
     lo_blocked |= flag;
@@ -68,6 +99,13 @@ void lolistorm_disable_flag(unsigned flag)
 
 bool lolistorm_check_flag(unsigned flag)
 {
+    // Tasia: all extra features require the password to be entered.
+    // While locked, every feature flag is off.
+    if (!extras_unlocked)
+    {
+        return false;
+    }
+
     if ((flag & lo_blocked) == flag)
     {
         return false;

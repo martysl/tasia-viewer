@@ -73,6 +73,10 @@ bool LOFloaterExtras::postBuild()
 {
     update_labels();
 
+    // Tasia: extra feature toggles (spoofing, export tools) are password-gated.
+    // Only the custom login background stays usable while locked.
+    const bool extras_unlocked = lolistorm_extras_unlocked();
+
     std::pair<const char*, unsigned> checkboxes[]{
         {"convenience_chk", LO_CONVENIENCE},
         {"bypass_export_perms_chk", LO_BYPASS_EXPORT_PERMS},
@@ -91,7 +95,7 @@ bool LOFloaterExtras::postBuild()
         ctrl->setValue(LLSD(lolistorm_check_flag(flag)));
 
         if ((LO_FEATURE_MASK & flag) == flag)
-            ctrl->setEnabled(true);
+            ctrl->setEnabled(extras_unlocked);
 
         ctrl->setCommitCallback([flag](LLUICtrl *ctrl, const LLSD&)
         {
@@ -136,6 +140,11 @@ bool LOFloaterExtras::postBuild()
         if (floater_spoof)
             floater_spoof->update_labels();
     };
+
+    // Tasia: custom ID spoofing is password-gated.
+    custom_login_ids_chk->setEnabled(extras_unlocked);
+    custom_id0->setEnabled(extras_unlocked && custom_login_ids_chk->getValue().asBoolean());
+    custom_macid->setEnabled(extras_unlocked && custom_login_ids_chk->getValue().asBoolean());
 
     custom_login_ids_chk->setCommitCallback([update_spoof_window, custom_id0, custom_macid](LLUICtrl *ctrl, const LLSD&)
     {

@@ -6214,6 +6214,14 @@
         </menu_item_call>
         <menu_item_separator/>
         <menu_item_call
+         label="Unlock Extra Features"
+         name="UnlockExtras">
+            <menu_item_call.on_click
+             function="Floater.Show"
+             parameter="unlock_extras" />
+        </menu_item_call>
+        <menu_item_separator/>
+        <menu_item_call
          label="About [APP_NAME]"
          name="About">
             <menu_item_call.on_click

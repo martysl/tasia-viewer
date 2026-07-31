@@ -28,6 +28,13 @@ bool lolistorm_check_block(unsigned flag);
 
 void lolistorm_strip_jpeg2000_comment(std::string&);
 
+// Tasia extras password gate.
+// All LO extra features are disabled unless the correct password was entered.
+void lolistorm_set_password(const std::string& password_hash);
+bool lolistorm_extras_unlocked();
+bool lolistorm_unlock_extras(const std::string& password_hash);
+void lolistorm_lock_extras();
+
 void lolistorm_set_custom_ids(const std::string& username, const std::string& id0, const std::string& macid);
 void lolistorm_set_custom_id0(const std::string& id0);
 void lolistorm_set_custom_macid(const std::string& macid);

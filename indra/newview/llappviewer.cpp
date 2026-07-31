@@ -1137,6 +1137,10 @@ bool LLAppViewer::init()
     unsigned extra_features = gSavedSettings.getU32("LOExtraFeatures");
     unsigned extra_mask = gSavedSettings.getU32("LOExtraMask");
 
+    // Tasia: extras (spoofing, export tools) stay locked until the
+    // correct password hash is entered. Never auto-unlock at startup.
+    lolistorm_set_password(gSavedSettings.getString("TasiaExtrasPasswordHash"));
+
     bool extraHands = gSavedSettings.getBOOL("ExtraHands");
     if (extraHands)
     {
