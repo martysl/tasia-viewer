@@ -628,6 +628,30 @@ private:
 };
 // </FS:AW  opensim preferences>
 
+// <Tasia> animation priority overrides preferences
+class LLPanelPreferenceTasia : public LLPanelPreference
+{
+    LOG_CLASS(LLPanelPreferenceTasia);
+
+public:
+    LLPanelPreferenceTasia();
+    ~LLPanelPreferenceTasia();
+
+    /*virtual*/ bool postBuild();
+
+protected:
+    void onAddAnimOverride();
+    void onRemoveAnimOverride();
+    void refreshAnimOverrideList();
+
+private:
+    LLLineEditor* mUUIDEdit;
+    LLSpinCtrl* mPrioritySpin;
+    LLScrollListCtrl* mAnimList;
+    LLTextBox* mStatusText;
+};
+// </Tasia>
+
 // <FS:Ansariel> Output device selection
 class FSPanelPreferenceSounds : public LLPanelPreference
 {

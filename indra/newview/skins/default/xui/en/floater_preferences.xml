@@ -212,7 +212,7 @@
          help_topic="preferences_opensim_tab"
          name="opensim" />
         <panel
-         class="panel_preference"
+         class="panel_preference_tasia"
          filename="panel_preferences_tasia.xml"
          label="Tasia"
          layout="topleft"
