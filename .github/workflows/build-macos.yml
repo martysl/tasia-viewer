@@ -3,7 +3,7 @@ name: Build Tasia Viewer - macOS
 on:
   push:
     branches:
-      - feature/tasia-giphy-welcome-loading-macos
+      - feature/tasia-macos-build
   workflow_dispatch:
     inputs:
       publish_release:
