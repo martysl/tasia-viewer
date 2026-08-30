@@ -103,6 +103,10 @@ else ()
     set(CMAKE_CXX_FLAGS_RELEASE        "${_msquic_saved_CXX_FLAGS_RELEASE}")
     set(BUILD_SHARED_LIBS              "${_msquic_saved_BUILD_SHARED_LIBS}")
 
+# On macOS there is no GNU objcopy (only llvm-objcopy, and the symbol-renaming
+# step is a Linux/Windows convention to isolate quictls/OpenSSL symbols). Skip
+# the localization step on Apple; libmsquic.a is still linked in below.
+if (NOT APPLE)
     find_program(MSQUIC_NM_EXE nm)
     if (NOT MSQUIC_NM_EXE)
         message(FATAL_ERROR "MsQuic: 'nm' is required to localize bundled OpenSSL symbols")
@@ -126,6 +130,7 @@ else ()
 
     add_custom_target(msquic_localized ALL DEPENDS "${_msquic_marker}")
     add_dependencies(msquic msquic_localized)
+endif ()
 
     message(STATUS "MsQuic: Building from source (static, v${MSQUIC_GIT_TAG_SRC})")
 endif ()
