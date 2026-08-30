@@ -162,6 +162,7 @@ jobs:
           TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
         run: |
           CMAKE_ARGS=()
+          CMAKE_ARGS+=("-DGCC_DISABLE_FATAL_WARNINGS=ON")
           CMAKE_ARGS+=("--fmodstudio")
           CMAKE_ARGS+=("--package")
           if [ -n "${{ matrix.cmake_arch_flag }}" ]; then

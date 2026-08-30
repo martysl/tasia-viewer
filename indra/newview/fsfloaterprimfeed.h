@@ -110,7 +110,7 @@ public:
     void draw() override;
 
 private:
-    void onVisibilityChange(bool new_visibility);
+    void onVisibilityChange(bool new_visibility) override;
     void primfeedAuthResponse(bool success, const LLSD& response);
     bool onPrimfeedConnectStateChange(const LLSD& data);
     bool onPrimfeedConnectInfoChange();
