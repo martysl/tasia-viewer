@@ -144,7 +144,11 @@ jobs:
 
       - name: Install macOS build prerequisites
         run: |
-          brew install bash gnu-sed ninja
+          brew install bash gnu-sed ninja llvm
+          # llvm-objcopy is NOT bundled with Xcode/CLT; it is required to
+          # localize MsQuic's bundled quictls/OpenSSL symbols (--redefine-syms)
+          # so they cannot collide with the viewer's libcrypto/libssl at link time.
+          echo "LLVM_BIN=$(brew --prefix llvm)/bin" >> "$GITHUB_ENV"
 
       - name: Set Tasia build metadata
         shell: bash
@@ -169,6 +173,7 @@ jobs:
             CMAKE_ARGS+=("${{ matrix.cmake_arch_flag }}")
           fi
 
+          export PATH="$LLVM_BIN:$PATH"
           autobuild configure \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \
@@ -178,6 +183,7 @@ jobs:
       - name: Build macOS with FMOD - ${{ matrix.arch }}
         shell: bash
         run: |
+          export PATH="$LLVM_BIN:$PATH"
           autobuild build \
             -c ReleaseFS_open \
             -A ${{ env.AUTOBUILD_ADDRSIZE }} \

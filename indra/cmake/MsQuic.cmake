@@ -103,14 +103,41 @@ else ()
     set(CMAKE_CXX_FLAGS_RELEASE        "${_msquic_saved_CXX_FLAGS_RELEASE}")
     set(BUILD_SHARED_LIBS              "${_msquic_saved_BUILD_SHARED_LIBS}")
 
-# On macOS there is no GNU objcopy (only llvm-objcopy, and the symbol-renaming
-# step is a Linux/Windows convention to isolate quictls/OpenSSL symbols). Skip
-# the localization step on Apple; libmsquic.a is still linked in below.
-if (NOT APPLE)
-    find_program(MSQUIC_NM_EXE nm)
+# On macOS there is no GNU objcopy; use llvm-objcopy (shipped by Xcode / CLT),
+# which supports --redefine-syms for Mach-O. The symbol-localization step is
+# required on EVERY non-Windows platform so MsQuic's bundled quictls/OpenSSL
+# symbols cannot collide with the viewer's own libcrypto/libssl (used by curl)
+# at static link time.
+if (APPLE)
+    find_program(MSQUIC_NM_EXE NAMES llvm-nm)
     if (NOT MSQUIC_NM_EXE)
-        message(FATAL_ERROR "MsQuic: 'nm' is required to localize bundled OpenSSL symbols")
+        # Fall back to xcrun to locate llvm-nm inside the Xcode toolchain
+        execute_process(COMMAND xcrun --find llvm-nm
+                        OUTPUT_VARIABLE MSQUIC_NM_EXE
+                        OUTPUT_STRIP_TRAILING_WHITESPACE
+                        ERROR_QUIET)
     endif()
+else ()
+    find_program(MSQUIC_NM_EXE nm)
+endif ()
+if (NOT MSQUIC_NM_EXE)
+    message(FATAL_ERROR "MsQuic: 'nm' is required to localize bundled OpenSSL symbols")
+endif()
+
+if (APPLE)
+    find_program(MSQUIC_OBJCOPY_EXE NAMES llvm-objcopy)
+    if (NOT MSQUIC_OBJCOPY_EXE)
+        execute_process(COMMAND xcrun --find llvm-objcopy
+                        OUTPUT_VARIABLE MSQUIC_OBJCOPY_EXE
+                        OUTPUT_STRIP_TRAILING_WHITESPACE
+                        ERROR_QUIET)
+    endif()
+else ()
+    find_program(MSQUIC_OBJCOPY_EXE NAMES objcopy)
+endif ()
+if (NOT MSQUIC_OBJCOPY_EXE)
+    message(FATAL_ERROR "MsQuic: an objcopy supporting --redefine-syms is required (llvm-objcopy on macOS, objcopy elsewhere)")
+endif()
 
     set(_msquic_marker  "${msquic_BINARY_DIR}/msquic_localized.stamp")
     set(_msquic_archive "${msquic_BINARY_DIR}/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/libmsquic.a")
@@ -121,7 +148,7 @@ if (NOT APPLE)
                 -DMSQUIC_AR_PATH=${_msquic_archive}
                 -DAR=${CMAKE_AR}
                 -DNM=${MSQUIC_NM_EXE}
-                -DOBJCOPY=${CMAKE_OBJCOPY}
+                -DOBJCOPY=${MSQUIC_OBJCOPY_EXE}
                 -DMARKER=${_msquic_marker}
                 -P "${CMAKE_CURRENT_LIST_DIR}/MsQuicLocalize.cmake"
         DEPENDS msquic_lib "${CMAKE_CURRENT_LIST_DIR}/MsQuicLocalize.cmake"
@@ -130,7 +157,6 @@ if (NOT APPLE)
 
     add_custom_target(msquic_localized ALL DEPENDS "${_msquic_marker}")
     add_dependencies(msquic msquic_localized)
-endif ()
 
     message(STATUS "MsQuic: Building from source (static, v${MSQUIC_GIT_TAG_SRC})")
 endif ()
