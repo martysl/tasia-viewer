@@ -1902,9 +1902,29 @@ if (DARWIN)
          )
 # [FS]
 
-  # Add resource files to the project.
-  set(viewer_RESOURCE_FILES
-    tasia_icon.icns
+# Replace the macOS bundle icon with the channel-appropriate one and ensure it
+# exists in the source dir where CMake's add_executable(MACOSX_BUNDLE) expects it.
+set(ICON_PATH "private")
+string(TOLOWER ${VIEWER_CHANNEL} channel_lower)
+if(channel_lower MATCHES "release")
+  set(ICON_PATH "release")
+elseif(channel_lower MATCHES "beta")
+  set(ICON_PATH "beta")
+elseif(channel_lower MATCHES "project")
+  set(ICON_PATH "project")
+endif()
+if (OPENSIM)
+  set(ICON_PATH "${ICON_PATH}-os")
+endif (OPENSIM)
+execute_process(
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CMAKE_CURRENT_SOURCE_DIR}/icons/${ICON_PATH}/tasia_icon.icns"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tasia_icon.icns"
+  )
+
+# Add resource files to the project.
+set(viewer_RESOURCE_FILES
+  tasia_icon.icns
     Info-Firestorm.plist
     Firestorm.xib/
     # CMake doesn't seem to support Xcode language variants well just yet
