@@ -820,7 +820,7 @@ void set_nav_save_data(ESaveFilter filter, std::string &extension, std::string &
 {
     switch (filter)
     {
-        case LLFilePicker::FFSAVE_WAV:
+        case FFSAVE_WAV:
             type = "WAVE";
             creator = "TVOD";
             extension = "wav";
@@ -835,7 +835,7 @@ void set_nav_save_data(ESaveFilter filter, std::string &extension, std::string &
             creator = "prvw";
             extension = "png,tga";
             break;
-        case LLFilePicker::FFSAVE_BMP:
+        case FFSAVE_BMP:
             type = "BMPf";
             creator = "prvw";
             extension = "bmp";
@@ -850,13 +850,13 @@ void set_nav_save_data(ESaveFilter filter, std::string &extension, std::string &
             creator = "prvw";
             extension = "png";
             break;
-        case LLFilePicker::FFSAVE_AVI:
+        case FFSAVE_AVI:
             type = "\?\?\?\?";
             creator = "\?\?\?\?";
             extension = "mov";
             break;
 
-        case LLFilePicker::FFSAVE_ANIM:
+        case FFSAVE_ANIM:
             type = "\?\?\?\?";
             creator = "\?\?\?\?";
             extension = "xaf";
@@ -881,7 +881,7 @@ void set_nav_save_data(ESaveFilter filter, std::string &extension, std::string &
             extension = "raw";
             break;
 
-        case LLFilePicker::FFSAVE_J2C:
+        case FFSAVE_J2C:
             type = "\?\?\?\?";
             creator = "prvw";
             extension = "j2c";
