@@ -31,7 +31,7 @@ LLFloaterUnlockExtras::~LLFloaterUnlockExtras()
 {
 }
 
-BOOL LLFloaterUnlockExtras::postBuild()
+bool LLFloaterUnlockExtras::postBuild()
 {
     getChild<LLButton>("unlock_btn")->setClickedCallback([this]() { onUnlockClicked(); });
     getChild<LLButton>("lock_btn")->setClickedCallback([this]() { onLockClicked(); });

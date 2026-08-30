@@ -19,7 +19,7 @@ public:
     LLFloaterUnlockExtras(const LLSD& key);
     ~LLFloaterUnlockExtras() override;
 
-    /*virtual*/ BOOL postBuild() override;
+    /*virtual*/ bool postBuild() override;
     /*virtual*/ void draw() override;
 
     static void registerFloater();
