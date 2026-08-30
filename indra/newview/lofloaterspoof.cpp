@@ -7,6 +7,7 @@
 #include "llcontrol.h"
 #include "lllineeditor.h"
 
+#include "llfloaterreg.h"
 #include "lofloaterspoof.h"
 #include "loextras.h"
 
