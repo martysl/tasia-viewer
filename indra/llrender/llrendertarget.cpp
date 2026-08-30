@@ -498,7 +498,6 @@ void LLRenderTarget::bindTexture(U32 index, S32 channel, LLTexUnit::eTextureFilt
 {
     gGL.getTexUnit(channel)->bindManual(mUsage, getTexture(index), filter_options == LLTexUnit::TFO_TRILINEAR || filter_options == LLTexUnit::TFO_ANISOTROPIC);
 
-    bool isSRGB = false;
     llassert(mInternalFormat.size() > index);
     switch (mInternalFormat[index])
     {
@@ -506,7 +505,6 @@ void LLRenderTarget::bindTexture(U32 index, S32 channel, LLTexUnit::eTextureFilt
         case GL_SRGB8:
         case GL_SRGB_ALPHA:
         case GL_SRGB8_ALPHA8:
-            isSRGB = true;
             break;
 
         default:

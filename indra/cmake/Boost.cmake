@@ -109,6 +109,27 @@ function(_ll_mark_boost_system_includes _dir)
 endfunction()
 _ll_mark_boost_system_includes("${boost_SOURCE_DIR}")
 
+# Force the OSX architecture onto every Boost target. FetchContent's Boost
+# sub-build (in _deps/boost-build) uses its own CMakeCache.txt and does not
+# reliably inherit -DCMAKE_OSX_ARCHITECTURES from the top-level configure, so
+# on Apple Silicon Boost.Context's arm64 asm still compiles for x86_64 and
+# fails. Set OSX_ARCHITECTURES per-target to pin the arch regardless.
+if (APPLE AND CMAKE_OSX_ARCHITECTURES)
+    # ll::boost links the Boost::* ALIAS imported targets whose underlying
+    # real targets live in the boost sub-build; iterate the actual targets.
+    foreach(_t
+            boost_atomic boost_chrono boost_container boost_context boost_date_time
+            boost_fiber boost_fiber_numa boost_filesystem boost_graph boost_iostreams
+            boost_json boost_program_options boost_random boost_serialization
+            boost_stacktrace_addr2line boost_stacktrace_basic boost_stacktrace_from_exception
+            boost_stacktrace_noop boost_thread boost_url boost_wave boost_wserialization)
+        if (TARGET ${_t})
+            set_target_properties(${_t} PROPERTIES
+                OSX_ARCHITECTURES "${CMAKE_OSX_ARCHITECTURES}")
+        endif()
+    endforeach()
+endif ()
+
 target_link_libraries( ll::boost INTERFACE
         Boost::asio
         Boost::assign
