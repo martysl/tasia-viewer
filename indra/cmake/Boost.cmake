@@ -14,6 +14,15 @@ endif()
 # symbols (unlike the autobuild prebuilt 1.86 package which was incomplete).
 include(FetchContent)
 
+# Propagate CMAKE_OSX_ARCHITECTURES into the FetchContent sub-build for Boost.
+# FetchContent_MakeAvailable re-runs CMake in _deps/boost-build, and a CLI
+# -DCMAKE_OSX_ARCHITECTURES=arm64 passed to the top-level configure is NOT
+# copied into that sub-build cache, so Xcode builds Boost.Context (and the
+# arm64 asm) as x86_64. Force it into the cache so the sub-build inherits it.
+if (APPLE AND CMAKE_OSX_ARCHITECTURES)
+  set(CMAKE_OSX_ARCHITECTURES "${CMAKE_OSX_ARCHITECTURES}" CACHE STRING "" FORCE)
+endif ()
+
 set(BOOST_INCLUDE_LIBRARIES
         asio
         assign
