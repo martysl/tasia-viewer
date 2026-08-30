@@ -2802,14 +2802,19 @@ if (DARWIN)
   # These all get set with PROPERTIES. It's not that the property names are
   # magically known to CMake -- it's that these names are referenced in the
   # Info-SecondLife.plist file in the configure_file() directive below.
-  #set(product "${VIEWER_CHANNEL}")
-  set(product "Firestorm")
-  set(MACOSX_EXECUTABLE_NAME "Firestorm")
-  set(MACOSX_BUNDLE_INFO_STRING "Firestorm Viewer")
+  # The executable/bundle must match CHANNEL_VENDOR_BASE ('Tasia') because
+  # viewer_manifest.py locates the bundle executable via CHANNEL_VENDOR_BASE
+  # (e.g. for install_name_tool rewrites) and installs it as <vendor>.app.
+  if (NOT VIEWER_VENDOR)
+    string(REGEX MATCH "^[^ -]+" VIEWER_VENDOR "${VIEWER_CHANNEL}")
+  endif()
+  set(product "${VIEWER_VENDOR}")
+  set(MACOSX_EXECUTABLE_NAME "${VIEWER_VENDOR}")
+  set(MACOSX_BUNDLE_INFO_STRING "${VIEWER_VENDOR} Viewer")
   set(MACOSX_BUNDLE_ICON_FILE "tasia_icon.icns")
-  set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.firestormviewer.firestorm")
+  set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.${VIEWER_VENDOR}.${VIEWER_VENDOR}")
   set(MACOSX_BUNDLE_LONG_VERSION_STRING "${VIEWER_CHANNEL} ${VIEWER_SHORT_VERSION}.${VIEWER_VERSION_REVISION}")
-  set(MACOSX_BUNDLE_BUNDLE_NAME "Firestorm")
+  set(MACOSX_BUNDLE_BUNDLE_NAME "${VIEWER_VENDOR}")
   set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${VIEWER_SHORT_VERSION}.${VIEWER_VERSION_REVISION}")
   set(MACOSX_BUNDLE_BUNDLE_VERSION "${VIEWER_SHORT_VERSION}${VIEWER_MACOSX_PHASE}${VIEWER_REVISION}")
   set(MACOSX_BUNDLE_COPYRIGHT "Copyright 2010-2025 The Phoenix Firestorm Project, Inc.")
