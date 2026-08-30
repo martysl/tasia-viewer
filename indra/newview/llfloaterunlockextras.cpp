@@ -20,11 +20,11 @@
 #include "llviewercontrol.h"
 #include "loextras.h"
 #include "llmd5.h"
+#include "llstring.h"
 
 LLFloaterUnlockExtras::LLFloaterUnlockExtras(const LLSD& key)
     : LLFloater(key)
 {
-    mAutoScale = true;
 }
 
 LLFloaterUnlockExtras::~LLFloaterUnlockExtras()
@@ -33,11 +33,11 @@ LLFloaterUnlockExtras::~LLFloaterUnlockExtras()
 
 bool LLFloaterUnlockExtras::postBuild()
 {
-    getChild<LLButton>("unlock_btn")->setClickedCallback([this]() { onUnlockClicked(); });
-    getChild<LLButton>("lock_btn")->setClickedCallback([this]() { onLockClicked(); });
+    getChild<LLButton>("unlock_btn")->setClickedCallback([this](LLUICtrl*, const LLSD&) { onUnlockClicked(); });
+    getChild<LLButton>("lock_btn")->setClickedCallback([this](LLUICtrl*, const LLSD&) { onLockClicked(); });
 
     updateStatus();
-    return TRUE;
+    return true;
 }
 
 void LLFloaterUnlockExtras::draw()
@@ -67,30 +67,30 @@ void LLFloaterUnlockExtras::onUnlockClicked()
 
     if (lolistorm_unlock_extras(digest))
     {
-        getChild<LLTextBase>("status_text")->setText("Extra features unlocked for this session.");
-        getChild<LLLineEditor>("password_edit")->setText("");
+        getChild<LLTextBase>("status_text")->setText(LLStringExplicit("Extra features unlocked for this session."));
+        getChild<LLLineEditor>("password_edit")->setText(LLStringExplicit(""));
     }
     else
     {
-        getChild<LLTextBase>("status_text")->setText("Wrong password.");
+        getChild<LLTextBase>("status_text")->setText(LLStringExplicit("Wrong password."));
     }
 }
 
 void LLFloaterUnlockExtras::onLockClicked()
 {
     lolistorm_lock_extras();
-    getChild<LLTextBase>("status_text")->setText("Extra features locked.");
-    getChild<LLLineEditor>("password_edit")->setText("");
+    getChild<LLTextBase>("status_text")->setText(LLStringExplicit("Extra features locked."));
+    getChild<LLLineEditor>("password_edit")->setText(LLStringExplicit(""));
 }
 
 void LLFloaterUnlockExtras::updateStatus()
 {
     if (lolistorm_extras_unlocked())
     {
-        getChild<LLTextBase>("status_text")->setText("Extra features are UNLOCKED for this session.");
+        getChild<LLTextBase>("status_text")->setText(LLStringExplicit("Extra features are UNLOCKED for this session."));
     }
     else
     {
-        getChild<LLTextBase>("status_text")->setText("Extra features are locked. Enter the password to unlock them for this session.");
+        getChild<LLTextBase>("status_text")->setText(LLStringExplicit("Extra features are locked. Enter the password to unlock them for this session."));
     }
 }
