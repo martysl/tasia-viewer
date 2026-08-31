@@ -2056,7 +2056,7 @@ class LLAdvancedEnableAppearanceToXML : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
     {
-        bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+        bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
         LLViewerObject *obj = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
         if (obj && obj->isAnimatedObject() && obj->getControlAvatar())
         {
@@ -4121,7 +4121,7 @@ class LLLandEnableBuyPass : public view_listener_t
 
 bool enable_object_edit()
 {
-    if (lolistorm_check_flag(LO_CONVENIENCE))
+    if (false) // Tasia: removed LO_CONVENIENCE flag (Lostorm leftovers)
         return true;
 
     if (!isAgentAvatarValid()) return false;

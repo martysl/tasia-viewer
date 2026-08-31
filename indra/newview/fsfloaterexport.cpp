@@ -295,7 +295,7 @@ void FSFloaterObjectExport::updateSelection()
 
 bool FSFloaterObjectExport::exportSelection()
 {
-    bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);
+    bool anonymize = false; // Tasia: removed LO_ANONYMIZE_EXPORTS flag (Lostorm leftovers)
     if (!mObjectSelection)
     {
         LL_WARNS("export") << "Nothing selected; Bailing!" << LL_ENDL;
@@ -385,8 +385,8 @@ LLSD FSFloaterObjectExport::getLinkSet(LLSelectNode* node)
 
 void FSFloaterObjectExport::addPrim(LLViewerObject* object, bool root)
 {
-    bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);
-    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    bool anonymize = false; // Tasia: removed LO_ANONYMIZE_EXPORTS flag (Lostorm leftovers)
+    bool enhanced_export = false; // Tasia: removed LO_ENHANCED_EXPORT flag (Lostorm leftovers)
     LLSD prim;
     LLUUID object_id = object->getID();
     bool default_prim = true;
@@ -707,7 +707,7 @@ bool FSFloaterObjectExport::exportTexture(const LLUUID& texture_id)
     //TODO: check for local file static texture. The above will only get the static texture in the static db, not individual textures.
 
     LLViewerFetchedTexture* imagep = LLViewerTextureManager::getFetchedTexture(texture_id);
-    bool texture_export = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool texture_export = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     std::string name;
     std::string description;
 
@@ -792,7 +792,7 @@ void FSFloaterObjectExport::saveFormattedImage(LLPointer<LLImageFormatted> mForm
     texture_str.write((const char*) mFormattedImage->getData(), mFormattedImage->getDataSize());
     std::string str = texture_str.str();
 
-    if (lolistorm_check_flag(LO_ANONYMIZE_EXPORTS))
+    if (false) // Tasia: removed LO_ANONYMIZE_EXPORTS flag (Lostorm leftovers)
         lolistorm_strip_jpeg2000_comment(str);
 
     mManifest["asset"][id.asString()]["name"] = mRequestedTexture[id].name;
@@ -1080,8 +1080,8 @@ void FSFloaterObjectExport::addObject(const LLViewerObject* prim, const std::str
 // <FS:CR> *TODO: I know it's really lame to tack this in here, maybe someday it can be integrated properly.
 void FSFloaterObjectExport::updateTextureInfo()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
-    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
+    bool enhanced_export = false; // Tasia: removed LO_ENHANCED_EXPORT flag (Lostorm leftovers)
 
     std::list<LLUUID> texture_ids;
 
@@ -1356,7 +1356,7 @@ S32 FSFloaterObjectExport::getNumExportableTextures()
 
 void FSFloaterObjectExport::addTexturePreview()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     S32 num_text = mNumExportableTextures;
     if (num_text == 0) return;
     S32 img_width = 100;

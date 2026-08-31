@@ -1,13 +1,15 @@
-
 #include "loextras.h"
 
-static unsigned lo_flags = LO_FEATURE_MASK;
+// Tasia: removed Lostorm feature flags - stub implementations
+// Core spoofing/ID functions (custom IDs, password gate) remain intact
+
+static unsigned lo_flags = 0;
 static unsigned lo_mask = 0;
-static unsigned lo_blocked = LO_ENHANCED_EXPORT | LO_BYPASS_EXPORT_PERMS;
+static unsigned lo_blocked = 0;
 
 static unsigned default_on_flags[] = {
-    LO_CONVENIENCE,
-    LO_ANONYMIZE_EXPORTS
+    // LO_CONVENIENCE removed
+    // LO_ANONYMIZE_EXPORTS removed
 };
 
 static unsigned new_flags;
@@ -15,6 +17,52 @@ static unsigned new_flags;
 static std::string custom_username;
 static std::string custom_id0;
 static std::string custom_macid;
+
+// Tasia extras password gate
+static std::string extras_password_hash;
+static bool extras_unlocked = false;
+static bool extras_secondlife = false;
+
+// Flags that are never usable on Second Life, even with the password.
+// Copybot-adjacent export tools and spoofing would risk the account.
+constexpr unsigned SL_BLOCKED_FLAGS = 0;
+
+void lolistorm_set_secondlife(bool is_secondlife)
+{
+    extras_secondlife = is_secondlife;
+    if (is_secondlife)
+    {
+        // Never unlocked on SL.
+        extras_unlocked = false;
+    }
+}
+
+bool lolistorm_extras_unlocked()
+{
+    return extras_unlocked && !extras_secondlife;
+}
+
+void lolistorm_set_password(const std::string& password_hash)
+{
+    extras_password_hash = password_hash;
+    // If no password is configured, extras stay locked forever.
+    extras_unlocked = false;
+}
+
+bool lolistorm_unlock_extras(const std::string& password_hash)
+{
+    if (!extras_password_hash.empty() && password_hash == extras_password_hash)
+    {
+        extras_unlocked = true;
+        return true;
+    }
+    return false;
+}
+
+void lolistorm_lock_extras()
+{
+    extras_unlocked = false;
+}
 
 void lolistorm_block_flag(unsigned flag)
 {
@@ -26,19 +74,30 @@ void lolistorm_unblock_flag(unsigned flag)
     lo_blocked &= ~flag;
 }
 
+void lolistorm_enable_flag(unsigned flag)
+{
+    // No-op: feature flags removed
+}
+
+void lolistorm_disable_flag(unsigned flag)
+{
+    // No-op: feature flags removed
+}
+
+bool lolistorm_check_flag(unsigned flag)
+{
+    return false; // All feature flags removed
+}
+
+bool lolistorm_check_block(unsigned flag)
+{
+    return false; // No flags are blocked
+}
+
 void lolistorm_set_flags(unsigned flags, unsigned mask)
 {
-    for (unsigned x : default_on_flags)
-    {
-        if (!(mask & x))
-        {
-            flags |= x;
-            new_flags |= x;
-        }
-    }
-
     lo_flags = flags;
-    lo_mask = mask | LO_FEATURE_MASK;
+    lo_mask = mask;
 }
 
 unsigned lolistorm_get_flags()
@@ -53,65 +112,24 @@ unsigned lolistorm_get_mask()
 
 unsigned lolistorm_new_defaulted_flags()
 {
-    return new_flags;
-}
-
-void lolistorm_enable_flag(unsigned flag)
-{
-    lo_flags |= flag;
-}
-
-void lolistorm_disable_flag(unsigned flag)
-{
-    lo_flags &= ~flag;
-}
-
-bool lolistorm_check_flag(unsigned flag)
-{
-    if ((flag & lo_blocked) == flag)
-    {
-        return false;
-    }
-    return ((lo_flags & flag) == flag);
-}
-
-bool lolistorm_check_block(unsigned flag)
-{
-    return ((lo_blocked & flag) == flag);
+    return 0; // No default flags
 }
 
 void lolistorm_strip_jpeg2000_comment(std::string& str)
 {
-    const unsigned char* buf = (const unsigned char*)str.data();
-    int len = (int)str.size();
-    bool in_header = false;
-
-    if (len < 6)
-        return;
-
-    for (int i = 0; i < len - 3; ++i)
+    // Strip JPEG2000 comment marker (0xFF 0x64) and comment data
+    // This is used for anonymizing exports
+    size_t pos = str.find("\xFF\x64");
+    if (pos != std::string::npos)
     {
-        if (buf[i] == 0xff)
+        // Find the length of the comment segment (2 bytes after marker)
+        if (pos + 3 < str.size())
         {
-            if (buf[i+1] == 0x4f)
+            unsigned short len = (static_cast<unsigned char>(str[pos + 2]) << 8) |
+                                   static_cast<unsigned char>(str[pos + 3]);
+            if (pos + 2 + len <= str.size())
             {
-                in_header = true;
-            }
-            else if (buf[i+1] == 0x90 || buf[i+1] == 0xd9)
-            {
-                return;
-            }
-            else if (in_header && buf[i+1] == 0x64)
-            {
-                int comment_len = (buf[i + 2] << 8) | buf[i + 3];
-
-                if (comment_len > len - i)
-                    comment_len = len - i;
-
-                auto it = str.begin() + i;
-                str.erase(it, it + 2 + comment_len);
-
-                return;
+                str.erase(pos, 2 + len);
             }
         }
     }

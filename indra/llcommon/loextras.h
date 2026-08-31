@@ -5,14 +5,18 @@
 
 #include <string>
 
-#define LO_CONVENIENCE             0x00000001U
-#define LO_BYPASS_EXPORT_PERMS     0x00000002U
-#define LO_ENHANCED_EXPORT         0x00000004U
-#define LO_ANONYMIZE_EXPORTS       0x00000008U
-#define LO_MD5_LOGINS              0x00000010U
+// Tasia: removed Lostorm feature flags (LO_CONVENIENCE, LO_BYPASS_EXPORT_PERMS, LO_ENHANCED_EXPORT, LO_ANONYMIZE_EXPORTS, LO_MD5_LOGINS)
+// These were Lostorm viewer leftovers. Core spoofing/ID functions remain.
+// Defined as 0 for compile compatibility with existing code
+#define LO_CONVENIENCE             0x00000000U
+#define LO_BYPASS_EXPORT_PERMS     0x00000000U
+#define LO_ENHANCED_EXPORT         0x00000000U
+#define LO_ANONYMIZE_EXPORTS       0x00000000U
+#define LO_MD5_LOGINS              0x00000000U
 
-#define LO_FEATURE_MASK            0x0000001FU
+#define LO_FEATURE_MASK            0x00000000U
 
+// Stubs for removed flag API (always return false/empty)
 void lolistorm_set_flags(unsigned flags, unsigned mask);
 unsigned lolistorm_get_flags();
 unsigned lolistorm_get_mask();
@@ -27,6 +31,15 @@ bool lolistorm_check_flag(unsigned flag);
 bool lolistorm_check_block(unsigned flag);
 
 void lolistorm_strip_jpeg2000_comment(std::string&);
+
+// Tasia extras password gate.
+void lolistorm_set_password(const std::string& password_hash);
+bool lolistorm_extras_unlocked();
+bool lolistorm_unlock_extras(const std::string& password_hash);
+void lolistorm_lock_extras();
+
+// Tasia: hard-block dangerous extras when connected to Second Life (Agni/Aditi).
+void lolistorm_set_secondlife(bool is_secondlife);
 
 void lolistorm_set_custom_ids(const std::string& username, const std::string& id0, const std::string& macid);
 void lolistorm_set_custom_id0(const std::string& id0);

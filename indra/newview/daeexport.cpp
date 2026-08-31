@@ -740,7 +740,7 @@ void DAESaver::transformTexCoord(S32 num_vert, LLVector2* coord, LLVector3* posi
 
 bool DAESaver::saveDAE(std::string filename)
 {
-    bool anonymize = lolistorm_check_flag(LO_ANONYMIZE_EXPORTS);
+    bool anonymize = false; // Tasia: removed LO_ANONYMIZE_EXPORTS flag (Lostorm leftovers)
 
     // Collada expects file and folder names to be escaped
     // Note: cdom::nativePathToUri()
@@ -1076,7 +1076,7 @@ void DAESaver::generateEffects(daeElement *effects)
         domElement* phong = t->add("phong");
 
         // Excluding this causes Blender to have glitched rendering
-        if (lolistorm_check_flag(LO_ENHANCED_EXPORT))
+        if (false) // Tasia: removed LO_ENHANCED_EXPORT flag (Lostorm leftovers)
             phong->add("shininess float")->setCharData("50");
 
         domElement* diffuse = phong->add("diffuse");

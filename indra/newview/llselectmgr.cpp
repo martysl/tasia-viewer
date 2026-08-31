@@ -1973,7 +1973,7 @@ struct TextureApplyFunctor : public LLSelectedTEFunctor
 // *TODO: re-arch texture applying out of lltooldraganddrop
 bool LLSelectMgr::selectionSetImage(const LLUUID& imageid, bool isPBR)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     // First for (no copy) textures and multiple object selection
     LLViewerInventoryItem* item = gInventory.getItem(imageid);
 

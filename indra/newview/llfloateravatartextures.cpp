@@ -56,7 +56,7 @@ LLFloaterAvatarTextures::~LLFloaterAvatarTextures()
 
 bool LLFloaterAvatarTextures::postBuild()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
 
     for (U32 i=0; i < TEX_NUM_INDICES; i++)
     {
@@ -88,7 +88,7 @@ static void update_texture_ctrl(LLVOAvatar* avatarp,
                                  LLTextureCtrl* ctrl,
                                  ETextureIndex te)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     LLUUID id = IMG_DEFAULT_AVATAR;
     const LLAvatarAppearanceDictionary::TextureEntry* tex_entry = LLAvatarAppearance::getDictionary()->getTexture(te);
     if (tex_entry && tex_entry->mIsLocalTexture)
@@ -178,7 +178,7 @@ void LLFloaterAvatarTextures::refresh()
 // static
 void LLFloaterAvatarTextures::onClickDump(void* data)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     if (gAgent.isGodlike() || bypass_perms)
     {
         const LLVOAvatarSelf* avatarp = gAgentAvatarp;

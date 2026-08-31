@@ -2385,7 +2385,7 @@ void LLVOAvatarSelf::setBakedReady(LLAvatarAppearanceDefines::ETextureIndex type
 // virtual
 void LLVOAvatarSelf::dumpLocalTextures() const
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
 
 #if !LL_RELEASE_FOR_DOWNLOAD
     bypass_perms = true;
@@ -2978,7 +2978,7 @@ bool LLVOAvatarSelf::canGrabBakedTexture(EBakedTextureIndex baked_index) const
         return false;
     }
 
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
 
     if (bypass_perms || gAgent.isGodlikeWithoutAdminMenuFakery())
         return true;
