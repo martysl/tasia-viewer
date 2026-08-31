@@ -229,6 +229,7 @@ jobs:
         shell: bash
         env:
           TASIA_GIPHY_API_KEY: ${{ secrets.TASIA_GIPHY_API_KEY }}
+          TASIA_KLIPY_API_KEY: ${{ secrets.TASIA_KLIPY_API_KEY }}
         run: |
           set -euo pipefail
 

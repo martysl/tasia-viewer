@@ -25,3 +25,7 @@
 | 2026-05-25 | Keep only the newest Linux+Windows releases visible | Avoids release confusion and stale downloads |
 | 2026-05-25 | Prune old Actions run results after successful publish | Keeps CI history focused on current releasable builds |
 | 2026-05-25 | Discord webhook post is part of release completion | Ensures Mom/community always gets direct release+ZIP links |
+| 2026-08-31 | KLIPY picker off by default (`TasiaKlipyEnabled=false`) | Disabled provider must not initialize; opt-in avoids key/network use until enabled |
+| 2026-08-31 | KLIPY API key via `TASIA_KLIPY_API_KEY` at build time or `TasiaKlipyAPIKey` at runtime, same as GIPHY | Avoids committing real keys while allowing a packaged fallback |
+| 2026-08-31 | Generated KLIPY key source files are ignored build artifacts | Prevents accidental commits of generated key material |
+| 2026-08-31 | KLIPY request URLs must not be logged | KLIPY API key is carried in the request query string |

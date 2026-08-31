@@ -952,7 +952,16 @@ bool LLAppViewer::init()
 
     LL_INFOS("InitInfo") << "LLCore::Http initialized." << LL_ENDL ;
 
-    LLQuicGlobal::instance().initialize(gDirUtilp->getCAFile());
+    // Tasia QUIC transport — only initialize when enabled by the user.
+    // On Second Life (Agni/Aditi) the toggle is disabled at login time.
+    if (gSavedSettings.getBOOL("TasiaUseQUIC"))
+    {
+        LLQuicGlobal::instance().initialize(gDirUtilp->getCAFile());
+    }
+    else
+    {
+        LL_INFOS("InitInfo") << "TasiaUseQUIC disabled — skipping QUIC initialization." << LL_ENDL ;
+    }
 
     LLMachineID::init();
 

@@ -234,6 +234,7 @@
 #include "fsfloaterprimfeed.h"
 #include "llfloaterflickr.h"
 #include "llfloatergiphypicker.h"
+#include "llfloaterklipypicker.h"
 #include "llfloatertasiafeed.h"
 #include "llfloaterscriptrecover.h"
 #include "llfloatersearchreplace.h"
@@ -646,6 +647,7 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("delete_queue", "floater_script_queue.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterDeleteQueue>);
     LLFloaterReg::add("flickr", "floater_flickr.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterFlickr>);
     LLFloaterReg::add("giphy_picker", "floater_giphy_picker.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterGiphyPicker>);
+    LLFloaterReg::add("klipy_picker", "floater_klipy_picker.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterKlipyPicker>);
     LLFloaterReg::add("primfeed", "floater_primfeed.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterPrimfeed>);
     LLFloaterReg::add("tasiafeed", "floater_tasiafeed.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<LLFloaterTasiaFeed>);
     LLFloaterReg::add("fs_asset_blacklist", "floater_fs_asset_blacklist.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterAssetBlacklist>);

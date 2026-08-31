@@ -72,4 +72,15 @@
      name="TasiaAnimatedGifChatPreview"
      width="400" />
 
+    <check_box
+     control_name="TasiaKlipyEnabled"
+     follows="left|top"
+     height="16"
+     label="Enable KLIPY GIF &amp; clip picker"
+     layout="topleft"
+     left="35"
+     top_pad="5"
+     name="TasiaKlipyEnabled"
+     width="400" />
+
 </panel>

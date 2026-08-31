@@ -314,6 +314,17 @@
           top_pad="1"
           name="remember_check"
           width="145" />
+      <check_box
+          control_name="TasiaUseQUIC"
+          follows="left|bottom"
+          font="SansSerifSmall"
+          left="110"
+          height="16"
+          label="Use QUIC"
+          top_pad="1"
+          tool_tip="Use QUIC transport for grid transfers. Disabled automatically on Second Life."
+          name="tasia_quic_check"
+          width="145" />
       <button
           name="password_show_btn"
           tool_tip="Show password text"

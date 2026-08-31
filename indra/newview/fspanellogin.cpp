@@ -1076,6 +1076,17 @@ void FSPanelLogin::onClickConnect(void *)
             return;
         }
 
+        // Tasia: auto-disable QUIC on Second Life (Agni/Aditi), where it is not supported.
+        {
+            const std::string grid = LLGridManager::getInstance()->getGrid();
+            const bool on_sl = (grid == "agni" || grid == "aditi");
+            if (on_sl)
+            {
+                LL_INFOS("InitInfo") << "Tasia: disabling QUIC for Second Life grid '" << grid << "'." << LL_ENDL;
+            }
+            gSavedSettings.setBOOL("TasiaUseQUIC", !on_sl);
+        }
+
         // The start location SLURL has already been sent to LLStartUp::setStartSLURL
 
         std::string username = sInstance->getChild<LLUICtrl>("username_combo")->getValue().asString();

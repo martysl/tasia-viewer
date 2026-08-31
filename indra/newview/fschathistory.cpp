@@ -108,6 +108,11 @@ struct TasiaGiphyPreview
     std::string media_url;
 };
 
+struct TasiaKlipyPreview
+{
+    std::string page_url;
+};
+
 struct TasiaImagePreview
 {
     std::string url;
@@ -132,6 +137,14 @@ bool tasiaIsGiphyHost(std::string host)
     return host == "giphy.com" ||
         host == "www.giphy.com" ||
         tasiaEndsWith(host, ".giphy.com");
+}
+
+bool tasiaIsKlipyHost(std::string host)
+{
+    LLStringUtil::toLower(host);
+    return host == "klipy.com" ||
+        host == "www.klipy.com" ||
+        tasiaEndsWith(host, ".klipy.com");
 }
 
 bool tasiaHasDirectImageExtension(std::string path)
@@ -314,6 +327,84 @@ bool tasiaExtractGiphyPreviewFromURL(std::string url, TasiaGiphyPreview& preview
     return true;
 }
 
+bool tasiaIsKlipyId(const std::string& value)
+{
+    if (value.empty() || value.size() > 128)
+    {
+        return false;
+    }
+
+    for (std::string::const_iterator it = value.begin(); it != value.end(); ++it)
+    {
+        if (!isalnum(static_cast<unsigned char>(*it)) && *it != '-' && *it != '_')
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool tasiaExtractKlipyPreviewFromURL(std::string url, TasiaKlipyPreview& preview)
+{
+    tasiaStripTrailingUrlPunctuation(url);
+    LLURI uri(url);
+    std::string scheme = uri.scheme();
+    LLStringUtil::toLower(scheme);
+    if (scheme != "http" && scheme != "https")
+    {
+        return false;
+    }
+
+    const std::string host = uri.hostName();
+    if (!tasiaIsKlipyHost(host))
+    {
+        return false;
+    }
+
+    // klipy.com/{gifs|clips|stickers|memes}/{slug-or-id}
+    const std::vector<std::string> segments = tasiaSplitPath(uri.path());
+    if (segments.empty())
+    {
+        return false;
+    }
+
+    const std::string& first = segments[0];
+    if (first != "gifs" && first != "clips" && first != "stickers" && first != "memes")
+    {
+        return false;
+    }
+
+    std::string id;
+    if (segments.size() >= 2)
+    {
+        id = segments[1];
+        // Strip trailing "-<id>" style slug into the raw id if the result looks
+        // like a slug; otherwise keep the segment as-is.
+        std::string::size_type last_dash = id.rfind('-');
+        if (last_dash != std::string::npos && last_dash + 1 < id.size())
+        {
+            const std::string candidate = id.substr(last_dash + 1);
+            if (tasiaIsKlipyId(candidate))
+            {
+                id = candidate;
+            }
+        }
+        if (!tasiaIsKlipyId(id))
+        {
+            return false;
+        }
+    }
+    else
+    {
+        // Allow bare host/type (e.g. https://klipy.com/gifs) without an id:
+        // still worth previewing the type page.
+        id = first;
+    }
+
+    preview.page_url = "https://klipy.com/" + first + "/" + id;
+    return true;
+}
+
 bool tasiaExtractImagePreviewFromURL(std::string url, TasiaImagePreview& preview)
 {
     tasiaStripTrailingUrlPunctuation(url);
@@ -421,6 +512,43 @@ bool tasiaFindFirstGiphyPreview(const std::string& text, TasiaGiphyPreview& prev
         }
 
         if (tasiaExtractGiphyPreviewFromURL(text.substr(url_pos, url_end - url_pos), preview))
+        {
+            return true;
+        }
+        search_pos = url_end;
+    }
+    return false;
+}
+
+bool tasiaFindFirstKlipyPreview(const std::string& text, TasiaKlipyPreview& preview)
+{
+    std::string::size_type search_pos = 0;
+    while (search_pos < text.size())
+    {
+        std::string::size_type http_pos = text.find("http://", search_pos);
+        std::string::size_type https_pos = text.find("https://", search_pos);
+        std::string::size_type url_pos = std::min(http_pos, https_pos);
+        if (http_pos == std::string::npos)
+        {
+            url_pos = https_pos;
+        }
+        else if (https_pos == std::string::npos)
+        {
+            url_pos = http_pos;
+        }
+
+        if (url_pos == std::string::npos)
+        {
+            return false;
+        }
+
+        std::string::size_type url_end = text.find_first_of(" \n\r\t<>\"'", url_pos);
+        if (url_end == std::string::npos)
+        {
+            url_end = text.size();
+        }
+
+        if (tasiaExtractKlipyPreviewFromURL(text.substr(url_pos, url_end - url_pos), preview))
         {
             return true;
         }
@@ -780,6 +908,77 @@ private:
     std::string mURL;
     std::string mMediaURL;
     LLMediaCtrl* mMedia = nullptr;
+    LLTextBox* mURLText = nullptr;
+    LLTextBox* mPoweredBy = nullptr;
+    LLButton* mOpenButton = nullptr;
+};
+
+class TasiaKlipyPreviewPanel : public LLPanel
+{
+public:
+    TasiaKlipyPreviewPanel(const TasiaKlipyPreview& preview)
+        : LLPanel(makeParams())
+        , mURL(preview.page_url)
+    {
+        LLTextBox::Params url_params;
+        url_params.name = "tasia_klipy_preview_url";
+        url_params.rect = LLRect(10, 27, 330, 6);
+        url_params.initial_value = LLSD(mURL);
+        url_params.use_ellipses = true;
+        mURLText = LLUICtrlFactory::create<LLTextBox>(url_params);
+        addChild(mURLText);
+
+        LLTextBox::Params powered_params;
+        powered_params.name = "tasia_klipy_powered";
+        powered_params.rect = LLRect(340, 42, 440, 24);
+        powered_params.initial_value = LLSD("Powered by KLIPY");
+        mPoweredBy = LLUICtrlFactory::create<LLTextBox>(powered_params);
+        addChild(mPoweredBy);
+
+        LLButton::Params open_params;
+        open_params.name = "tasia_klipy_open";
+        open_params.label = "Open KLIPY";
+        open_params.rect = LLRect(340, 64, 440, 40);
+        mOpenButton = LLUICtrlFactory::create<LLButton>(open_params);
+        mOpenButton->setClickedCallback([this](LLUICtrl*, const LLSD&) { openURL(); });
+        addChild(mOpenButton);
+    }
+
+    void reshape(S32 width, S32 height, bool called_from_parent = true) override
+    {
+        LLPanel::reshape(width, height, called_from_parent);
+        if (mURLText)
+        {
+            mURLText->setRect(LLRect(10, 27, llmax(120, width - 120), 6));
+        }
+        if (mPoweredBy)
+        {
+            mPoweredBy->setRect(LLRect(llmax(120, width - 110), 42, width - 10, 24));
+        }
+        if (mOpenButton)
+        {
+            mOpenButton->setRect(LLRect(llmax(120, width - 110), 64, width - 10, 40));
+        }
+    }
+
+private:
+    static LLPanel::Params makeParams()
+    {
+        LLPanel::Params params;
+        params.name = "tasia_klipy_preview";
+        params.rect = LLRect(0, 74, 440, 0);
+        params.mouse_opaque = true;
+        params.background_visible = true;
+        params.has_border = true;
+        return params;
+    }
+
+    void openURL()
+    {
+        LLWeb::loadURLExternal(mURL);
+    }
+
+    std::string mURL;
     LLTextBox* mURLText = nullptr;
     LLTextBox* mPoweredBy = nullptr;
     LLButton* mOpenButton = nullptr;
@@ -2668,6 +2867,30 @@ void FSChatHistory::appendMessage(const LLChat& chat, const LLSD &args, const LL
                     params.top_pad = 4;
                     params.bottom_pad = 4;
                     appendWidget(params, "\n[GIPHY] " + preview.page_url, false);
+                }
+            }
+
+            if (!preview_added && gSavedSettings.getBOOL("TasiaKlipyEnabled"))
+            {
+                TasiaKlipyPreview preview;
+                if (tasiaFindFirstKlipyPreview(message, preview))
+                {
+                    TasiaKlipyPreviewPanel* preview_panel = new TasiaKlipyPreviewPanel(preview);
+
+                    LLRect target_rect = getDocumentView()->getRect();
+                    target_rect.mLeft += mLeftWidgetPad + getHPad();
+                    target_rect.mRight -= mRightWidgetPad;
+                    preview_panel->reshape(target_rect.getWidth(), preview_panel->getRect().getHeight());
+                    preview_panel->setOrigin(target_rect.mLeft, preview_panel->getRect().mBottom);
+
+                    LLInlineViewSegment::Params params;
+                    params.force_newline = true;
+                    params.view = preview_panel;
+                    params.left_pad = mLeftWidgetPad;
+                    params.right_pad = mRightWidgetPad;
+                    params.top_pad = 4;
+                    params.bottom_pad = 4;
+                    appendWidget(params, "\n[KLIPY] " + preview.page_url, false);
                 }
             }
         }

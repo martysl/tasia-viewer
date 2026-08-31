@@ -100,11 +100,13 @@ set(viewer_SOURCE_FILES
     fsprimfeedauth.cpp
     tasiafeedconnect.cpp
     llgiphyclient.cpp
+    llklipyclient.cpp
     lltasia_user_config.cpp
     lltasiaguard.cpp
     lltasiacrypt.cpp
     lltasia_welcome_client.cpp
     lltasia_giphy_key.cpp
+    lltasia_klipy_key.cpp
     exogroupmutelist.cpp
     floatermedialists.cpp
     fsareasearch.cpp
@@ -195,6 +197,7 @@ set(viewer_SOURCE_FILES
     llflickrconnect.cpp
     llfloaterflickr.cpp
     llfloatergiphypicker.cpp
+    llfloaterklipypicker.cpp
     llfloatertasiafeed.cpp
     fsprimfeedconnect.cpp
     fsfloaterprimfeed.cpp
@@ -953,11 +956,13 @@ set(viewer_HEADER_FILES
     fsprimfeedauth.h
     tasiafeedconnect.h
     llgiphyclient.h
+    llklipyclient.h
     lltasia_user_config.h
     lltasiaguard.h
     lltasiacrypt.h
     lltasia_welcome_client.h
     lltasia_giphy_key.h
+    lltasia_klipy_key.h
     exogroupmutelist.h
     floatermedialists.h
     fsareasearch.h
@@ -1051,6 +1056,7 @@ set(viewer_HEADER_FILES
     llflickrconnect.h
     llfloaterflickr.h
     llfloatergiphypicker.h
+    llfloaterklipypicker.h
     llfloatertasiafeed.h
     fsprimfeedconnect.h
     fsfloaterprimfeed.h
@@ -1836,6 +1842,30 @@ endif()
 
 list(APPEND viewer_HEADER_FILES ${TASIA_GIPHY_GENERATED_HEADER})
 list(APPEND viewer_SOURCE_FILES ${TASIA_GIPHY_GENERATED_SOURCE})
+
+# <Tasia> Generate obfuscated KLIPY API key fallback files.
+set(TASIA_KLIPY_KEY_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/../../scripts/generate_tasia_klipy_key.py")
+set(TASIA_KLIPY_GENERATED_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/lltasia_klipy_key.generated.h")
+set(TASIA_KLIPY_GENERATED_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/lltasia_klipy_key.generated.cpp")
+
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} ${TASIA_KLIPY_KEY_GENERATOR}
+        --header ${TASIA_KLIPY_GENERATED_HEADER}
+        --source ${TASIA_KLIPY_GENERATED_SOURCE}
+    RESULT_VARIABLE TASIA_KLIPY_KEY_RESULT
+)
+if (NOT TASIA_KLIPY_KEY_RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to generate Tasia KLIPY key source files")
+endif()
+
+if ("$ENV{TASIA_KLIPY_API_KEY}" STREQUAL "")
+    message(STATUS "Tasia KLIPY build key: not configured")
+else()
+    message(STATUS "Tasia KLIPY build key: configured")
+endif()
+
+list(APPEND viewer_HEADER_FILES ${TASIA_KLIPY_GENERATED_HEADER})
+list(APPEND viewer_SOURCE_FILES ${TASIA_KLIPY_GENERATED_SOURCE})
 # </Tasia>
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)

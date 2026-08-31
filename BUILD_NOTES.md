@@ -358,3 +358,23 @@ Replaced the BugSplat crash reporting pipeline with a generic HTTP crash endpoin
 
 ### Rationale
 Eliminates the dependency on BugSplat's proprietary SDK/API and lets the crash reporter send dumps to any standard HTTP endpoint. The viewer-side code no longer hardcodes assumptions about which SaaS service processes the crashes.
+
+## 2026-08-31: KLIPY GIF & clip picker (native video clip picker with preview)
+- Modeled directly on the existing GIPHY implementation (`llgiphyclient`, `llfloatergiphypicker`, `lltasia_giphy_key`).
+- Files added:
+  - `indra/newview/llklipyclient.h` / `llklipyclient.cpp` — KLIPY API client
+  - `indra/newview/llfloaterklipypicker.h` / `llfloaterklipypicker.cpp` — picker floater
+  - `indra/newview/skins/default/xui/en/floater_klipy_picker.xml` — picker XUI layout
+  - `indra/newview/lltasia_klipy_key.h` / `lltasia_klipy_key.cpp` — runtime API key access
+  - `scripts/generate_tasia_klipy_key.py` — obfuscated key generator
+- KLIPY client supports four content types: GIFs, Clips (video), Stickers, Memes, via a content-type combo box in the picker. Clips use mp4 variants.
+- Registered floater name: `klipy_picker`.
+- Chat wiring:
+  - `Clip` button added to nearby chat and IM session floaters (`floater_fs_nearby_chat.xml`, `floater_fs_im_session.xml`), gated behind `visibility_control="TasiaKlipyEnabled"`.
+  - Handlers `onKlipyPickerButtonClicked` / `onKlipySelected` in `fsfloaternearbychat.cpp` and `fsfloaterim.cpp` send the selected KLIPY page URL through the normal chat/im send path.
+- Chat preview (in `fschathistory.cpp`): detects `klipy.com/{gifs|clips|stickers|memes}/...` URLs and renders a `Powered by KLIPY` card with an `Open KLIPY` button, gated behind `TasiaKlipyEnabled`.
+- Settings added in `indra/newview/app_settings/settings.xml`:
+  - `TasiaKlipyEnabled` (Boolean, default false — off unless the user enables it)
+  - `TasiaKlipyAPIKey` (String, runtime override; empty uses generated build-time fallback)
+- CMake: added Klipy sources/headers to `indra/newview/CMakeLists.txt` and a KLIPY key-generation block mirroring the GIPHY one. Generated files are gitignored.
+- API key: `TASIA_KLIPY_API_KEY` at build time or `TasiaKlipyAPIKey` at runtime; obfuscation round-trip verified against the GIPHY generator pattern.
