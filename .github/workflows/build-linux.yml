@@ -193,13 +193,14 @@ jobs:
 
           FFMPEG_URL="https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz"
           DEST_DIR="${{ github.workspace }}/build-linux-x86_64/packages/ffmpeg"
+          FFMPEG_EXTRACT="/tmp/tasia-ffmpeg-static"
 
-          mkdir -p "$DEST_DIR"
+          mkdir -p "$DEST_DIR" "$FFMPEG_EXTRACT"
 
           echo "::group::Downloading static ffmpeg"
           curl -fsSL -o /tmp/tasia-ffmpeg.tar.xz "$FFMPEG_URL"
-          tar -xJf /tmp/tasia-ffmpeg.tar.xz -C /tmp
-          FFMPEG_BIN="$(find /tmp -maxdepth 2 -type f -path '*ffmpeg*' -name 'ffmpeg' | head -n 1)"
+          tar -xJf /tmp/tasia-ffmpeg.tar.xz -C "$FFMPEG_EXTRACT"
+          FFMPEG_BIN="$(find "$FFMPEG_EXTRACT" -maxdepth 2 -type f -name 'ffmpeg' | head -n 1 || true)"
           if [ -z "$FFMPEG_BIN" ]; then
             echo "::error::ffmpeg binary not found after extract."
             exit 1

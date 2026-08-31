@@ -2093,6 +2093,13 @@ class LinuxManifest(ViewerManifest):
             #     self.path("*.py")
             # </FS:Ansariel> Remove VMP
 
+        # TASIA: Portable mode — ship an empty bin/portable-data directory so the
+        # viewer keeps ALL user data (settings, cache, logs, profile) inside the
+        # unpacked folder instead of writing to ~/.firestorm. LLDir_Linux::initAppDirs
+        # forces STRICT PORTABLE MODE to a "portable-data" dir next to the executable
+        # (see lldir_linux.cpp) and creates it if missing.
+        self.ensure_dst_dir("bin/portable-data")
+
         # recurses, packaged again
         self.path("res-sdl")
 
