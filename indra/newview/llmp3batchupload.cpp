@@ -211,7 +211,7 @@ void enumerate_and_confirm_parts(const std::string& prefix, F32 maximum)
         const std::string part = prefix + llformat("%03d.wav", ordinal);
         if (!gDirUtilp->fileExists(part)) break;
         std::string error;
-        if (check_for_invalid_wav_formats(part, error, LLGridManager::instance().isInSecondLife()))
+        if (check_for_invalid_wav_formats(part, error))
         {
             LLFile::remove(part);
             for (const BatchPart& accepted : parts) LLFile::remove(accepted.filename);
@@ -394,7 +394,7 @@ void convert_and_confirm(const std::vector<std::string>& filenames)
 }
 } // namespace
 
-void mp3_batch_sound_file_picked(const std::vector<std::string>& filenames, LLFilePicker::ELoadFilter)
+void mp3_batch_sound_file_picked(const std::vector<std::string>& filenames, ELoadFilter)
 {
     LL_INFOS("MP3BatchUpload") << "MP3 picker returned " << filenames.size() << " file(s)" << LL_ENDL;
     if (filenames.empty())
@@ -407,5 +407,5 @@ void mp3_batch_sound_file_picked(const std::vector<std::string>& filenames, LLFi
 void start_mp3_batch_sound_upload()
 {
     if (gAgentCamera.cameraMouselook()) gAgentCamera.changeCameraToDefault();
-    LLFilePickerReplyThread::startPicker(boost::bind(&mp3_batch_sound_file_picked, _1, _2), LLFilePicker::FFLOAD_ALL, false);
+    LLFilePickerReplyThread::startPicker(boost::bind(&mp3_batch_sound_file_picked, _1, _2), FFLOAD_ALL, false);
 }

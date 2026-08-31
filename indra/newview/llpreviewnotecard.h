@@ -55,6 +55,11 @@ public:
     bool saveItem();
     void setObjectID(const LLUUID& object_id) override;
 
+    // Refresh an agent notecard after LLBufferedAssetUploadInfo completes.
+    // <TASIA> Made public so MP3 batch upload (a free function / lambda) can
+    // finalize the results notecard it creates (see llmp3batchupload.cpp).
+    static void finishInventoryUpload(LLUUID itemId, LLUUID newAssetId, LLUUID newItemId);
+
     // llview
     void draw() override;
 // [SL:KB] - Patch: UI-FloaterSearchReplace | Checked: 2010-11-05 (Catznip-2.3.0a) | Added: Catznip-2.3.0a
@@ -113,7 +118,6 @@ protected:
     bool handleSaveChangesDialog(const LLSD& notification, const LLSD& response);
     bool handleConfirmDeleteDialog(const LLSD& notification, const LLSD& response);
 
-    static void finishInventoryUpload(LLUUID itemId, LLUUID newAssetId, LLUUID newItemId);
     static void finishTaskUpload(LLUUID itemId, LLUUID newAssetId, LLUUID taskId);
     // <FS:Ansariel> FIRE-13969: Search button
     void onSearchButtonClicked();

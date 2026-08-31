@@ -43,6 +43,11 @@ const S32 LLVORBISENC_CHUNK_SIZE_ERR               = 11; // chunk size is wrong
 const U8  LLVORBIS_CLIP_MAX_CHANNELS               = 2;
 const U32 LLVORBIS_CLIP_SAMPLE_RATE                = 44100;
 
+// <TASIA> Time limits used by MP3 batch upload (LLVORBIS_CLIP_MAX_TIME for
+// Second Life, LLVORBIS_CLIP_MAX_TIME_OPENSIM for OpenSim — 60s on OS).
+const F32 LLVORBIS_CLIP_MAX_TIME                   = 30.0f;
+const F32 LLVORBIS_CLIP_MAX_TIME_OPENSIM           = 60.0f;
+
 S32 check_for_invalid_wav_formats(const std::string& in_fname, std::string& error_msg);
 S32 encode_vorbis_file(const std::string& in_fname, const std::string& out_fname);
 
