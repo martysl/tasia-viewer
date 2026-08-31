@@ -54,6 +54,9 @@
 #include "llagentui.h"
 #include "llagentwearables.h"
 #include "llagentpilot.h"
+#include "llagentdata.h"
+#include "llweb.h"
+#include "lluri.h"
 // [SL:KB] - Patch: Appearance-PhantomAttach | Checked: Catznip-5.0
 #include "llattachmentsmgr.h"
 // [/SL:KB]
@@ -11370,6 +11373,39 @@ void handle_show_url(const LLSD& param)
 
 }
 
+// TASIA: Open the Tasia Chat webview with the current agent's identity.
+void handle_tasia_chat(const LLSD& /*param*/)
+{
+    std::string grid = LLGridManager::getInstance()->getGridId();
+    std::string username = gAgentUsername;
+
+    std::string display_name = username;
+    LLAvatarName av_name;
+    if (LLAvatarNameCache::get(gAgentID, &av_name))
+    {
+        display_name = av_name.getDisplayName();
+    }
+
+    // Build: https://chat.tasiaviewer.work/?uuid=UUID&username=USERNAME&display=DISPLAYNAME&hud=1&grid=GRID
+    LLSD qparams;
+    qparams["uuid"] = gAgentID.asString();
+    qparams["username"] = username;
+    qparams["display"] = display_name;
+    qparams["hud"] = "1";
+    qparams["grid"] = grid;
+
+    std::string url = "https://chat.tasiaviewer.work/?" + LLURI::mapToQueryString(qparams);
+
+    if (LLWeb::useExternalBrowser(url))
+    {
+        LLWeb::loadURLExternal(url);
+    }
+    else
+    {
+        LLWeb::loadURLInternal(url);
+    }
+}
+
 void handle_report_bug(const LLSD& param)
 {
     // <FS:Ansariel> Keep linking to out JIRA
@@ -13259,4 +13295,7 @@ void initialize_menus()
     // <FS:Ansariel> Add avater complexity sttings to menu
     view_listener_t::addMenu(new FSRenderAvatarComplexityMode(), "World.RenderAvatarComplexityMode");
     view_listener_t::addMenu(new FSCheckRenderAvatarComplexityMode(), "World.CheckRenderAvatarComplexityMode");
+
+    // TASIA: Tasia Chat webview
+    commit.add("Tasia.Chat", boost::bind(&handle_tasia_chat, _2));
 }

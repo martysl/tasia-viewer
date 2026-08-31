@@ -55,6 +55,7 @@
 #include "llfloateravatarpicker.h"
 #include "llfloateremojipicker.h"
 #include "llfloatergiphypicker.h"
+#include "llfloaterklipypicker.h"
 #include "llfloaterreg.h"
 #include "llfloatersearchreplace.h"
 #include "llgroupactions.h"
@@ -1030,6 +1031,7 @@ bool FSFloaterIM::postBuild()
     mEmojiPickerToggleBtn->setClickedCallback([this](LLUICtrl*, const LLSD&) { onEmojiPickerToggleBtnClicked(); });
 
     getChild<LLButton>("giphy_picker_btn")->setClickedCallback([this](LLUICtrl*, const LLSD&) { onGiphyPickerButtonClicked(); });
+    getChild<LLButton>("klipy_picker_btn")->setClickedCallback([this](LLUICtrl*, const LLSD&) { onKlipyPickerButtonClicked(); });
 
     mRecentEmojisUpdatedCallbackConnection = LLFloaterEmojiPicker::setRecentEmojisUpdatedCallback([this](const std::list<llwchar>& recent_emojis_list) { initEmojiRecentPanel(); });
 
@@ -2597,6 +2599,27 @@ void FSFloaterIM::onEmojiPickerToggleBtnClicked()
 void FSFloaterIM::onGiphyPickerButtonClicked()
 {
     LLFloaterGiphyPicker::show(boost::bind(&FSFloaterIM::onGiphySelected, this, _1));
+}
+
+void FSFloaterIM::onKlipyPickerButtonClicked()
+{
+    LLFloaterKlipyPicker::show(boost::bind(&FSFloaterIM::onKlipySelected, this, _1));
+}
+
+void FSFloaterIM::onKlipySelected(const std::string& url)
+{
+    std::string trimmed_url = url;
+    LLStringUtil::trim(trimmed_url);
+    if (trimmed_url.empty())
+    {
+        return;
+    }
+
+    sendMsg(trimmed_url);
+    if (mInputEditor)
+    {
+        mInputEditor->setFocus(true);
+    }
 }
 
 void FSFloaterIM::onGiphySelected(const std::string& url)

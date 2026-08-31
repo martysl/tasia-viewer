@@ -164,6 +164,8 @@ public:
     void onEmojiPickerToggleBtnClicked();
     void onGiphyPickerButtonClicked();
     void onGiphySelected(const std::string& url);
+    void onKlipyPickerButtonClicked();
+    void onKlipySelected(const std::string& url);
 
 protected:
     /* virtual */
