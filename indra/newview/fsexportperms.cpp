@@ -45,8 +45,8 @@ bool FSExportPermsCheck::canExportNode(LLSelectNode* node, bool dae)
         return false;
     }
     bool exportable = false;
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
-    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
+    bool enhanced_export = false; // Tasia: removed LO_ENHANCED_EXPORT flag (Lostorm leftovers)
 
     LLViewerObject* object = node->getObject();
     if (LLGridManager::getInstance()->isInSecondLife())
@@ -212,7 +212,7 @@ bool FSExportPermsCheck::canExportNode(LLSelectNode* node, bool dae)
 bool FSExportPermsCheck::canExportAsset(LLUUID asset_id, std::string* name, std::string* description)
 {
     bool exportable = false;
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     LLViewerInventoryCategory::cat_array_t cats;
     LLViewerInventoryItem::item_array_t items;
     LLAssetIDMatches asset_id_matches(asset_id);

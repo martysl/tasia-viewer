@@ -876,7 +876,7 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
                                         menuentry_vec_t &items,
                                         menuentry_vec_t &disabled_items, U32 flags)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     const LLInventoryObject *obj = getInventoryObject();
     bool single_folder_root = (mRoot == NULL);
 

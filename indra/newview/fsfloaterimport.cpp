@@ -349,7 +349,7 @@ void FSFloaterImport::populateBackupInfo()
 
 void FSFloaterImport::processPrim(LLSD& prim)
 {
-    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    bool enhanced_export = false; // Tasia: removed LO_ENHANCED_EXPORT flag (Lostorm leftovers)
 
     if (prim.has("texture"))
     {
@@ -772,7 +772,7 @@ bool FSFloaterImport::processPrimCreated(LLViewerObject* object)
         return false;
     }
 
-    bool enhanced_export = lolistorm_check_flag(LO_ENHANCED_EXPORT);
+    bool enhanced_export = false; // Tasia: removed LO_ENHANCED_EXPORT flag (Lostorm leftovers)
     LLSelectMgr::getInstance()->selectObjectAndFamily(object, true);
 
     LLUUID prim_uuid = mManifest["linkset"][mLinkset][mObject].asUUID();

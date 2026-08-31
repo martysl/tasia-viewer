@@ -408,7 +408,7 @@ bool LLPanelGroupRoles::hasModal()
 
 void LLPanelGroupRoles::setGroupID(const LLUUID& id)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     LLPanelGroupTab::setGroupID(id);
 
     LLPanelGroupMembersSubTab* group_members_tab = findChild<LLPanelGroupMembersSubTab>("members_sub_tab");

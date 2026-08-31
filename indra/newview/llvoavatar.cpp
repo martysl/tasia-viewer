@@ -4905,7 +4905,7 @@ LLViewerInventoryItem* recursiveGetObjectInventoryItem(LLViewerObject *vobj, LLU
 
 void LLVOAvatar::updateAnimationDebugText()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
 
     for (LLMotionController::motion_list_t::iterator iter = mMotionController.getActiveMotions().begin();
          iter != mMotionController.getActiveMotions().end(); ++iter)
@@ -11564,7 +11564,7 @@ void LLVOAvatar::dumpArchetypeXMLCallback(const std::vector<std::string>& filena
         apr_file_printf( file, "\n\t<archetype name=\"???\">\n" );
 
         bool agent_is_godlike = gAgent.isGodlikeWithoutAdminMenuFakery();
-        bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+        bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
 
         if (group_by_wearables)
         {

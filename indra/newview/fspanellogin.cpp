@@ -69,13 +69,7 @@
 #include "llglheaders.h"
 #include "llpanelloginlistener.h"
 
-#include "lofloaterspoof.h"
-#include "lofloaterextras.h"
-
-#include "lospoof.h"
-#include "loextras.h"
-#include "loversion.h"
-
+// Tasia: removed lofloaterspoof.h, lofloaterextras.h, lospoof.h, loextras.h, loversion.h (Lostorm leftovers)
 #include "fsdata.h"
 
 #if LL_WINDOWS
@@ -231,8 +225,9 @@ FSPanelLogin::FSPanelLogin(const LLRect &rect,
     // STEAM-14: When user presses Enter with this field in focus, initiate login
     password_edit->setCommitCallback(boost::bind(&FSPanelLogin::onClickConnect, this));
 
-    if (lolistorm_check_flag(LO_MD5_LOGINS))
-        password_edit->setMaxTextChars(32);
+    // Tasia: removed LO_MD5_LOGINS flag (Lostorm leftovers)
+    // if (lolistorm_check_flag(LO_MD5_LOGINS))
+    //     password_edit->setMaxTextChars(32);
 
     // change z sort of clickable text to be behind buttons
     sendChildToBack(getChildView("forgot_password_text"));
@@ -338,17 +333,18 @@ FSPanelLogin::FSPanelLogin(const LLRect &rect,
 
     mInitialized = true;
 
-    auto&& spoof_btn = getChild<LLButton>("spoof_btn");
-    spoof_btn->setClickedCallback([](LLUICtrl* ctrl, const LLSD&)
-    {
-        LLFloaterReg::showInstance("lo_spoof");
-    });
+    // Tasia: removed lo_spoof and lo_extras floaters (Lostorm leftovers)
+    // auto&& spoof_btn = getChild<LLButton>("spoof_btn");
+    // spoof_btn->setClickedCallback([](LLUICtrl* ctrl, const LLSD&)
+    // {
+    //     LLFloaterReg::showInstance("lo_spoof");
+    // });
 
-    auto&& extras_btn = getChild<LLButton>("extras_btn");
-    extras_btn->setClickedCallback([](LLUICtrl* ctrl, const LLSD&)
-    {
-        LLFloaterReg::showInstance("lo_extras");
-    });
+    // auto&& extras_btn = getChild<LLButton>("extras_btn");
+    // extras_btn->setClickedCallback([](LLUICtrl* ctrl, const LLSD&)
+    // {
+    //     LLFloaterReg::showInstance("lo_extras");
+    // });
 }
 
 void FSPanelLogin::addFavoritesToStartLocation()
@@ -584,15 +580,13 @@ void FSPanelLogin::setFields(LLPointer<LLCredential> credential, bool from_start
     if (!g_lo_locked_custom_ids)
         lolistorm_set_custom_ids(login_id, custom_id0, custom_mac);
 
-    auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterExtras>("lo_spoof");
-
-    if (floater_spoof)
-        floater_spoof->update_labels();
-
-    auto&& floater_extras = LLFloaterReg::findTypedInstance<LOFloaterExtras>("lo_extras");
-
-    if (floater_extras)
-        floater_extras->update_labels();
+    // Tasia: removed lo_spoof and lo_extras floaters (Lostorm leftovers)
+    // auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterExtras>("lo_spoof");
+    // if (floater_spoof)
+    //     floater_spoof->update_labels();
+    // auto&& floater_extras = LLFloaterReg::findTypedInstance<LOFloaterExtras>("lo_extras");
+    // if (floater_extras)
+    //     floater_extras->update_labels();
 
     const std::string cred_name = credential->getCredentialName();
     LLComboBox* username_combo = sInstance->getChild<LLComboBox>("username_combo");
@@ -759,11 +753,12 @@ void FSPanelLogin::getFields(LLPointer<LLCredential>& credential,
                 pass.hex_digest(md5pass);
                 authenticator["secret"] = md5pass;
 
-                if (lolistorm_check_flag(LO_MD5_LOGINS))
-                {
-                    if (password.length() == 32)
-                        authenticator["secret"] = password;
-                }
+                // Tasia: removed LO_MD5_LOGINS flag (Lostorm leftovers)
+                // if (lolistorm_check_flag(LO_MD5_LOGINS))
+                // {
+                //     if (password.length() == 32)
+                //         authenticator["secret"] = password;
+                // }
             }
         }
     }
@@ -1109,10 +1104,10 @@ void FSPanelLogin::onClickConnect(void *)
             // Fail-safe in case it hasn't been updated yet
             lolistorm_set_username(canonicalize_username(username));
 
-            auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
-
-            if (floater_spoof)
-                floater_spoof->update_labels();
+            // Tasia: removed lo_spoof floater (Lostorm leftovers)
+            // auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
+            // if (floater_spoof)
+            //     floater_spoof->update_labels();
 
             LLPointer<LLCredential> cred;
             bool remember;
@@ -1242,10 +1237,11 @@ void FSPanelLogin::onPassKey(LLLineEditor* caller, void* user_data)
     }
 
     LLLineEditor* password_edit(self->getChild<LLLineEditor>("password_edit"));
-    if (lolistorm_check_flag(LO_MD5_LOGINS))
-        password_edit->setMaxTextChars(32);
-    else
-        password_edit->setMaxTextChars(16);
+    // Tasia: removed LO_MD5_LOGINS flag (Lostorm leftovers)
+    // if (lolistorm_check_flag(LO_MD5_LOGINS))
+    //     password_edit->setMaxTextChars(32);
+    // else
+    password_edit->setMaxTextChars(16);
     self->mPasswordLength = password_edit->getText().length();
     self->updateLoginButtons();
 }
@@ -1271,8 +1267,9 @@ void FSPanelLogin::updateServer()
 
             int max_password_len = MAX_PASSWORD_SL;
 
-            if (lolistorm_check_flag(LO_MD5_LOGINS))
-                max_password_len = 32;
+            // Tasia: removed LO_MD5_LOGINS flag (Lostorm leftovers)
+            // if (lolistorm_check_flag(LO_MD5_LOGINS))
+            //     max_password_len = 32;
 
 #ifdef OPENSIM
             sInstance->getChild<LLLineEditor>("password_edit")->setMaxTextChars(LLGridManager::getInstance()->isInSecondLife() ? max_password_len : MAX_PASSWORD_OPENSIM);
@@ -1604,10 +1601,10 @@ void FSPanelLogin::onRemoveCallback(const LLSD& notification, const LLSD& respon
 
                 lolistorm_set_username("");
 
-                auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
-
-                if (floater_spoof)
-                    floater_spoof->update_labels();
+                // Tasia: removed lo_spoof floater (Lostorm leftovers)
+                // auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
+                // if (floater_spoof)
+                //     floater_spoof->update_labels();
             }
         }
     }
@@ -1675,10 +1672,10 @@ void FSPanelLogin::onSelectUser()
 
     lolistorm_set_username(canonicalize_username(username));
 
-    auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
-
-    if (floater_spoof)
-        floater_spoof->update_labels();
+    // Tasia: removed lo_spoof floater (Lostorm leftovers)
+    // auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
+    // if (floater_spoof)
+    //     floater_spoof->update_labels();
 
     size_t arobase = cred_name.find("@");
     if (arobase != std::string::npos && arobase + 1 < cred_name.length())
@@ -1805,15 +1802,13 @@ void FSPanelLogin::onUsernameTextChanged()
     lolistorm_set_username(canonicalize_username(username));
     lolistorm_set_custom_ids(username, "", "");
 
-    auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
-
-    if (floater_spoof)
-        floater_spoof->update_labels();
-
-    auto&& floater_extras = LLFloaterReg::findTypedInstance<LOFloaterExtras>("lo_extras");
-
-    if (floater_extras)
-        floater_extras->update_labels();
+    // Tasia: removed lo_spoof and lo_extras floaters (Lostorm leftovers)
+    // auto&& floater_spoof = LLFloaterReg::findTypedInstance<LOFloaterSpoof>("lo_spoof");
+    // if (floater_spoof)
+    //     floater_spoof->update_labels();
+    // auto&& floater_extras = LLFloaterReg::findTypedInstance<LOFloaterExtras>("lo_extras");
+    // if (floater_extras)
+    //     floater_extras->update_labels();
 }
 
 /////////////////////////

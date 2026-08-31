@@ -116,8 +116,9 @@ static bool lo_persist_override(const std::string& name)
 {
     const std::size_t n = sizeof(lo_persist_override_table) / sizeof(std::string);
 
-    if (!lolistorm_check_flag(LO_CONVENIENCE))
-        return false;
+    // Tasia: removed LO_CONVENIENCE flag (Lostorm leftovers)
+    // if (!lolistorm_check_flag(LO_CONVENIENCE))
+    //     return false;
 
     for (std::size_t i = 0; i < n; ++i)
     {

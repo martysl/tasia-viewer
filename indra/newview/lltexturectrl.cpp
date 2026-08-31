@@ -204,7 +204,7 @@ LLFloaterTexturePicker::~LLFloaterTexturePicker()
 
 void LLFloaterTexturePicker::setImageID(const LLUUID& image_id, bool set_selection /*=true*/)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
 
     if( ((mImageAssetID != image_id) || mTentative) && mActive)
     {
@@ -477,7 +477,7 @@ bool LLFloaterTexturePicker::handleDragAndDrop(
         EAcceptance *accept,
         std::string& tooltip_msg)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     bool handled = false;
 
     bool is_mesh = cargo_type == DAD_MESH;
@@ -700,7 +700,7 @@ bool LLFloaterTexturePicker::postBuild()
         }
     }
 
-    if (lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
+    if (false) // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
         getChild<LLLineEditor>("TextureKey")->setText(mImageAssetID.asString());
 
     childSetAction("l_add_btn", LLFloaterTexturePicker::onBtnAdd, this);
@@ -963,7 +963,7 @@ const LLUUID& LLFloaterTexturePicker::findItemID(const LLUUID& asset_id, bool co
 
 void LLFloaterTexturePicker::commitIfImmediateSet()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     // <FS:Ansariel> FIRE-8298: Apply now checkbox has no effect
     //if (!mNoCopyTextureSelected && mCanApply)
     if ((bypass_perms || !mNoCopyTextureSelected) && mCanApply && mCanPreview)
@@ -1162,7 +1162,7 @@ void LLFloaterTexturePicker::onBtnPipette()
 
 void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem*> &items, bool user_action)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     if (items.size())
     {
         LLFolderViewItem* first_item = items.front();
@@ -2572,7 +2572,7 @@ void LLTextureCtrl::draw()
 
 bool LLTextureCtrl::allowDrop(LLInventoryItem* item, EDragAndDropType cargo_type, std::string& tooltip_msg)
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
 
     bool copy = item->getPermissions().allowCopyBy(gAgent.getID());
     bool mod = item->getPermissions().allowModifyBy(gAgent.getID());

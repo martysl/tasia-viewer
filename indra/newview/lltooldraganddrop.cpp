@@ -954,7 +954,7 @@ bool LLToolDragAndDrop::handleDropMaterialProtections(LLViewerObject* hit_obj,
 {
     if (!item) return false;
 
-    if (lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
+    if (false) // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
         return true;
 
     // Always succeed if....
@@ -2203,7 +2203,7 @@ EAcceptance LLToolDragAndDrop::dad3dRezAttachmentFromInv(
     // must be in the user's inventory
     if(mSource != SOURCE_AGENT && mSource != SOURCE_LIBRARY)
     {
-        if (!lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS))
+        if (true) // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
             return ACCEPT_NO;
     }
 

@@ -57,12 +57,7 @@
     left="0"
     top="10"
     name="sl_logo_small" />
-  <button
-    label="Check IDs"
-    label_color="Yellow"
-    name="spoof_btn"
-    width="100" />
-    <layout_stack
+  <layout_stack
       animate="false"
       clip="false"
       follows="all"
@@ -324,25 +319,6 @@
       visible="false">
     + Click to add more grids
     </text>
-    </layout_panel>
-    <layout_panel
-      auto_resize="false"
-      follows="left|top|right"
-      name="extras_panel"
-      layout="topleft"
-      width="160"
-      height="66"
-      visible="true">
-    <button
-      label="Extra Features"
-      label_color="White"
-      image_unselected="PushButton_Extras"
-      image_pressed="PushButton_Extras_Pressed"
-      image_hover_unselected="PushButton_Extras_Over"
-      name="extras_btn"
-      width="160"
-      height="32"
-      font="SansSerifLarge" />
     </layout_panel>
     <layout_panel
       follows="left|top|right"

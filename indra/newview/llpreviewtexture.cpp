@@ -109,7 +109,7 @@ LLPreviewTexture::LLPreviewTexture(const LLSD& key)
       mDisplayNameCallback(false),
       mAvatarNameCallbackConnection()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     updateImageID();
     if (key.has("save_as"))
     {
@@ -1223,7 +1223,7 @@ void LLPreviewTexture::adjustAspectRatio()
 
 void LLPreviewTexture::updateImageID()
 {
-    bool bypass_perms = lolistorm_check_flag(LO_BYPASS_EXPORT_PERMS);
+    bool bypass_perms = false; // Tasia: removed LO_BYPASS_EXPORT_PERMS flag (Lostorm leftovers)
     const LLViewerInventoryItem *item = static_cast<const LLViewerInventoryItem*>(getItem());
     if(item)
     {

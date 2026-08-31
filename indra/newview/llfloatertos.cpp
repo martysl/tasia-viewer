@@ -78,7 +78,7 @@ bool LLFloaterTOS::postBuild()
     }
 
     // disable Agree to TOS radio button until the page has fully loaded
-    if (!lolistorm_check_flag(LO_CONVENIENCE))
+    if (true) // Tasia: removed LO_CONVENIENCE flag (Lostorm leftovers)
         updateAgreeEnabled(false);
 
     // hide the SL text widget if we're displaying TOS with using a browser widget.
