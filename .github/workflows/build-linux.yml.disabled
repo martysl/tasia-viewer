@@ -186,6 +186,31 @@ jobs:
           echo "TASIA_DISPLAY_VERSION=8.0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
           echo "TASIA_BUILD_NUMBER=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
 
+      - name: Download static ffmpeg (MP3 batch converter)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          FFMPEG_URL="https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz"
+          DEST_DIR="${{ github.workspace }}/build-linux-x86_64/packages/ffmpeg"
+
+          mkdir -p "$DEST_DIR"
+
+          echo "::group::Downloading static ffmpeg"
+          curl -fsSL -o /tmp/tasia-ffmpeg.tar.xz "$FFMPEG_URL"
+          tar -xJf /tmp/tasia-ffmpeg.tar.xz -C /tmp
+          FFMPEG_BIN="$(find /tmp -maxdepth 2 -type f -path '*ffmpeg*' -name 'ffmpeg' | head -n 1)"
+          if [ -z "$FFMPEG_BIN" ]; then
+            echo "::error::ffmpeg binary not found after extract."
+            exit 1
+          fi
+          cp "$FFMPEG_BIN" "$DEST_DIR/tasia-ffmpeg"
+          chmod +x "$DEST_DIR/tasia-ffmpeg"
+          echo "::endgroup::"
+
+          "$DEST_DIR/tasia-ffmpeg" -version 2>&1 | head -n 1
+          echo "Staged MP3 converter: $DEST_DIR/tasia-ffmpeg"
+
       - name: Configure with FMOD
         shell: bash
         env:

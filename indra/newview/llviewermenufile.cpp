@@ -69,6 +69,7 @@
 #include "lltrans.h"
 #include "llfloaterbuycurrency.h"
 #include "llviewerassetupload.h"
+#include "llmp3batchupload.h"
 
 #include <cstdlib>
 #include <fstream>
@@ -1306,6 +1307,15 @@ class LLFileUploadSound : public view_listener_t
     }
 };
 
+class LLFileUploadMP3BatchSound : public view_listener_t
+{
+    bool handleEvent(const LLSD&) override
+    {
+        start_mp3_batch_sound_upload();
+        return true;
+    }
+};
+
 class LLFileUploadAnim : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
@@ -1969,6 +1979,7 @@ void init_menu_file()
     view_listener_t::addCommit(new LLFileUploadImage(), "File.UploadImage");
     view_listener_t::addCommit(new LLFileUploadClipboard(), "File.UploadClipboard");
     view_listener_t::addCommit(new LLFileUploadSound(), "File.UploadSound");
+    view_listener_t::addCommit(new LLFileUploadMP3BatchSound(), "File.UploadMP3BatchSound");
     view_listener_t::addCommit(new LLFileUploadAnim(), "File.UploadAnim");
     view_listener_t::addCommit(new LLFileUploadModel(), "File.UploadModel");
     view_listener_t::addCommit(new LLFileUploadMaterial(), "File.UploadMaterial");
@@ -2003,4 +2014,5 @@ void init_menu_file()
 void register_file_menu_floaters()
 {
     LLFloaterReg::add("upload_clipboard", "floater_upload_clipboard.xml", &LLFloaterReg::build<LLFloaterUploadClipboard>, "upload");
+    LLFloaterReg::add("mp3_batch_progress", "floater_mp3_batch_progress.xml", &LLFloaterReg::build<LLFloater>, "upload");
 }
