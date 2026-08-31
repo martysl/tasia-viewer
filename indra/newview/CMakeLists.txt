@@ -1808,6 +1808,7 @@ configure_file(
 list(APPEND viewer_HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/fsdiscordkey.h)
 LIST(APPEND viewer_HEADER_FILES fsfloaterdiscord.h fsdiscordconnect.h)
 LIST(APPEND viewer_SOURCE_FILES fsfloaterdiscord.cpp fsdiscordconnect.cpp)
+LIST(APPEND viewer_SOURCE_FILES llbugreport.cpp)
 #</FS:LO>
 
 # <FS:TS> Generate the version information header file.
@@ -2012,7 +2013,6 @@ if (WINDOWS)
 
     list(APPEND viewer_SOURCE_FILES
          llboostfilesystemcompat.cpp
-    llbugreport.cpp
          growlmanager.cpp
          growlnotifierwin.cpp
          llappviewerwin32.cpp
