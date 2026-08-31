@@ -49,4 +49,19 @@
 			<menu_item_check label="Brak" name="None"/>
 		</menu>
 	</menu>
+	<menu label="Tasia" name="Tasia">
+		<menu_item_call label="Zgłoś błąd / opinia" name="ReportBug">
+			<menu_item_call.on_click function="Floater.Show" parameter="bug_report"/>
+		</menu_item_call>
+		<menu_item_call label="TasiaGuard - Odbanuj IP" name="TasiaGuard">
+			<menu_item_call.on_click function="Floater.Show" parameter="tasiaguard"/>
+		</menu_item_call>
+		<menu_item_call label="Tasia Chat" name="TasiaChat">
+			<menu_item_call.on_click function="Tasia.Chat"/>
+		</menu_item_call>
+		<menu_item_separator/>
+		<menu_item_call label="O [APP_NAME]" name="About">
+			<menu_item_call.on_click function="Floater.Show" parameter="sl_about"/>
+		</menu_item_call>
+	</menu>
 </menu_bar>
