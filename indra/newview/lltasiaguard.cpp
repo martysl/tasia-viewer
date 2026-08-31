@@ -88,8 +88,6 @@ static void unbanCoro(std::string url, LLSD post_data)
     {
         LLSD data = result["data"];
         std::string msg = data["message"].asString();
-        if (!msg.empty())
-            LLSD::String(msg);
         LLNotificationsUtil::add("TasiaGuardUnbanComplete");
     }
     else
