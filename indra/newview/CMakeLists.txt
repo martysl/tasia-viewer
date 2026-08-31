@@ -532,6 +532,7 @@ set(viewer_SOURCE_FILES
     llmarketplacenotifications.cpp
     llmaterialeditor.cpp
     llmaterialmgr.cpp
+    llmp3batchupload.cpp
     llmediactrl.cpp
     llmediadataclient.cpp
     llmenuoptionpathfindingrebakenavmesh.cpp
@@ -1395,6 +1396,7 @@ set(viewer_HEADER_FILES
     llmarketplacenotifications.h
     llmaterialeditor.h
     llmaterialmgr.h
+    llmp3batchupload.h
     llmediactrl.h
     llmediadataclient.h
     llmenuoptionpathfindingrebakenavmesh.h

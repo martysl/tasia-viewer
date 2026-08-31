@@ -2084,6 +2084,9 @@ class LinuxManifest(ViewerManifest):
             self.path("firestorm-bin","do-not-directly-run-firestorm-bin")
             self.path("../linux_crash_logger/linux-crash-logger","linux-crash-logger.bin")
             self.path2basename("../llplugin/slplugin", "SLPlugin")
+            # Tasia: bundle the static ffmpeg MP3/audio converter (Linux)
+            if not sys.platform.startswith('win'):
+                self.path(src=os.path.join(pkgdir, 'ffmpeg', 'tasia-ffmpeg'), dst='tasia-ffmpeg')
             #this copies over the python wrapper script, associated utilities and required libraries, see SL-321, SL-322 and SL-323
             # <FS:Ansariel> Remove VMP
             # with self.prefix(src="../viewer_components/manager", dst=""):
