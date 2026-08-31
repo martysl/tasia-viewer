@@ -11387,6 +11387,7 @@ void handle_tasia_chat(const LLSD& /*param*/)
     }
 
     // Build: https://chat.tasiaviewer.work/?uuid=UUID&username=USERNAME&display=DISPLAYNAME&hud=1&grid=GRID
+    // NOTE: LLURI::mapToQueryString() prepends the leading '?', so do NOT add another one.
     LLSD qparams;
     qparams["uuid"] = gAgentID.asString();
     qparams["username"] = username;
@@ -11394,16 +11395,10 @@ void handle_tasia_chat(const LLSD& /*param*/)
     qparams["hud"] = "1";
     qparams["grid"] = grid;
 
-    std::string url = "https://chat.tasiaviewer.work/?" + LLURI::mapToQueryString(qparams);
+    std::string url = "https://chat.tasiaviewer.work/" + LLURI::mapToQueryString(qparams);
 
-    if (LLWeb::useExternalBrowser(url))
-    {
-        LLWeb::loadURLExternal(url);
-    }
-    else
-    {
-        LLWeb::loadURLInternal(url);
-    }
+    // TASIA: Always open Tasia Chat in the internal (in-viewer) web browser.
+    LLWeb::loadURLInternal(url);
 }
 
 void handle_report_bug(const LLSD& param)
