@@ -8,8 +8,8 @@ static unsigned lo_mask = 0;
 static unsigned lo_blocked = 0;
 
 static unsigned default_on_flags[] = {
-    // LO_CONVENIENCE removed
-    // LO_ANONYMIZE_EXPORTS removed
+    LO_CONVENIENCE,
+    LO_ANONYMIZE_EXPORTS
 };
 
 static unsigned new_flags;
@@ -25,7 +25,8 @@ static bool extras_secondlife = false;
 
 // Flags that are never usable on Second Life, even with the password.
 // Copybot-adjacent export tools and spoofing would risk the account.
-constexpr unsigned SL_BLOCKED_FLAGS = 0;
+constexpr unsigned SL_BLOCKED_FLAGS =
+    LO_BYPASS_EXPORT_PERMS | LO_ENHANCED_EXPORT | LO_ANONYMIZE_EXPORTS | LO_MD5_LOGINS;
 
 void lolistorm_set_secondlife(bool is_secondlife)
 {
@@ -86,7 +87,25 @@ void lolistorm_disable_flag(unsigned flag)
 
 bool lolistorm_check_flag(unsigned flag)
 {
-    return false; // All feature flags removed
+    // Tasia: all extra features require the password to be entered.
+    // While locked, every feature flag is off.
+    if (!extras_unlocked)
+    {
+        return false;
+    }
+
+    // Tasia: on Second Life, the dangerous flags are never usable,
+    // even with the password.
+    if (extras_secondlife && (flag & SL_BLOCKED_FLAGS) == flag)
+    {
+        return false;
+    }
+
+    if ((flag & lo_blocked) == flag)
+    {
+        return false;
+    }
+    return ((lo_flags & flag) == flag);
 }
 
 bool lolistorm_check_block(unsigned flag)

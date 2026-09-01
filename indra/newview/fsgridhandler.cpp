@@ -53,6 +53,7 @@
 #include "fspanellogin.h"
 #include "lfsimfeaturehandler.h"    // <COLOSI opensim multi-currency support />
 #include "llmaterialtable.h" // <FS:Beq> FIRE-31628 for access to static var
+#include "loextras.h" // Tasia: for lolistorm_set_secondlife()
 
 void gridDownloadError( LLSD const &aData, LLGridManager* mOwner, GridEntry* mData, LLGridManager::AddState mState )
 {
@@ -1235,6 +1236,7 @@ void LLGridManager::updateIsInProductionGrid()
     if (uris.empty())
     {
         LL_DEBUGS("GridManager") << "uri is empty, setting grid platform to NOTHING." << LL_ENDL;
+        lolistorm_set_secondlife(false); // Tasia: not SL, so not locked
         return;
     }
 
@@ -1246,12 +1248,14 @@ void LLGridManager::updateIsInProductionGrid()
     {
         LL_DEBUGS("GridManager")<< "uri: "<<  login_uri.authority() << " setting grid platform to SL MAIN" << LL_ENDL;
         EGridPlatform = GP_SLMAIN;
+        lolistorm_set_secondlife(true); // Tasia: on SL, lock dangerous features
         return;
     }
     else if (login_uri.authority().find("lindenlab.com") !=  std::string::npos ) //here is no real money
     {
         LL_DEBUGS("GridManager")<< "uri: "<< login_uri.authority() << " setting grid platform to SL BETA" << LL_ENDL;
         EGridPlatform = GP_SLBETA;
+        lolistorm_set_secondlife(true); // Tasia: on SL, lock dangerous features
         return;
     }
 
@@ -1259,6 +1263,7 @@ void LLGridManager::updateIsInProductionGrid()
     {
         LL_DEBUGS("GridManager")<< "uri: "<< uris[0] << "setting grid platform to AURORA" << LL_ENDL;
         EGridPlatform = GP_AURORA;
+        lolistorm_set_secondlife(false); // Tasia: OpenSim/Aurora, not SL
         return;
     }
 
@@ -1274,6 +1279,7 @@ void LLGridManager::updateIsInProductionGrid()
 
     LL_DEBUGS("GridManager")<< "uri: "<< login_uri.authority() << " setting grid platform to OPENSIM" << LL_ENDL;
     EGridPlatform = GP_OPENSIM;
+    lolistorm_set_secondlife(false); // Tasia: OpenSim, not SL
 }
 
 // For any Second Life grid
