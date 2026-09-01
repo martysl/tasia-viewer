@@ -1476,13 +1476,6 @@ Your unban request has been sent to TasiaGuard. Check your IP status shortly.
    </notification>
 
    <notification
-    name="GridBlockedNonSL"
-    type="alertmodal">
-    <tag>fail</tag>
-This viewer is a Second Life-only version. The grid "[GRID]" is not supported.
-   </notification>
-
-   <notification
     name="TasiaFeedUploadComplete"
     type="alertmodal">
     <tag>success</tag>

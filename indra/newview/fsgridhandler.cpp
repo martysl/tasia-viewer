@@ -579,13 +579,6 @@ void LLGridManager::addGrid(GridEntry* grid_entry,  AddState state)
             state = FAIL;
         }
 
-        // Block non-Second Life grids (SL-only version)
-        if (state != FAIL && !isSLGrid(grid))
-        {
-            LLNotificationsUtil::add("GridBlockedNonSL");
-            state = FAIL;
-        }
-
         // trim last slash
         size_t pos = grid.find_last_of("/");
         if ( (grid.length()-1) == pos )
