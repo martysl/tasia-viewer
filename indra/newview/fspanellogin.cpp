@@ -69,7 +69,11 @@
 #include "llglheaders.h"
 #include "llpanelloginlistener.h"
 
-// Tasia: removed lofloaterspoof.h, lofloaterextras.h, lospoof.h, loextras.h, loversion.h (Lostorm leftovers)
+// Tasia: removed lofloaterspoof.h, lofloaterextras.h (Lostorm floater UI removed)
+// Core spoofing functions still needed: lospoof.h, loextras.h, loversion.h
+#include "lospoof.h"
+#include "loextras.h"
+#include "loversion.h"
 #include "fsdata.h"
 
 #if LL_WINDOWS
