@@ -38,6 +38,14 @@ if (USE_FMODSTUDIO)
     elseif (DARWIN)
       #despite files being called libfmod.dylib, we are searching for fmod
       target_link_libraries( ll::fmodstudio INTERFACE  fmod)
+
+      # The macOS manifest packages FMOD under Tasia.app/Contents/Resources,
+      # while the FMOD dylib install name is @rpath/libfmod*.dylib. Add the
+      # Resources directory to the final executable's runtime search paths so
+      # dyld can resolve FMOD when Tasia starts.
+      target_link_options(ll::fmodstudio INTERFACE
+        "LINKER:-rpath,@executable_path/../Resources"
+      )
     elseif (LINUX)
       target_link_libraries( ll::fmodstudio INTERFACE  fmod)
     endif (WINDOWS)
