@@ -128,7 +128,6 @@ if (WINDOWS)
           /Oi
           /Ot
           /fp:precise
-          /MP
           /permissive-
       )
 
