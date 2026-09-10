@@ -148,3 +148,12 @@ server/tasiafeed/uploads/
 server/tasiafeed/thumbs/
 # private/proprietary dependencies
 private-deps/
+
+# Tasia private notes — never pushed to GitHub
+BUILD_NOTES.md
+NEXT_ACTION.md
+PROJECT_STATUS.md
+DECISIONS.md
+SECRETS_POLICY.md
+TEXTURE_SCANNER_CONCEPT.md
+VIEWER_PERKS_CONCEPT.md
