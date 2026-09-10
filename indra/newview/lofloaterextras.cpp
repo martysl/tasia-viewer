@@ -73,9 +73,8 @@ bool LOFloaterExtras::postBuild()
 {
     update_labels();
 
-    // Tasia: extra feature toggles (spoofing, export tools) are password-gated.
-    // Only the custom login background stays usable while locked.
-    const bool extras_unlocked = lolistorm_extras_unlocked();
+    // Tasia private build (employees only): feature toggles are always usable,
+    // there is no password gate on the UI. Public builds must re-introduce it.
 
     std::pair<const char*, unsigned> checkboxes[]{
         {"convenience_chk", LO_CONVENIENCE},
@@ -93,9 +92,6 @@ bool LOFloaterExtras::postBuild()
         LLUICtrl* ctrl = getChild<LLUICtrl>(ctrl_name);
 
         ctrl->setValue(LLSD(lolistorm_check_flag(flag)));
-
-        if ((LO_FEATURE_MASK & flag) == flag)
-            ctrl->setEnabled(extras_unlocked);
 
         ctrl->setCommitCallback([flag](LLUICtrl *ctrl, const LLSD&)
         {
@@ -141,10 +137,10 @@ bool LOFloaterExtras::postBuild()
             floater_spoof->update_labels();
     };
 
-    // Tasia: custom ID spoofing is password-gated.
-    custom_login_ids_chk->setEnabled(extras_unlocked);
-    custom_id0->setEnabled(extras_unlocked && custom_login_ids_chk->getValue().asBoolean());
-    custom_macid->setEnabled(extras_unlocked && custom_login_ids_chk->getValue().asBoolean());
+    // Tasia private build: custom ID spoofing controls are always usable too.
+    custom_login_ids_chk->setEnabled(true);
+    custom_id0->setEnabled(custom_login_ids_chk->getValue().asBoolean());
+    custom_macid->setEnabled(custom_login_ids_chk->getValue().asBoolean());
 
     custom_login_ids_chk->setCommitCallback([update_spoof_window, custom_id0, custom_macid](LLUICtrl *ctrl, const LLSD&)
     {

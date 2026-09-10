@@ -468,6 +468,25 @@
 			 function="Edit.EnableHoverHeight" />
 		</pie_slice>
 
+        <pie_separator />
+
+        <pie_menu
+            label="Save as &gt;"
+            name="Self Save as &gt;">
+            <pie_slice
+                label="Rigged Mesh (DAE)..."
+                name="Self Export Rigged Mesh">
+                <pie_slice.on_click
+                    function="Object.ExportRiggedMesh" />
+            </pie_slice>
+            <pie_slice
+                label="All Rigged Wearables (DAE)..."
+                name="Self Export All Rigged Wearables">
+                <pie_slice.on_click
+                    function="Object.ExportAllRiggedWearables" />
+            </pie_slice>
+        </pie_menu>
+
     </pie_menu>
     <pie_slice
         label="Textures"

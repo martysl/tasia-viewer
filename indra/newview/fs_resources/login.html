@@ -1,140 +1,135 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
-<title>Freestorm 17.0</title>
+<title>Tasia Viewer</title>
 <style>
-body
-{
-	padding: 0;
-	margin: 0;
-
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-
-	background: #a0a0a0 center center fixed;
-	background-repeat: no-repeat;
-	background-size: cover;
-
-	font-family: sans-serif;
-	font-size: 10pt;
+/*
+ * Tasia Viewer login page — written from scratch.
+ * Local page (x-freestorm:///login.html); no external requests, no warnings.
+ */
+:root {
+    --bg: #071420;
+    --panel: rgba(8, 28, 48, 0.82);
+    --line: rgba(61, 240, 255, 0.25);
+    --text: #d8ecf2;
+    --glow: #3df0ff;
+    --muted: #7fa5b3;
+    --accent: #b7ff3d;
 }
-
-#contentbox
-{
-	overflow: auto;
-
-	position: absolute;
-	top: 1em;
-	left: 1em;
-
-	width: 32em;
-
-	padding: 0.4em 1.5ex;
-	border: solid #ff67ac;
-	border-width: 3px 7px;
-	border-radius: 8px 0px;
-
-	background-color: rgba(204, 224, 255, 0.8);
-	backdrop-filter: blur(4px);
-	opacity: 1.0;
-	color: #202020;
-	text-shadow: #ffffff 0 0 4px;
-	font-size: 1.15vw;
+* { box-sizing: border-box; }
+html, body {
+    width: 100%; height: 100%;
+    margin: 0; padding: 0;
 }
-
-#contentbox.flipped
-{
-	left: auto;
-	right: 1em;
+body {
+    background: radial-gradient(1200px 800px at 50% 20%, #0c2236 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: "Segoe UI", "Noto Sans", Ubuntu, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
-
-#overlay
-{
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: rgba(192, 192, 192, 0.25);
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 26px rgba(61,240,255,.30), 0 0 8px rgba(183,255,61,.10); }
+    50%      { box-shadow: 0 0 52px rgba(61,240,255,.55), 0 0 22px rgba(183,255,61,.20); }
 }
-
-#overlayinner
-{
-	margin: 5vw auto;
-	width: 50vw;
-	background-color: white;
-	border: solid #CF3F3F 0.5vw;
-
-	font-size: 1.6vw;
-	text-align: center;
-	line-height: 2.2vw;
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
 }
-
-#overlayinner h2
-{
-	color: #CF3F3F;
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-body { background-image:url('perv13.webp'); }
+.card {
+    width: min(640px, 88vw);
+    padding: 44px 48px 36px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    text-align: center;
+    animation: fadeUp .5s ease-out;
+    box-shadow: 0 20px 60px rgba(0,0,0,.45);
+}
+.ring {
+    width: 92px; height: 92px;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(61,240,255,.30);
+    display: grid; place-items: center;
+    position: relative;
+    animation: pulse 3s ease-in-out infinite;
+}
+.ring::before {
+    content: "";
+    position: absolute; inset: -5px;
+    border-radius: 50%;
+    border: 1px dashed rgba(183,255,61,.20);
+    animation: spin 12s linear infinite;
+}
+.ring .glyph { font-size: 34px; font-weight: 700; color: var(--glow); }
+h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    letter-spacing: .03em;
+    color: var(--glow);
+    text-shadow: 0 0 18px rgba(61,240,255,.45);
+}
+p.lead {
+    margin: 0 0 26px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+}
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(0,0,0,.18);
+    font-size: 12.5px;
+    font-family: ui-monospace, Consolas, monospace;
+    color: var(--muted);
+}
+.info b { color: var(--text); font-weight: 600; }
+.footer {
+    margin-top: 18px;
+    font-size: 11.5px;
+    color: var(--muted);
+    opacity: .75;
+    letter-spacing: .04em;
+}
 </style>
-<div id="contentbox" class="flipped">
-<hr style="color:#ff67ac;border-color:#ff67ac;background-color:#ff67ac;clear:both;border:none;height:1px;">
-<p style="text-align:center;color:#f0418c;margin:0;padding:4px 0;">You are running <b id="version-anchor">Freestorm 17.0</b> based on Firestorm 7.1.13
-</div>
-<div id="overlay" onclick="this.style.display = 'none'" style="display:none">
-<div id="overlayinner" onclick="return false">
-<h2>Warning!</h2>
-<div id="warning"></div>
-</div>
+</head>
+<body>
+<div class="card">
+    <div class="ring"><div class="glyph">T</div></div>
+    <h1>Tasia Viewer</h1>
+    <p class="lead">You are running your own Tasia build.<br>Enjoy the world — no warnings, just exploring.</p>
+    <div class="info">
+        <span>Grid: <b id="i-grid">&mdash;</b></span>
+        <span>Channel: <b id="i-channel">&mdash;</b></span>
+        <span>Version: <b id="i-version">&mdash;</b></span>
+    </div>
+    <div class="footer">Tasia Viewer</div>
 </div>
 <script>
-var w = document.getElementById("warning");
-if (URLSearchParams != 'undefined')
-{
-	var params = new URLSearchParams(window.location.search.substring(1));
-	var channel = params.get('channel');
-	var grid = params.get('grid')
-	var os = params.get('os')
-	var nowarn = params.get('nowarn');
-	var version = params.get('version');
-	var loversion = params.get('loversion');
-
-	var bad_version = false;
-	var bad_channel = false;
-
-	var linux = (os != null && os.match(/Linux/));
-
-	if (loversion)
-	{
-		var vera = document.getElementById('version-anchor');
-		vera.innerText = "Freestorm 17." + loversion;
-	}
-
-	if (channel != null && grid != null && os != null && version != null)
-	{
-		// if (grid == 'agni')
-		{
-			if (version != "7.1.13 (78266)")
-				bad_version = true;
-
-			if (channel != "Firestorm-Releasex64")
-				bad_channel = true;
-		}
-	}
-
-	if (!nowarn)
-	{
-		if (bad_version)
-			w.innerHTML += "<p>Viewer is configured with the wrong version number.<br>Logging in to Second Life may put your account at risk.";
-
-		if (bad_channel)
-			w.innerHTML += "<p>Viewer is configured with the wrong channel name.<br>Logging in to Second Life may put your account at risk.";
-
-		if (bad_version || bad_channel)
-		{
-			document.getElementById("overlay").style.display = 'block';
-		}
-	}
-}
+(function () {
+    var p = new URLSearchParams(window.location.search.substring(1));
+    var el = function (id, value) {
+        if (value) {
+            var node = document.getElementById(id);
+            if (node) node.textContent = value;
+        }
+    };
+    el('i-grid', p.get('grid'));
+    el('i-channel', p.get('channel'));
+    el('i-version', p.get('version'));
+})();
 </script>
+</body>
+</html>

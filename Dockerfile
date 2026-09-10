@@ -34,6 +34,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrandr-dev \
     libfontconfig-dev \
     libfreetype6-dev \
+    libdbus-1-dev \
+    libnuma-dev \
     # Audio
     libpulse-dev \
     libssl-dev \

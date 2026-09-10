@@ -132,6 +132,10 @@
 #include "llviewertexturelist.h"
 #include "llvlcomposition.h"
 #include "llvoavatarself.h"
+#include "lldirpicker.h"
+#include "fsdaeexporter.h"
+#include "llformat.h"
+#include "llvovolume.h"
 #include "llvoicevivox.h"
 #include "llworld.h"
 #include "llworldmap.h"
@@ -12358,6 +12362,152 @@ class FSObjectExportCollada : public view_listener_t
 };
 // </FS:CR>
 
+// <Tasia> Rigged mesh export (DAE preserved-skinning + optional Blender .blend)
+static void exportAllRiggedWearablesCallback(const std::vector<std::string>& filenames, std::string)
+{
+    if (filenames.empty())
+        return;
+    const std::string& directory = filenames[0];
+    if (directory.empty())
+        return;
+
+    S32 exported = FSDAEExporter::exportAllAvatarRiggedMeshes(directory, gSavedSettings.getBOOL("FSBlenderExportEnabled"));
+    LLSD args;
+    if (exported > 0)
+    {
+        args["MESSAGE"] = llformat("Exported %d rigged wearable mesh(es) to:\n%s", exported, directory.c_str());
+    }
+    else
+    {
+        args["MESSAGE"] = llformat("No rigged wearable meshes found to export to:\n%s", directory.c_str());
+    }
+    LLNotificationsUtil::add("GenericAlert", args);
+}
+
+class FSObjectExportRiggedMesh : public view_listener_t
+{
+    bool handleEvent( const LLSD& userdata)
+    {
+        // Find the first skin-wearing volume inside the selection. Selections
+        // are linkset-wide, so the skinned mesh may be any prim, not just the
+        // primary/root prim.
+        LLVOVolume* vol = NULL;
+        LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
+        if (selection)
+        {
+            for (LLObjectSelection::iterator iter = selection->begin(); iter != selection->end(); ++iter)
+            {
+                LLSelectNode* node = *iter;
+                if (!node)
+                    continue;
+                LLViewerObject* objp = node->getObject();
+                if (!objp || objp->isHUDAttachment())
+                    continue;
+                vol = FSDAEExporter::findFirstSkinnedVolume(objp);
+                if (vol)
+                    break;
+            }
+        }
+
+        if (!vol)
+        {
+            LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE",
+                "Please select a rigged mesh first."));
+            return true;
+        }
+
+        LLViewerObject* objectp = vol;
+        std::string name = objectp->getAttachmentItemName();
+        if (name.empty())
+            name = "rigged_mesh";
+
+        LLFilePicker picker;
+        if (picker.getSaveFile(FFSAVE_COLLADA, name))
+        {
+            std::string path = picker.getFirstFile();
+            std::string base = path;
+            if (base.size() > 4 && base.compare(base.size() - 4, 4, ".dae") == 0)
+                base.erase(base.size() - 4);    // filebase without extension
+
+            if (FSDAEExporter::exportRiggedMesh(base, objectp, gSavedSettings.getBOOL("FSBlenderExportEnabled")))
+            {
+                LLSD args;
+                args["MESSAGE"] = llformat("Exported rigged mesh:\n\n%s.dae", base.c_str());
+                if (gSavedSettings.getBOOL("FSBlenderExportEnabled"))
+                    args["MESSAGE"] = llformat("Exported rigged mesh:\n\n%s.dae\n%s.blend", base.c_str(), base.c_str());
+                LLNotificationsUtil::add("GenericAlert", args);
+            }
+            else
+            {
+                LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE",
+                    "Rigged mesh export failed."));
+            }
+        }
+        return true;
+    }
+};
+
+class FSObjectExportAllRiggedWearables : public view_listener_t
+{
+    bool handleEvent( const LLSD& userdata)
+    {
+        (new LLDirPickerThread(boost::bind(&exportAllRiggedWearablesCallback, _1, _2), std::string()))->getFile();
+        return true;
+    }
+};
+
+// Exports the rigged meshes worn by the avatar whose name tag / body was
+// clicked. The picker is async, so hold the target avatar until the folder is
+// chosen. This path exists so a user can back up their OWN worn meshes when
+// they ask for help — only ever use it with the owner's consent.
+static LLUUID gFSExportTargetAvatarId;
+
+static void exportAvatarRiggedWearablesCallback(const std::vector<std::string>& filenames, std::string)
+{
+    LLUUID avatar_id = gFSExportTargetAvatarId;
+    gFSExportTargetAvatarId.setNull();
+
+    if (filenames.empty())
+        return;
+    const std::string& directory = filenames[0];
+    if (directory.empty())
+        return;
+
+    LLVOAvatar* avatarp = NULL;
+    if (!avatar_id.isNull())
+        avatarp = gAgentAvatarp ? find_avatar_from_object(avatar_id) : NULL;
+
+    S32 exported = FSDAEExporter::exportAvatarRiggedMeshes(avatarp, directory,
+                                                            gSavedSettings.getBOOL("FSBlenderExportEnabled"));
+
+    LLSD args;
+    if (exported > 0)
+    {
+        args["MESSAGE"] = llformat("Exported %d rigged wearable mesh(es) to:\n%s", exported, directory.c_str());
+    }
+    else
+    {
+        args["MESSAGE"] = llformat("No rigged wearable meshes found to export to:\n%s", directory.c_str());
+    }
+    LLNotificationsUtil::add("GenericAlert", args);
+}
+
+class FSObjectExportOthersRiggedWearables : public view_listener_t
+{
+    bool handleEvent( const LLSD& userdata)
+    {
+        LLViewerObject* objp = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+        LLVOAvatar* avatarp = find_avatar_from_object(objp);
+        if (!avatarp || avatarp == gAgentAvatarp)
+            return true;
+
+        gFSExportTargetAvatarId = avatarp->getID();
+        (new LLDirPickerThread(boost::bind(&exportAvatarRiggedWearablesCallback, _1, _2), std::string()))->getFile();
+        return true;
+    }
+};
+// </Tasia>
+
 // <FS:Zi> Make sure to call this before any of the UI is set up, so all text editors can
 //         pick up the menu properly.
 void initialize_edit_menu()
@@ -13215,6 +13365,9 @@ void initialize_menus()
     // <FS:Techwolf Lupindo> export
     view_listener_t::addMenu(new FSObjectExport(), "Object.Export");
     view_listener_t::addMenu(new FSObjectExportCollada(), "Object.ExportCollada");
+    view_listener_t::addMenu(new FSObjectExportRiggedMesh(), "Object.ExportRiggedMesh");
+    view_listener_t::addMenu(new FSObjectExportAllRiggedWearables(), "Object.ExportAllRiggedWearables");
+    view_listener_t::addMenu(new FSObjectExportOthersRiggedWearables(), "Object.ExportOthersRiggedWearables");
     enable.add("Object.EnableExport", boost::bind(&enable_export_object));
     // </FS:Techwolf Lupindo>
 

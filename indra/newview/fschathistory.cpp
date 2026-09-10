@@ -621,21 +621,22 @@ public:
         mTitle = LLUICtrlFactory::create<LLTextBox>(title_params);
         addChild(mTitle);
 
-        LLButton::Params play_params;
-        play_params.name = "tasia_youtube_play";
-        play_params.label = "Play in Viewer";
-        play_params.rect = LLRect(410, 58, 530, 36);
-        mPlayButton = LLUICtrlFactory::create<LLButton>(play_params);
-        mPlayButton->setClickedCallback([this](LLUICtrl*, const LLSD&) { openPlayer(); });
-        addChild(mPlayButton);
-
+        /* Open in YouTube on top (external browser), Play In-World on bottom (in-viewer) */
         LLButton::Params open_params;
         open_params.name = "tasia_youtube_open";
-        open_params.label = "Open YouTube";
-        open_params.rect = LLRect(410, 30, 530, 8);
+        open_params.label = "Open in YouTube";
+        open_params.rect = LLRect(410, 58, 530, 36);
         mOpenButton = LLUICtrlFactory::create<LLButton>(open_params);
         mOpenButton->setClickedCallback([this](LLUICtrl*, const LLSD&) { openURL(); });
         addChild(mOpenButton);
+
+        LLButton::Params play_params;
+        play_params.name = "tasia_youtube_play";
+        play_params.label = "Play In-World";
+        play_params.rect = LLRect(410, 30, 530, 8);
+        mPlayButton = LLUICtrlFactory::create<LLButton>(play_params);
+        mPlayButton->setClickedCallback([this](LLUICtrl*, const LLSD&) { openPlayer(); });
+        addChild(mPlayButton);
     }
 
     void reshape(S32 width, S32 height, bool called_from_parent = true) override
@@ -647,11 +648,11 @@ public:
         }
         if (mPlayButton)
         {
-            mPlayButton->setRect(LLRect(width - 120, height - 10, width - 10, height - 32));
+            mPlayButton->setRect(LLRect(width - 120, height - 38, width - 10, height - 60));
         }
         if (mOpenButton)
         {
-            mOpenButton->setRect(LLRect(width - 120, height - 38, width - 10, height - 60));
+            mOpenButton->setRect(LLRect(width - 120, height - 10, width - 10, height - 32));
         }
     }
 

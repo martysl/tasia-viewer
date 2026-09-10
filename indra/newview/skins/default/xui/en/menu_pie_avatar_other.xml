@@ -230,6 +230,17 @@
 			</pie_menu>
         </pie_menu>
 
+        <pie_menu
+            name="Other Save as &gt;"
+            label="Save as &gt;">
+            <pie_slice
+                label="All Rigged Wearables (DAE)..."
+                name="Other Export All Rigged Wearables">
+                <pie_slice.on_click
+                    function="Object.ExportOthersRiggedWearables" />
+            </pie_slice>
+        </pie_menu>
+
         <pie_separator />
         <pie_menu
             name="DerenderMenu"

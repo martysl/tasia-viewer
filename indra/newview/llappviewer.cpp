@@ -1141,28 +1141,19 @@ bool LLAppViewer::init()
     // correct password hash is entered. Never auto-unlock at startup.
     lolistorm_set_password(gSavedSettings.getString("TasiaExtrasPasswordHash"));
 
-    // Tasia: on Second Life (Agni/Aditi) the dangerous extras are
-    // hard-blocked and can never be unlocked, password or not.
+    // Tasia private build (employees only): the export permission bypass and
+    // enhanced export are usable on every grid, exactly like before the block
+    // was added. The SL-specific guard was removed on Mom's request; any public
+    // build MUST restore it (see git history, "Hard-block dangerous extras").
+    const std::string grid_id = LLGridManager::getInstance()->getGridId();
+    const bool is_secondlife = (grid_id == "Agni" || grid_id == "Aditi");
+    if (is_secondlife)
     {
-        const std::string grid_id = LLGridManager::getInstance()->getGridId();
-        const bool is_secondlife = (grid_id == "Agni" || grid_id == "Aditi");
-        lolistorm_set_secondlife(is_secondlife);
-        if (is_secondlife)
-        {
-            LL_INFOS("LOExtras") << "Second Life grid detected (" << grid_id
-                                 << "): spoofing and export tools hard-blocked." << LL_ENDL;
-        }
+        LL_INFOS("LOExtras") << "Second Life grid detected: note that this "
+                             << "private build has the SL extras hard-block removed." << LL_ENDL;
     }
-
-    bool extraHands = gSavedSettings.getBOOL("ExtraHands");
-    if (extraHands)
-    {
-        lolistorm_unblock_flag(LO_ENHANCED_EXPORT | LO_BYPASS_EXPORT_PERMS);
-    }
-    else
-    {
-        lolistorm_block_flag(LO_ENHANCED_EXPORT | LO_BYPASS_EXPORT_PERMS);
-    }
+    lolistorm_set_secondlife(is_secondlife);
+    lolistorm_unblock_flag(LO_ENHANCED_EXPORT | LO_BYPASS_EXPORT_PERMS);
 
     lolistorm_set_flags(extra_features, extra_mask);
 

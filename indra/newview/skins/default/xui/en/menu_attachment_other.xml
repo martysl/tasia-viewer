@@ -277,5 +277,21 @@
 			<menu_item_call.on_enable
 			function="Object.EnableExport" />
 		</menu_item_call>
+		<!-- <Tasia> Rigged mesh export (preserved skinning + Blender) -->
+		<menu_item_call
+			label="Rigged Mesh (DAE)"
+			name="ExportRiggedMesh">
+			<menu_item_call.on_click
+			function="Object.ExportRiggedMesh" />
+			<menu_item_call.on_enable
+			function="Object.EnableExport" />
+		</menu_item_call>
+		<menu_item_call
+			label="All Rigged Wearables (DAE)"
+			name="ExportAllRiggedWearables">
+			<menu_item_call.on_click
+			function="Object.ExportAllRiggedWearables" />
+		</menu_item_call>
+		<!-- </Tasia> -->
 	</context_menu>
 </context_menu>
