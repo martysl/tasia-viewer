@@ -32,6 +32,10 @@ env:
   AUTOBUILD_VSVER: 170
   LL_SKIP_REQUIRE_SYSROOT: 1
   XZ_DEFAULTS: -T0
+  # windows-2022 runners OOM when ninja spawns one job per core during the
+  # boost/_deps link storm ("CreateProcess: Insufficient system resources").
+  # Cap parallelism to keep within runner memory. Ninja honors this variable.
+  CMAKE_BUILD_PARALLEL_LEVEL: 8
 
 jobs:
   build:
