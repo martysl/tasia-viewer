@@ -32,10 +32,10 @@ env:
   AUTOBUILD_VSVER: 170
   LL_SKIP_REQUIRE_SYSROOT: 1
   XZ_DEFAULTS: -T0
-  # windows-2022 runners OOM when the build runs too much in parallel
-  # (C1060 out of heap / CreateProcess insufficient resources / VM killed) —
-  # /MP removed in 00-Common.cmake (single-frontend cl.exe) and ninja capped low.
-  CMAKE_BUILD_PARALLEL_LEVEL: 2
+  # windows-2022 GP runners (7 GB) still OOM cl.exe at parallelism 2 —
+  # two heavy TU compilers (boost/msquic headers) balloon until total memory
+  # dies in a cascade. Serial build (-j 1) is the only reliable setting here.
+  CMAKE_BUILD_PARALLEL_LEVEL: 1
 
 jobs:
   build:
@@ -210,7 +210,8 @@ jobs:
             -- \
             --fmodstudio \
             --no-package \
-            --ninja
+            --ninja \
+            -j 1
 
       - name: Copy Microsoft-signed msquic.dll to output
         shell: bash
