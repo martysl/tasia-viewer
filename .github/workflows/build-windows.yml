@@ -33,9 +33,9 @@ env:
   LL_SKIP_REQUIRE_SYSROOT: 1
   XZ_DEFAULTS: -T0
   # windows-2022 runners OOM when the build runs too much in parallel
-  # (C1060 out of heap / CreateProcess insufficient resources) — /MP was also
-  # removed from 00-Common.cmake so each cl.exe is single-frontend.
-  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  # (C1060 out of heap / CreateProcess insufficient resources / VM killed) —
+  # /MP removed in 00-Common.cmake (single-frontend cl.exe) and ninja capped low.
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
 
 jobs:
   build:
@@ -139,6 +139,25 @@ jobs:
           ninja --version
           cmake --version
           where cl
+
+      - name: Expand Windows page file (best effort)
+        shell: powershell
+        run: |
+          try {
+            wmic pagefileset where "name='C:\\pagefile.sys'" set InitialSize=8192,MaximumSize=8192 | Out-Null
+            if (Test-Path 'D:\') {
+              $existing = Get-WmiObject Win32_PageFileSetting -ErrorAction SilentlyContinue
+              if ($null -ne $existing -and @($existing).Count -eq 0) {
+                Set-WmiInstance -Class Win32_PageFileSetting -Arguments @{ Name='D:\pagefile.sys'; InitialSize=0; MaximumSize=0 } | Out-Null
+              }
+            }
+            $System = Get-WmiObject Win32_ComputerSystem
+            $System.AutomaticManagedPagefile = $false
+            $System.Put() | Out-Null
+            Get-WmiObject Win32_PageFileSetting | Select-Object Name, InitialSize, MaximumSize
+          } catch {
+            Write-Host "Page file tuning skipped: $_"
+          }
 
       - name: Set Tasia build metadata
         shell: bash
