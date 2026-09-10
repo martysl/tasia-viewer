@@ -73,6 +73,7 @@
 #include "lltextbox.h"
 #include "lltexturectrl.h"
 #include "lltextureentry.h"
+#include "loextras.h"
 #include "lltooldraganddrop.h"
 #include "lltoolface.h"
 #include "lltoolmgr.h"
@@ -1674,9 +1675,13 @@ void FSPanelFace::updateUI(bool force_set_values /*false*/)
     LLSelectNode* node = LLSelectMgr::getInstance()->getSelection()->getFirstNode();
     LLViewerObject* objectp = node ? node->getObject() : NULL;
 
+    // <Tasia> private build: extras unlock also lets us READ texture/material
+    // values on non-modifiable objects so the Texture tab shows the real UUID,
+    // tint, repeats, etc. The sim still rejects writes on non-mod objects, so
+    // this is view-only; restoring perms here would break normal SL editing.
     if (objectp
         && objectp->getPCode() == LL_PCODE_VOLUME
-        && objectp->permModify())
+        && (objectp->permModify() || lolistorm_extras_unlocked()))
     {
         // TODO: Find out what "permanent" objects are supposed to allow to be edited. Right now this will
         //       completely blank out the texture panel, so we could just move that into the if() above -Zi
