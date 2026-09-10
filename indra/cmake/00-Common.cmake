@@ -42,6 +42,11 @@ if (WINDOWS)
   set(CMAKE_CXX_FLAGS_RELEASE "$ENV{LL_BUILD_RELEASE}")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "$ENV{LL_BUILD_RELWITHDEBINFO}")
   set(CMAKE_CXX_FLAGS_DEBUG "$ENV{LL_BUILD_DEBUG}")
+  # CI windows-2022 runners (2 vCPU / 7 GB) OOM cl.exe on debug-info-heavy
+  # translation units (C1060). Strip /Zi and /DEBUG from Release so no PDB is
+  # generated; the Linux build and local dev builds are unaffected.
+  string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+  string(REPLACE "/DEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 else (WINDOWS)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} $ENV{LL_BUILD}")
 endif (WINDOWS)
