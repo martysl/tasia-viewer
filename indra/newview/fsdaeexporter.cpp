@@ -1061,23 +1061,32 @@ void FSDAEExporter::writeGeometry(std::ofstream& out,
     out << "          </technique_common>\n";
     out << "        </source>\n";
 
-    // Vertices
+    // Vertices (shared POSITION only)
     out << "        <vertices id=\"" << geom_id << "-mesh-vertices\">\n";
     out << "          <input semantic=\"POSITION\" source=\"#" << geom_id << "-mesh-positions\"/>\n";
-    out << "          <input semantic=\"NORMAL\" source=\"#" << geom_id << "-mesh-normals\"/>\n";
-    out << "          <input semantic=\"TEXCOORD\" source=\"#" << geom_id << "-mesh-map-0\"/>\n";
     out << "        </vertices>\n";
 
-    // Triangles per face
+    // Triangles per face. Each corner references position, normal and
+    // texcoord explicitly (the three sources are 1:1 aligned, so all three
+    // indices are the same value). Non-triangulated per-input <p> output
+    // produced valid-looking files that re-imported into Second Life with the
+    // texture mapped incorrectly, because the UV binding was only implied via
+    // the <vertices> block. Explicit per-inputs match what standard exporters
+    // (Blender) emit and restore correct UV mapping on re-upload.
     U32 base_vert = 0;
     for (const auto& f : faces)
     {
         std::string mat = sanitizeId(f.material_name);
         out << "        <triangles count=\"" << (f.indices.size() / 3) << "\" material=\"" << mat << "\">\n";
         out << "          <input semantic=\"VERTEX\" source=\"#" << geom_id << "-mesh-vertices\" offset=\"0\"/>\n";
+        out << "          <input semantic=\"NORMAL\" source=\"#" << geom_id << "-mesh-normals\" offset=\"1\"/>\n";
+        out << "          <input semantic=\"TEXCOORD\" source=\"#" << geom_id << "-mesh-map-0\" offset=\"2\" set=\"0\"/>\n";
         out << "          <p>";
         for (U32 j = 0; j < f.indices.size(); ++j)
-            out << (base_vert + f.indices[j]) << " ";
+        {
+            U32 vi = base_vert + f.indices[j];
+            out << vi << " " << vi << " " << vi << " ";
+        }
         out << "</p>\n";
         out << "        </triangles>\n";
         base_vert += (U32)f.positions.size();
