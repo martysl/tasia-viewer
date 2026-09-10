@@ -1050,9 +1050,14 @@ void FSDAEExporter::writeGeometry(std::ofstream& out,
     // Texcoords
     out << "        <source id=\"" << geom_id << "-mesh-map-0\">\n";
     out << "          <float_array id=\"" << geom_id << "-mesh-map-0-array\" count=\"" << (total_verts * 2) << "\">";
+    // V convention test: SL mesh UVs (vf.mTexCoords) are used verbatim by the
+    // renderer on a default-texgen face (Scale 1, Offset 0, Rotation 0), so the
+    // DAE should write the raw V. A 1.0f - v flip here made the texture come
+    // back vertically reversed after SL re-import, so it is intentionally
+    // removed until ground-truth comparison decides the convention.
     for (const auto& f : faces)
         for (const auto& v : f.texcoords)
-            out << v.mV[0] << " " << (1.0f - v.mV[1]) << " ";
+            out << v.mV[0] << " " << v.mV[1] << " ";
     out << "</float_array>\n";
     out << "          <technique_common>\n";
     out << "            <accessor source=\"#" << geom_id << "-mesh-map-0-array\" count=\"" << total_verts << "\" stride=\"2\">\n";
