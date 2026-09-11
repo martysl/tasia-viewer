@@ -62,7 +62,7 @@ void LLFloaterUnlockExtras::onUnlockClicked()
 
     // Hash the entered password with MD5 and compare against the stored hash
     std::string digest(32, ' ');
-    LLMD5 hash((const unsigned char*)entered.data(), entered.size());
+    LLMD5 hash((const unsigned char*)entered.data(), (unsigned int)entered.size());
     hash.hex_digest(&digest[0]);
 
     if (lolistorm_unlock_extras(digest))
