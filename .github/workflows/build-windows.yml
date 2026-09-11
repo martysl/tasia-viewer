@@ -217,8 +217,8 @@ jobs:
         run: |
           set -euo pipefail
           DIST_DIR="build-vc170-64/newview/unpacked"
-          MSQUIC_DLL="$(find build/_deps -name 'msquic.dll' 2>/dev/null | head -1)"
-          if [ -n "$MSQUIC_DLL" ] && [ -d "$DIST_DIR" ]; then
+          MSQUIC_DLL="$(find build-vc170-64 build -iname 'msquic.dll' 2>/dev/null | head -1 || true)"
+          if [ -n "${MSQUIC_DLL:-}" ] && [ -d "$DIST_DIR" ]; then
             cp -v "$MSQUIC_DLL" "$DIST_DIR/"
             echo "Copied Microsoft-signed msquic.dll to $DIST_DIR"
           else
